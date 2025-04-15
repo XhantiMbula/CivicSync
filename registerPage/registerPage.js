@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         LastName, 
                         Username // ✅ This will be stored in `user_metadata`
                     },
-                    emailRedirectTo: "https://studylocker-gg.netlify.app/loginpage/loginpage"  
+                    emailRedirectTo: "/loginPage/loginPage.html"  
                 }
             });
 
@@ -78,11 +78,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const { error: insertError } = await window.supabaseClient
             .from("UserTable")
             .insert([{ 
-                "FirstName": FirstName,  
-                "LastName": LastName,
-                "Username": Username,
-                "Email": Email,  
-                "Password": Password
+                "UserFirstname": FirstName,  
+                "UserLastname": LastName,
+                "UserUsername": Username,
+                "UserEmail": Email,  
+                "UserPassword": Password
             }]);
 
             if (insertError) throw insertError;
