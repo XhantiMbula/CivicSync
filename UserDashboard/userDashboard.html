@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="userDashboard.css">
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="app-name">Civic Sync</div>
+            <div class="header-icons">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="profile-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="logout">Logout</div>
+            </div>
+        </div>
+
+        <div class="request-complaint-section">
+            <div class="request-box">
+                <div>Request</div>
+                <button id="add-request-button" class="request-button">+</button>
+            </div>
+        </div>
+
+        <table class="forms-table" id="request-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Form 1</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Form 2</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>...more</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="feed-section">
+            <div class="feed-column completed-requests">
+                <h3>Completed Requests</h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Completed Request 1">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="completed1" checked>
+                            <label for="completed1">Completed 1</label>
+                        </div>
+                        <p class="feed-item-description">Description of completed task 1.  This could be a longer description.</p>
+                        <p class="feed-item-location">Location: 123 Main St, Anytown</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Completed Request 2">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="completed2" checked>
+                            <label for="completed2">Completed 2</label>
+                        </div>
+                        <p class="feed-item-description">Description of completed task 2.</p>
+                        <p class="feed-item-location">Location: 456 Side Rd, Someplace</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feed-column updated-requests">
+                <h3>Updated Requests</h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Updated Request 1">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="updated1">
+                            <label for="updated1">Updated 1</label>
+                        </div>
+                        <p class="feed-item-description">Description of updated task 1.</p>
+                        <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Updated Request 2">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="updated2">
+                            <label for="updated2">Updated 2</label>
+                        </div>
+                        <p class="feed-item-description">Description of updated task 2.</p>
+                        <p class="feed-item-location">Location: 101 Pine Ave, Another Town</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feed-column pending-requests">
+                <h3>Pending Requests</h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Pending Request 1">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="pending1">
+                            <label for="pending1">Pending 1</label>
+                        </div>
+                        <p class="feed-item-description">Description of pending task 1.</p>
+                        <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Pending Request 2">
+                    <div class="feed-item-content">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" id="pending2">
+                            <label for="pending2">Pending 2</label>
+                        </div>
+                        <p class="feed-item-description">Description of pending task 2.</p>
+                        <p class="feed-item-location">Location: 333 Elm St, A Faraway Town</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="request-complaint-section complaint-section">
+            <div class="complaint-box">
+                <div>Complaint</div>
+                <button class="complaint-button">+</button>
+            </div>
+        </div>
+    </div>
+    <footer class="site-footer">
+        <div class="contact-info">
+            Contact Us: xhantimbula@syntaxsyndicate.co.za | +27 64 071 6111
+        </div>
+    </footer>
+
+    <div id="request-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h2>Add New Request</h2>
+            </div>
+            <div class="modal-body">
+                <form id="add-request-form">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required><br><br>
+
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="Crime">Crime</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Public Spaces">Public Spaces</option>
+                        <option value="Government Housing">Government Housing</option>
+                    </select><br><br>
+
+                    <label for="image">Image/Picture:</label>
+                    <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" required><br><br>
+
+                    <div class="modal-footer">
+                        <button type="button" class="modal-cancel-button">Cancel</button>
+                        <button type="submit" class="modal-submit-button">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById("request-modal");
+    const addRequestButton = document.getElementById("add-request-button");
+    const closeBtn = document.querySelector(".close");
+    const requestForm = document.getElementById("add-request-form");
+    const requestTable = document.getElementById("request-table");
+    const modalCancelButton = document.querySelector(".modal-cancel-button");
+    const profileIcon = document.querySelector('.profile-icon');
+    const dashboardContainer = document.querySelector('.dashboard-container'); // Or a more appropriate container
+
+    addRequestButton.addEventListener("click", () => {
+        modal.style.display = "block";
+    });
+
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    modalCancelButton.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+
+    window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+
+    requestForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        const title = document.getElementById("title").value;
+        const category = document.getElementById("category").value;
+        const imageInput = document.getElementById("image");
+        const description = document.getElementById("description").value;
+        const location = document.getElementById("location").value;
+        const status = "Pending";
+
+        let imageURL = "";
+        if (imageInput.files && imageInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageURL = e.target.result;
+                addNewRequestToTable(title, category, imageURL, description, location, status);
+                modal.style.display = "none";
+                requestForm.reset();
+            };
+            reader.readAsDataURL(imageInput.files[0]);
+        } else {
+            addNewRequestToTable(title, category, imageURL, description, location, status);
+            modal.style.display = "none";
+            requestForm.reset();
+        }
+    });
+
+    function addNewRequestToTable(title, category, image, description, location, status) {
+        const newRow = requestTable.insertRow();
+        const numberCell = newRow.insertCell();
+        const titleCell = newRow.insertCell();
+        const imageCell = newRow.insertCell();
+        const descriptionCell = newRow.insertCell();
+        const locationCell = newRow.insertCell();
+        const statusCell = newRow.insertCell();
+
+        numberCell.textContent = "Form " + (requestTable.rows.length - 1);
+        titleCell.textContent = title;
+
+        if (image) {
+            const imgElement = document.createElement("img");
+            imgElement.src = image;
+            imgElement.alt = "Request Image";
+            imgElement.style.maxWidth = "100px";
+            imageCell.appendChild(imgElement);
+        } else {
+            imageCell.textContent = "No Image";
+        }
+
+        descriptionCell.textContent = description;
+        locationCell.textContent = location;
+        statusCell.textContent = status;
+    }
+
+    if (profileIcon) {
+        profileIcon.addEventListener('click', () => {
+            const existingProfileDropdown = document.getElementById('profile-dropdown');
+            if (existingProfileDropdown) {
+                existingProfileDropdown.remove();
+                return;
+            }
+
+            const profileDropdown = document.createElement('div');
+            profileDropdown.id = 'profile-dropdown';
+            profileDropdown.classList.add('profile-dropdown');
+
+            // Sample user data (replace with actual data fetching)
+            const userData = {
+                profilePicture: 'default-profile.png', // Replace with actual image URL
+                username: 'JohnDoe123',
+                location: 'Cape Town, South Africa',
+            };
+
+            let profileHTML = `
+                <div class="profile-header">
+                    <div class="profile-picture-container">
+                        <img src="${userData.profilePicture}" alt="Profile Picture" class="profile-picture clickable">
+                        <input type="file" id="upload-picture" accept="image/*" style="display: none;">
+                        <label for="upload-picture" class="upload-label"><i class="fas fa-camera"></i> Upload</label>
+                    </div>
+                    <h3 class="username" contenteditable="true">${userData.username}</h3>
+                    <p class="location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span class="location-text" contenteditable="true">${userData.location}</span>
+                    </p>
+                </div>
+                <ul class="profile-actions">
+                    <li><a href="#activity"><i class="fas fa-history"></i> View Activity</a></li>
+                    <li class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                </ul>
+            `;
+
+            profileDropdown.innerHTML = profileHTML;
+            dashboardContainer.appendChild(profileDropdown);
+
+            const uploadPictureInput = profileDropdown.querySelector('#upload-picture');
+            const profilePictureImg = profileDropdown.querySelector('.profile-picture');
+            const usernameElement = profileDropdown.querySelector('.username');
+            const locationElement = profileDropdown.querySelector('.location-text');
+            const logoutLink = profileDropdown.querySelector('.logout-link');
+
+            // Make profile picture container clickable to trigger file upload
+            const profilePictureContainer = profileDropdown.querySelector('.profile-picture-container');
+            profilePictureContainer.addEventListener('click', () => {
+                uploadPictureInput.click();
+            });
+
+            // Handle image upload
+            uploadPictureInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        profilePictureImg.src = e.target.result;
+                        // In a real application, you would also send this data to the server to update the user's profile picture.
+                        console.log('New profile picture uploaded:', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Handle username change (you'd typically save this on blur or a button click)
+            usernameElement.addEventListener('blur', (event) => {
+                const newUsername = event.target.innerText.trim();
+                if (newUsername !== userData.username) {
+                    console.log('Username changed to:', newUsername);
+                    userData.username = newUsername;
+                    // In a real application, you would send this to the server to update the username.
+                }
+            });
+
+            // Prevent line breaks in editable username
+            usernameElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    usernameElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                }
+            });
+
+            // Handle location change (you'd typically save this on blur or a button click)
+            locationElement.addEventListener('blur', (event) => {
+                const newLocation = event.target.innerText.trim();
+                if (newLocation !== userData.location) {
+                    console.log('Location changed to:', newLocation);
+                    userData.location = newLocation;
+                    // In a real application, you would send this to the server to update the location.
+                }
+            });
+
+            // Prevent line breaks in editable location
+            locationElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    locationElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                }
+            });
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', () => {
+                    console.log('Logout clicked');
+                    // window.location.href = '/logout';
+                });
+            }
+
+            function closeDropdown(event) {
+                if (!profileIcon.contains(event.target) && !profileDropdown.contains(event.target)) {
+                    profileDropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            }
+
+            setTimeout(() => {
+                document.addEventListener('click', closeDropdown);
+            }, 10);
+        });
+    }
+});
+    </script>
+</body>
+</html>
