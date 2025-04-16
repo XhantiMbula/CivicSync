@@ -1,0 +1,3 @@
+Link to the table editor of the UserTable in the Supabase to look at/ make use of the Dummy Data
+https://supabase.com/dashboard/project/lywylvbgsnmqwcwgiyhc/editor/17342
+------------------------------------------------------------------------------------------------------
