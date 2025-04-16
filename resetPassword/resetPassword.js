@@ -40,7 +40,7 @@ async function resetPassword() {
         } else {
             showMessage("Password reset successful! Redirecting to login...", "success");
             setTimeout(() => {
-                window.location.href = "https://studylocker-gg.netlify.app/loginpage/loginpage";
+                window.location.href = "/loginpage/loginpage";
             }, 2000);
         }
     } catch (err) {

@@ -47,10 +47,10 @@ async function loginUser() {
 
     if (adminData) {
         console.log("Admin detected, redirecting...");
-        window.location.href = "https://studylocker-gg.netlify.app/adminDashboard";
+        window.location.href = "AdminDashboard";
     } else {
         console.log("Regular user detected, redirecting...");
-        window.location.href = "https://studylocker-gg.netlify.app/userDashboard";
+        window.location.href = "UserDashboard";
     }
 }
 
@@ -65,7 +65,7 @@ async function forgotPassword() {
     console.log("Sending password reset email to:", email);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://studylocker-gg.netlify.app/ResetPassword/resetPassword.html"
+        redirectTo: "/resetPassword/resetPassword.html"
     });
 
     if (error) {
