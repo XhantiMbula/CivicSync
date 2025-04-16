@@ -34,26 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById("category").value;
         const imageInput = document.getElementById("image");
         const description = document.getElementById("description").value;
-        const locationInput = document.getElementById("location");
+        const location = document.getElementById("location").value;
+
         const status = "Pending";
-
-// Function to handle location selection (can be expanded for mapping)
-    function handleLocationInput() {
-        // Basic example: You could trigger a map service here
-        // or use an autocomplete library for addresses.
-        console.log("Location input focused. You could integrate a map or autocomplete here.");
-
-        // For a very basic example, let's just prompt the user
-        const userLocation = prompt("Enter your location or a landmark:");
-        if (userLocation) {
-            locationInput.value = userLocation;
-        }
-    }
-
-    addRequestButton.addEventListener("click", () => {
-        modal.style.display = "block";
-        // Optionally, you could trigger location services when the modal opens
-    });
 
         let imageURL = "";
         if (imageInput.files && imageInput.files[0]) {
