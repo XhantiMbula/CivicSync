@@ -327,20 +327,62 @@ body {
 }
 
 /* Footer Styles */
+
 .site-footer {
-    background-color: #002906;
-    color: #fff;
-    padding: 25px 0;
-    text-align: center;
-    margin-top: 30px;
-    opacity: 0.9;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    background-color: #000000;
+    color: white;
+    padding: 30px 0;
+    margin-top: 50px;
 }
 
-.site-footer .contact-info {
-    font-size: 1.1em;
-    font-weight: bold;
-    letter-spacing: 0.5px;
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 300px;
+    margin-bottom: 20px;
+    padding: 0 15px;
+}
+
+.footer-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 5px;
+}
+
+.site-footer a:hover {
+    color: #e6ee00;
+}
+
+.site-footer p a {
+    color: #00A31E;
+    text-decoration: none;
+}
+
+.social-links a {
+    color: white;
+    margin-right: 15px;
+    font-size: 1.5rem;
+}
+
+.copyright {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .complaint-section{
@@ -452,14 +494,110 @@ body {
 }
 
 .modal-body input[type="text"],
-.modal-body input[type="email"],
+.modal-body input[type="file"],
 .modal-body textarea,
 .modal-body select {
     width: calc(100% - 24px); /* Adjust width for padding and border */
     padding: 12px;
     margin-bottom: 20px;
-    border: 1px solid #ccc; /* Light border */
-    border-radius: 8px; /* Rounded corners */}
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.modal-body textarea {
+    resize: vertical;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.modal-cancel-button,
+.modal-submit-button {
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-cancel-button:hover {
+    background-color: #e0e0e0;
+    color: #000;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.modal-submit-button {
+    background-color: #00A31E;
+    color: white;
+    border: none;
+}
+
+.modal-submit-button:hover {
+    background-color: #002906;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments for the modal */
+@media (max-width: 600px) {
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .modal-cancel-button,
+    .modal-submit-button {
+        width: 100%;
+    }
+    .modal-body input[type="file"] {
+        /* Hide the default file input */
+        opacity: 0;
+        position: absolute;
+        z-index: -1;
+    }
+    
+    .modal-body label[for="image"] {
+        display: inline-block;
+        background-color: #00A31E; /* Green background */
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px; /* Add some space below the button */
+    }
+    
+    .modal-body label[for="image"]:hover {
+        background-color: #002906; /* Darker green on hover */
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Style for when a file is selected (optional) */
+    .modal-body .file-selected {
+        display: block;
+        margin-top: 10px;
+        font-size: 0.9em;
+        color: #555;
+        font-style: italic;
+    }
+}
     .profile-dropdown {
         position: absolute; /* Or fixed, depending on your layout */
         top: 60px; /* Adjust based on your header height */
