@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById("request-modal");
     const addRequestButton = document.getElementById("add-request-button");
@@ -5,118 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestForm = document.getElementById("add-request-form");
     const requestTable = document.getElementById("request-table");
     const modalCancelButton = document.querySelector(".modal-cancel-button");
-    const locationInput = document.getElementById("location");
-    const locationSuggestions = document.createElement('div');
-    locationSuggestions.id = 'location-suggestions';
-    locationSuggestions.style.position = 'absolute';
-    locationSuggestions.style.zIndex = '1000';
-    locationSuggestions.style.backgroundColor = 'white';
-    locationSuggestions.style.border = '1px solid #ccc';
-    locationSuggestions.style.width = locationInput.offsetWidth + 'px'; // Match input width
-    locationSuggestions.style.display = 'none';
-    locationInput.parentNode.appendChild(locationSuggestions);
-
-    const apiKey = 'YOUR_GEOCODING_API_KEY'; // Replace with your actual API key
-    const autocompleteService = 'google'; // Choose your service: 'google', 'opencage', 'mapbox'
-
-    function autocompleteLocation(query) {
-        if (!query.trim()) {
-            locationSuggestions.style.display = 'none';
-            locationSuggestions.innerHTML = '';
-            return;
-        }
-
-        let autocompleteUrl = '';
-
-        switch (autocompleteService) {
-            case 'google':
-                autocompleteUrl = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(query)}&key=${apiKey}&sessiontoken=YOUR_SESSION_TOKEN&types=geocode`;
-                // **Note:** For production, you should implement session tokens properly
-                break;
-            case 'opencage':
-                autocompleteUrl = `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(query)}&key=${apiKey}&language=en&limit=5`;
-                break;
-            case 'mapbox':
-                autocompleteUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${apiKey}&types=address,poi&proximity=${longitude},${latitude}`;
-                // **Note:** You might want to use the user's current coordinates for proximity if available
-                break;
-            default:
-                console.warn("No valid autocomplete service selected.");
-                locationSuggestions.style.display = 'none';
-                locationSuggestions.innerHTML = '';
-                return;
-        }
-
-        fetch(autocompleteUrl)
-            .then(response => response.json())
-            .then(data => {
-                locationSuggestions.innerHTML = '';
-                locationSuggestions.style.display = 'block';
-                let suggestions = [];
-
-                switch (autocompleteService) {
-                    case 'google':
-                        if (data.predictions) {
-                            suggestions = data.predictions.map(p => ({ description: p.description, place_id: p.place_id }));
-                        }
-                        break;
-                    case 'opencage':
-                        if (data.results) {
-                            suggestions = data.results.map(r => ({ description: r.formatted, latitude: r.geometry.lat, longitude: r.geometry.lng }));
-                        }
-                        break;
-                    case 'mapbox':
-                        if (data.features) {
-                            suggestions = data.features.map(f => ({ description: f.place_name, latitude: f.center[1], longitude: f.center[0] }));
-                        }
-                        break;
-                }
-
-                if (suggestions.length > 0) {
-                    suggestions.forEach(suggestion => {
-                        const suggestionItem = document.createElement('div');
-                        suggestionItem.textContent = suggestion.description;
-                        suggestionItem.style.padding = '8px';
-                        suggestionItem.style.cursor = 'pointer';
-                        suggestionItem.addEventListener('click', () => {
-                            locationInput.value = suggestion.description;
-                            locationSuggestions.style.display = 'none';
-                            locationSuggestions.innerHTML = '';
-                            // If using Google Places API, you might want to fetch details using place_id here
-                            if (autocompleteService === 'opencage' && suggestion.latitude && suggestion.longitude) {
-                                // You can store these coordinates if needed
-                                console.log('Selected coordinates:', suggestion.latitude, suggestion.longitude);
-                            } else if (autocompleteService === 'mapbox' && suggestion.latitude && suggestion.longitude) {
-                                console.log('Selected coordinates:', suggestion.latitude, suggestion.longitude);
-                            }
-                        });
-                        locationSuggestions.appendChild(suggestionItem);
-                    });
-                } else {
-                    const noResults = document.createElement('div');
-                    noResults.textContent = 'No suggestions found.';
-                    noResults.style.padding = '8px';
-                    locationSuggestions.appendChild(noResults);
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching autocomplete suggestions:", error);
-                locationSuggestions.style.display = 'none';
-                locationSuggestions.innerHTML = '<div style="padding: 8px;">Error loading suggestions.</div>';
-            });
-    }
-
-    locationInput.addEventListener('input', (event) => {
-        autocompleteLocation(event.target.value);
-    });
-
-    // Close suggestions when clicking outside the input and suggestions box
-    document.addEventListener('click', (event) => {
-        if (!locationInput.contains(event.target) && !locationSuggestions.contains(event.target)) {
-            locationSuggestions.style.display = 'none';
-            locationSuggestions.innerHTML = '';
-        }
-    });
+    const profileIcon = document.querySelector('.profile-icon');
+    const dashboardContainer = document.querySelector('.dashboard-container'); // Or a more appropriate container
 
     addRequestButton.addEventListener("click", () => {
         modal.style.display = "block";
@@ -143,8 +34,26 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById("category").value;
         const imageInput = document.getElementById("image");
         const description = document.getElementById("description").value;
-        const location = locationInput.value;
+        const locationInput = document.getElementById("location");
         const status = "Pending";
+
+// Function to handle location selection (can be expanded for mapping)
+    function handleLocationInput() {
+        // Basic example: You could trigger a map service here
+        // or use an autocomplete library for addresses.
+        console.log("Location input focused. You could integrate a map or autocomplete here.");
+
+        // For a very basic example, let's just prompt the user
+        const userLocation = prompt("Enter your location or a landmark:");
+        if (userLocation) {
+            locationInput.value = userLocation;
+        }
+    }
+
+    addRequestButton.addEventListener("click", () => {
+        modal.style.display = "block";
+        // Optionally, you could trigger location services when the modal opens
+    });
 
         let imageURL = "";
         if (imageInput.files && imageInput.files[0]) {
@@ -189,4 +98,128 @@ document.addEventListener('DOMContentLoaded', () => {
         locationCell.textContent = location;
         statusCell.textContent = status;
     }
+
+    if (profileIcon) {
+        profileIcon.addEventListener('click', () => {
+            const existingProfileDropdown = document.getElementById('profile-dropdown');
+            if (existingProfileDropdown) {
+                existingProfileDropdown.remove();
+                return;
+            }
+
+            const profileDropdown = document.createElement('div');
+            profileDropdown.id = 'profile-dropdown';
+            profileDropdown.classList.add('profile-dropdown');
+
+            // Sample user data (replace with actual data fetching)
+            const userData = {
+                profilePicture: 'default-profile.png', // Replace with actual image URL
+                username: 'JohnDoe123',
+                location: 'Cape Town, South Africa',
+            };
+
+            let profileHTML = `
+                <div class="profile-header">
+                    <div class="profile-picture-container">
+                        <img src="${userData.profilePicture}" alt="Profile Picture" class="profile-picture clickable">
+                        <input type="file" id="upload-picture" accept="image/*" style="display: none;">
+                        <label for="upload-picture" class="upload-label"><i class="fas fa-camera"></i> Upload</label>
+                    </div>
+                    <h3 class="username" contenteditable="true">${userData.username}</h3>
+                    <p class="location">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span class="location-text" contenteditable="true">${userData.location}</span>
+                    </p>
+                </div>
+                <ul class="profile-actions">
+                    <li><a href="#activity"><i class="fas fa-history"></i> View Activity</a></li>
+                    <li class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</li>
+                </ul>
+            `;
+
+            profileDropdown.innerHTML = profileHTML;
+            dashboardContainer.appendChild(profileDropdown);
+
+            const uploadPictureInput = profileDropdown.querySelector('#upload-picture');
+            const profilePictureImg = profileDropdown.querySelector('.profile-picture');
+            const usernameElement = profileDropdown.querySelector('.username');
+            const locationElement = profileDropdown.querySelector('.location-text');
+            const logoutLink = profileDropdown.querySelector('.logout-link');
+
+            // Make profile picture container clickable to trigger file upload
+            const profilePictureContainer = profileDropdown.querySelector('.profile-picture-container');
+            profilePictureContainer.addEventListener('click', () => {
+                uploadPictureInput.click();
+            });
+
+            // Handle image upload
+            uploadPictureInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        profilePictureImg.src = e.target.result;
+                        // In a real application, you would also send this data to the server to update the user's profile picture.
+                        console.log('New profile picture uploaded:', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Handle username change (you'd typically save this on blur or a button click)
+            usernameElement.addEventListener('blur', (event) => {
+                const newUsername = event.target.innerText.trim();
+                if (newUsername !== userData.username) {
+                    console.log('Username changed to:', newUsername);
+                    userData.username = newUsername;
+                    // In a real application, you would send this to the server to update the username.
+                }
+            });
+
+            // Prevent line breaks in editable username
+            usernameElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    usernameElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                }
+            });
+
+            // Handle location change (you'd typically save this on blur or a button click)
+            locationElement.addEventListener('blur', (event) => {
+                const newLocation = event.target.innerText.trim();
+                if (newLocation !== userData.location) {
+                    console.log('Location changed to:', newLocation);
+                    userData.location = newLocation;
+                    // In a real application, you would send this to the server to update the location.
+                }
+            });
+
+            // Prevent line breaks in editable location
+            locationElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    locationElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                }
+            });
+
+            if (logoutLink) {
+                logoutLink.addEventListener('click', () => {
+                    console.log('Logout clicked');
+                    // window.location.href = '/logout';
+                });
+            }
+
+            function closeDropdown(event) {
+                if (!profileIcon.contains(event.target) && !profileDropdown.contains(event.target)) {
+                    profileDropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            }
+
+            setTimeout(() => {
+                document.addEventListener('click', closeDropdown);
+            }, 10);
+        });
+    }
 });
+    
