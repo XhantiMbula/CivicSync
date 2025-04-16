@@ -494,14 +494,110 @@ body {
 }
 
 .modal-body input[type="text"],
-.modal-body input[type="email"],
+.modal-body input[type="file"],
 .modal-body textarea,
 .modal-body select {
     width: calc(100% - 24px); /* Adjust width for padding and border */
     padding: 12px;
     margin-bottom: 20px;
-    border: 1px solid #ccc; /* Light border */
-    border-radius: 8px; /* Rounded corners */}
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+}
+
+.modal-body textarea {
+    resize: vertical;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.modal-cancel-button,
+.modal-submit-button {
+    background-color: #f4f4f4;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.modal-cancel-button:hover {
+    background-color: #e0e0e0;
+    color: #000;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.modal-submit-button {
+    background-color: #00A31E;
+    color: white;
+    border: none;
+}
+
+.modal-submit-button:hover {
+    background-color: #002906;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive adjustments for the modal */
+@media (max-width: 600px) {
+    .modal-content {
+        margin: 10% auto;
+        padding: 20px;
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .modal-cancel-button,
+    .modal-submit-button {
+        width: 100%;
+    }
+    .modal-body input[type="file"] {
+        /* Hide the default file input */
+        opacity: 0;
+        position: absolute;
+        z-index: -1;
+    }
+    
+    .modal-body label[for="image"] {
+        display: inline-block;
+        background-color: #00A31E; /* Green background */
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px; /* Add some space below the button */
+    }
+    
+    .modal-body label[for="image"]:hover {
+        background-color: #002906; /* Darker green on hover */
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Style for when a file is selected (optional) */
+    .modal-body .file-selected {
+        display: block;
+        margin-top: 10px;
+        font-size: 0.9em;
+        color: #555;
+        font-style: italic;
+    }
+}
     .profile-dropdown {
         position: absolute; /* Or fixed, depending on your layout */
         top: 60px; /* Adjust based on your header height */
