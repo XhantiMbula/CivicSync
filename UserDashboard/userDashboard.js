@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById("request-modal");
     const addRequestButton = document.getElementById("add-request-button");
@@ -7,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const requestTable = document.getElementById("request-table");
     const modalCancelButton = document.querySelector(".modal-cancel-button");
     const profileIcon = document.querySelector('.profile-icon');
-    const dashboardContainer = document.querySelector('.dashboard-container'); // Or a more appropriate container
+    const dashboardContainer = document.querySelector('.dashboard-container');
 
     addRequestButton.addEventListener("click", () => {
         modal.style.display = "block";
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    requestForm.addEventListener("submit", (event) => {
+    requestForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
         const title = document.getElementById("title").value;
@@ -35,23 +34,74 @@ document.addEventListener('DOMContentLoaded', () => {
         const imageInput = document.getElementById("image");
         const description = document.getElementById("description").value;
         const location = document.getElementById("location").value;
-
         const status = "Pending";
+        const userId = "current-user-id"; // Replace with actual user ID from Supabase Auth
 
         let imageURL = "";
+
+        // Step 1: Upload image to Supabase Storage if an image is provided
         if (imageInput.files && imageInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imageURL = e.target.result;
-                addNewRequestToTable(title, category, imageURL, description, location, status);
-                modal.style.display = "none";
-                requestForm.reset();
-            };
-            reader.readAsDataURL(imageInput.files[0]);
+            const file = imageInput.files[0];
+            const fileName = `${Date.now()}-${file.name}`; // Unique file name to avoid overwrites
+
+            try {
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('images')
+                    .upload(fileName, file);
+
+                if (uploadError) {
+                    console.error('Image upload failed:', uploadError.message);
+                    alert('Failed to upload image. Please try again.');
+                    return;
+                }
+
+                // Step 2: Get the public URL of the uploaded image
+                const { data: urlData } = supabase.storage
+                    .from('request-images')
+                    .getPublicUrl(fileName);
+
+                imageURL = urlData.publicUrl;
+            } catch (error) {
+                console.error('Error during image upload:', error);
+                alert('An error occurred while uploading the image.');
+                return;
+            }
         } else {
+            console.warn('No image provided. Proceeding without an image.');
+        }
+
+        // Step 3: Insert the request into the RequestTable
+        try {
+            const { data: requestData, error: requestError } = await supabase
+                .from('RequestTable')
+                .insert([
+                    {
+                        RequestTitle: title,
+                        RequestCategory: category,
+                        RequestImageURL: imageURL,
+                        RequestDescription: description,
+                        RequestLocation: location,
+                        RequestStatus: status,
+                        UserID: userId,
+                        created_at: new Date().toISOString() // Supabase will override this if the column has a default
+                    }
+                ]);
+
+            if (requestError) {
+                console.error('Request insertion failed:', requestError.message);
+                alert('Failed to submit request. Please try again.');
+                return;
+            }
+
+            console.log('Request submitted successfully:', requestData);
+
+            // Step 4: Add the request to the local table (same as before)
             addNewRequestToTable(title, category, imageURL, description, location, status);
             modal.style.display = "none";
             requestForm.reset();
+        } catch (error) {
+            console.error('Error during request submission:', error);
+            alert('An error occurred while submitting the request.');
         }
     });
 
@@ -94,9 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
             profileDropdown.id = 'profile-dropdown';
             profileDropdown.classList.add('profile-dropdown');
 
-            // Sample user data (replace with actual data fetching)
             const userData = {
-                profilePicture: 'default-profile.png', // Replace with actual image URL
+                profilePicture: 'default-profile.png',
                 username: 'JohnDoe123',
                 location: 'Cape Town, South Africa',
             };
@@ -129,66 +178,56 @@ document.addEventListener('DOMContentLoaded', () => {
             const locationElement = profileDropdown.querySelector('.location-text');
             const logoutLink = profileDropdown.querySelector('.logout-link');
 
-            // Make profile picture container clickable to trigger file upload
             const profilePictureContainer = profileDropdown.querySelector('.profile-picture-container');
             profilePictureContainer.addEventListener('click', () => {
                 uploadPictureInput.click();
             });
 
-            // Handle image upload
             uploadPictureInput.addEventListener('change', (event) => {
                 const file = event.target.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         profilePictureImg.src = e.target.result;
-                        // In a real application, you would also send this data to the server to update the user's profile picture.
                         console.log('New profile picture uploaded:', e.target.result);
                     };
                     reader.readAsDataURL(file);
                 }
             });
 
-            // Handle username change (you'd typically save this on blur or a button click)
             usernameElement.addEventListener('blur', (event) => {
                 const newUsername = event.target.innerText.trim();
                 if (newUsername !== userData.username) {
                     console.log('Username changed to:', newUsername);
                     userData.username = newUsername;
-                    // In a real application, you would send this to the server to update the username.
                 }
             });
 
-            // Prevent line breaks in editable username
             usernameElement.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    usernameElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                    usernameElement.blur();
                 }
             });
 
-            // Handle location change (you'd typically save this on blur or a button click)
             locationElement.addEventListener('blur', (event) => {
                 const newLocation = event.target.innerText.trim();
                 if (newLocation !== userData.location) {
                     console.log('Location changed to:', newLocation);
                     userData.location = newLocation;
-                    // In a real application, you would send this to the server to update the location.
                 }
             });
 
-            // Prevent line breaks in editable location
             locationElement.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    locationElement.blur(); // Trigger the blur event to save (or you can add a save button)
+                    locationElement.blur();
                 }
             });
 
             if (logoutLink) {
                 logoutLink.addEventListener('click', () => {
                     console.log('Logout clicked');
-                    // window.location.href = '/logout';
                 });
             }
 
@@ -205,4 +244,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-    
