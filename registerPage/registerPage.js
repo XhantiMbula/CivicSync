@@ -1,21 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
     console.log("DOM fully loaded, initializing Supabase...");
 
-    // ✅ Ensure Supabase is available before using it
+    // Ensure Supabase is available before using it
     if (typeof supabase === "undefined") {
         console.error("Supabase is not loaded.");
         return;
     }
 
-    // ✅ Supabase Credentials
+    // Supabase Credentials
     const supabaseUrl = "https://lywylvbgsnmqwcwgiyhc.supabase.co";
     const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg";
 
-    // ✅ Initialize Supabase
+    // Initialize Supabase
     window.supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
     console.log("Supabase initialized:", window.supabaseClient);
 
-    // ✅ Function to Send Verification Email
+    // Function to Send Verification Email
     async function sendVerificationEmail(email) {
         try {
             const { error } = await window.supabaseClient.auth.resend({
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // ✅ Function to Register User
+    // Function to Register User
     async function registerUser() {
         const FirstName = document.getElementById("name").value.trim();
         const LastName = document.getElementById("surname").value.trim();
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            // ✅ Step 1: Register the user with metadata
+            // Step 1: Register the user with metadata
             const { data, error } = await window.supabaseClient.auth.signUp({
                 email: Email,
                 password: Password,
@@ -59,9 +59,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     data: { 
                         FirstName, 
                         LastName, 
-                        Username // ✅ This will be stored in `user_metadata`
+                        Username 
                     },
-                    emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"  
+                    emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"
                 }
             });
 
@@ -74,20 +74,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             console.log("User registered with metadata:", user);
 
-            // ✅ Step 2: Insert User Data into Custom `UserTable`
+            // Step 2: Insert User Data into Custom `UserTable`
             const { error: insertError } = await window.supabaseClient
-            .from("UserTable")
-            .insert([{ 
-                "UserFirstname": FirstName,  
-                "UserLastname": LastName,
-                "UserUsername": Username,
-                "UserEmail": Email,  
-                "UserPassword": Password
-            }]);
+                .from("UserTable")
+                .insert([{ 
+                    "UserFirstname": FirstName,  
+                    "UserLastname": LastName,
+                    "UserUsername": Username,
+                    "UserEmail": Email,  
+                    "UserPassword": Password
+                }]);
 
             if (insertError) throw insertError;
 
-            // ✅ Step 3: Send Verification Email
+            // Step 3: Send Verification Email
             await sendVerificationEmail(Email);
 
             showMessage("Registration successful! Check your email to verify your account.", "success");
@@ -108,6 +108,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 4000);
     }
 
-    // ✅ Attach function to button
+    // Attach function to button
     document.querySelector("button").addEventListener("click", registerUser);
 });
