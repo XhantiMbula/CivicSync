@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="userDashboard.css">
+    <script src="userDashboard.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <div class="app-name">Civic Sync</div>
+            <div class="header-icons">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </div>
+                <div class="profile-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="logout">Logout</div>
+            </div>
+        </div>
+
+        <div class="request-complaint-section">
+            <div class="request-box">
+                <div>Request</div>
+                <button id="add-request-button" class="request-button">+</button>
+            </div>
+        </div>
+
+        <table class="forms-table" id="request-table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Image</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Form 1</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Form 2</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>...more</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Feed</h2>
+
+        <div class="feed-section">
+            <div class="feed-column completed-requests">
+                <h3</h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">
+                        <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 123 Main St, Anytown</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">
+                        <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 456 Side Rd, Someplace</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feed-column updated-requests">
+                <h3></h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">
+                        <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">
+                    
+                        <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 101 Pine Ave, Another Town</p>
+                    </div>
+                </div>
+            </div>
+            <div class="feed-column pending-requests">
+                <h3></h3>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">
+                <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
+                    </div>
+                </div>
+                <div class="feed-item">
+                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <div class="feed-item-content">       
+                        <p class="feed-item-description">Description</p>
+                        <p class="feed-item-location">Location: 333 Elm St, A Faraway Town</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="request-complaint-section complaint-section">
+            <div class="complaint-box">
+                <div>Complaint</div>
+                <button class="complaint-button">+</button>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Report incidents like sunken roads, fires, or other community issues:</p>
+                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Report an Incident</h3>
+                <p>Use our platform to report:</p>
+                <ul>
+                    <li>Sunken roads</li>
+                    <li>Fire hazards</li>
+                    <li>Power outages</li>
+                    <li>Other community issues</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="request-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="modal-header">
+                <h2>Add New Request</h2>
+            </div>
+            <div class="modal-body">
+                <form id="add-request-form">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required><br><br>
+
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="Crime">Crime</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Public Spaces">Public Spaces</option>
+                        <option value="Government Housing">Government Housing</option>
+                    </select><br><br>
+
+                    <label for="image">Image/Picture:</label>
+                    <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
+
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" required><br><br>
+
+                    <div class="modal-footer">
+                        <button type="button" class="modal-cancel-button">Cancel</button>
+                        <button type="submit" class="modal-submit-button">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+  
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSync - User Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="public/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <h2>TMCP Account</h2>
+      <ul>
+        <li><a href="#personal-details">Personal Details</a></li>
+        <li><a href="#account-details">Account Details</a></li>
+        <li><a href="#role-access">Role & Access</a></li>
+        <li><a href="#notifications">Notifications</a></li>
+        <li><a href="/logout">Sign Out</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <h1>Your Profile</h1>
+
+      <!-- Personal Details -->
+      <div class="section" id="personal-details">
+        <h2>Personal Details</h2>
+        <div class="editable">
+          <p><strong>Name:</strong> Sipho Mkhize</p>
+          <a href="#" onclick="editField('name')">Edit</a>
+        </div>
+        <div id="name-edit" style="display: none;">
+          <input type="text" value="Sipho Mkhize" id="name-input">
+          <button onclick="saveField('name')">Save</button>
+        </div>
+        <div class="editable">
+          <p><strong>Address:</strong> 123 Main Road, Khayelitsha, Cape Town</p>
+          <a href="#" onclick="editField('address')">Edit</a>
+        </div>
+        <div id="address-edit" style="display: none;">
+          <input type="text" value="123 Main Road, Khayelitsha, Cape Town" id="address-input">
+          <button onclick="saveField('address')">Save</button>
+        </div>
+        <div class="editable">
+          <p><strong>Contact:</strong> +27 123 456 789</p>
+          <a href="#" onclick="editField('contact')">Edit</a>
+        </div>
+        <div id="contact-edit" style="display: none;">
+          <input type="text" value="+27 123 456 789" id="contact-input">
+          <button onclick="saveField('contact')">Save</button>
+        </div>
+      </div>
+
+      <!-- Account Details -->
+      <div class="section" id="account-details">
+        <h2>Account Details</h2>
+        <p><strong>Username:</strong> sipho.mkhize</p>
+        <div class="editable">
+          <p><strong>Password:</strong> ********</p>
+          <a href="#" onclick="editField('password')">Change</a>
+        </div>
+        <div id="password-edit" style="display: none;">
+          <input type="password" placeholder="New Password" id="password-input">
+          <button onclick="saveField('password')">Save</button>
+        </div>
+        <div class="editable">
+          <p><strong>Security Question:</strong> What is your mother's maiden name?</p>
+          <a href="#" onclick="editField('security-question')">Change</a>
+        </div>
+        <div id="security-question-edit" style="display: none;">
+          <select id="security-question-input">
+            <option value="What is your mother's maiden name?">What is your mother's maiden name?</option>
+            <option value="What is your first pet's name?">What is your first pet's name?</option>
+            <option value="What is your favorite book?">What is your favorite book?</option>
+          </select>
+          <input type="text" placeholder="Answer" id="security-answer-input">
+          <button onclick="saveField('security-question')">Save</button>
+        </div>
+      </div>
+
+      <!-- Role & Access -->
+      <div class="section" id="role-access">
+        <h2>Role & Access</h2>
+        <p><strong>Role:</strong> Community Member</p>
+        <p><strong>Access Level:</strong> Standard User</p>
+        <p><strong>Account Created:</strong> January 15, 2025</p>
+      </div>
+
+      <!-- Notifications -->
+      <div class="section notifications" id="notifications">
+        <h2>Recent Notifications</h2>
+        <ul>
+          <li>Road repairs scheduled on Main St, April 16, 8 AM–2 PM</li>
+          <li>Your water leak request (#1234) has been resolved</li>
+          <li>Upcoming first aid training on May 1, 2025</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function editField(field) {
+      document.getElementById(`${field}-edit`).style.display = 'block';
+      document.querySelector(`#${field}-edit`).previousElementSibling.style.display = 'none';
+    }
+
+    function saveField(field) {
+      document.getElementById(`${field}-edit`).style.display = 'none';
+      document.querySelector(`#${field}-edit`).previousElementSibling.style.display = 'flex';
+      // Add logic to save changes to the backend here
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+
+    <!-- ✅ Load Supabase Client FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- ✅ Link CSS -->
+    <link rel="stylesheet" href="registerPage.css">
+
+    <!-- ✅ Load JavaScript AFTER Supabase is Available -->
+    <script src="registerPage.js" defer></script>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo"><a href="#">CivicSync</a></div>
+        <ul class="links">
+        </ul>
+        <a href="/registerPage/registerPage.html" class="action_btn">Sign-Up</a>
+        <a href="/loginPage/loginPage.html" class="action_btn">Log-In</a>
+        <div class="toggle_btn">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </div>
+
+    <div class="dropdown_menu">
+        <li><a href="/loginPage/loginPage.html" class="action_btn">Log-In</a></li>
+    </div>
+
+    <div class="loginContainer">
+        <div class="container">
+            <h2>Register</h2>
+
+            <div id="message-box"></div> <!-- Message Box for Errors/Success -->
+
+            <input type="text" id="name" placeholder="First Name">
+            <input type="text" id="surname" placeholder="Surname">
+            <input type="text" id="username" placeholder="Username">
+            <input type="email" id="email" placeholder="Email">
+            <!-- Added Phone Number field after Email -->
+            <input type="tel" id="phone" placeholder="Phone Number">
+            <input type="password" id="password" placeholder="Password">
+            <input type="password" id="confirm-password" placeholder="Confirm Password">
+            <button id="register-btn">Register</button>
+
+            <p>Already have an account? <a href="/loginPage/loginPage.html">Login</a></p>
+        </div>
+    </div>
+
+    <!-- Added Footer Section -->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Report incidents like sunken roads, fires, or other community issues:</p>
+                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Report an Incident</h3>
+                <p>Use our platform to report:</p>
+                <ul>
+                    <li>Sunken roads</li>
+                    <li>Fire hazards</li>
+                    <li>Power outages</li>
+                    <li>Other community issues</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
