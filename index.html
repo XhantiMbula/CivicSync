@@ -4,111 +4,56 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CivicSync</title>
-  <link rel="stylesheet" href="public/css/styles.css">
+  <link rel="stylesheet" href="indexPage.css">
 </head>
+
 <body>
-  <!-- Navigation Bar -->
-  <nav>
-    <div class="logo">TMCP</div>
-    <div class="nav-links">
-      <a href="/about">About</a>
-      <a href="/projects">Projects</a>
-      <a href="/services">Services</a>
-      <a href="/training">Training</a>
-      <a href="/contact">Contact Us</a>
-      <a href="/SignIn/SignUp">SignIn/SignUp</a>
-      <div class="search-bar">
-        <input type="text" placeholder="Search..." aria-label="Search">
-      </div>
-      <div class="language-switcher">
-        <select aria-label="Select Language">
-          <option value="en">English</option>
-          <option value="af">Afrikaans</option>
-          <option value="xh">isiXhosa</option>
-        </select>
-      </div>
+  
+  <div class="navbar">
+    <div class="logo"><a href="#">CivicSync</a></div>
+    <ul class="links">
+    </ul>
+    <a href="/registerPage/registerPage.html" class="action_btn">Sign-Up</a>
+    <a href="/loginPage/loginPage.html" class="action_btn">Log-In</a>
+    <div class="toggle_btn">
+        <i class="fa-solid fa-bars"></i>
     </div>
-  </nav>
+</div>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-text">
-      <p>APRIL 15, 2025 • TMCP TEAM</p>
-      <h1>Welcome to TMCP</h1>
-      <p>Empowering Cape Town townships with efficient communication for better municipal services.</p>
-    </div>
-    <div class="hero-image">
-      <img src="https://www.coachtours.co.za/images/620x258/bo-kaap.jpg" alt="Cape Town Township">
-    </div>
-  </section>
 
-  <!-- News Feed Section -->
-  <section class="news-feed">
-    <h2>Latest Updates & Community Impact</h2>
-    <div class="news-grid">
-      <div class="news-card">
-        <span class="category">Government Services</span>
-        <h3>Water Pipe Repairs in Khayelitsha</h3>
-        <p>The City of Cape Town has scheduled maintenance to fix water pipes in Khayelitsha, reducing leaks by 30%.</p>
-      </div>
-      <div class="news-card">
-        <span class="category">Testimonial</span>
-        <h3>Resident Feedback</h3>
-        <p>"TMCP helped us report a pothole, and it was fixed within 24 hours!" - Sipho, Mitchells Plain</p>
-      </div>
-      <div class="news-card">
-        <span class="category">Construction Projects</span>
-        <h3>New Road Development in Gugulethu</h3>
-        <p>A new road project is underway to improve accessibility and safety for Gugulethu residents.</p>
-      </div>
-      <div class="news-card">
-        <span class="category">Training</span>
-        <h3>First Aid Training Program</h3>
-        <p>Join our upcoming first aid training session to learn life-saving skills, scheduled for May 2025.</p>
-      </div>
-      <div class="news-card">
-        <span class="category">Training</span>
-        <h3>Electrical Safety Workshop</h3>
-        <p>Learn how to handle electrical dangers safely in our free workshop, coming to Khayelitsha in June 2025.</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-container">
-      <div class="footer-left">
-        <img src="https://via.placeholder.com/150x50?text=TMCP+Logo" alt="TMCP Logo">
-        <p>Transforming<br>Service Delivery</p>
-        <a href="/contact">Contact Us <i class="icon-arrow-right">➔</i></a>
+
+<footer class="site-footer">
+  <div class="footer-content">
+      <div class="footer-section">
+          <h3>Contact Us</h3>
+          <p>Report incidents like sunken roads, fires, or other community issues:</p>
+          <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+          <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
       </div>
-      <div class="footer-center">
-        <ul>
-          <li><a href="tel:+27123456789"><img src="https://via.placeholder.com/20?text=Phone" alt="Phone"> +27 123 456 789</a></li>
-          <li><a href="mailto:support@tmcp.co.za"><img src="https://via.placeholder.com/20?text=Email" alt="Email"> support@tmcp.co.za</a></li>
-          <li><a href="https://goo.gl/maps/example" target="_blank" rel="noopener"><img src="https://via.placeholder.com/20?text=Location" alt="Location"> Cape Town, South Africa</a></li>
-          <li class="no-icon small">123 Main Road, Suite 401<br>Cape Town, WC 8001 South Africa</li>
-        </ul>
+      <div class="footer-section">
+          <h3>Report an Incident</h3>
+          <p>Use our platform to report:</p>
+          <ul>
+              <li>Sunken roads</li>
+              <li>Fire hazards</li>
+              <li>Power outages</li>
+              <li>Other community issues</li>
+          </ul>
       </div>
-      <div class="footer-right">
-        <ul>
-          <li><a href="/services">Services</a></li>
-          <li><a href="/training">Training</a></li>
-          <li><a href="/blog">Blog</a></li>
-          <li><a href="/careers">Careers</a></li>
-          <li><a href="/contact">Contact</a></li>
-        </ul>
+      <div class="footer-section">
+          <h3>Follow Us</h3>
+          <div class="social-links">
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
       </div>
-    </div>
-    <div class="footer-after">
-      <div class="footer-copy">© TMCP 2025</div>
-      <div class="footer-social">
-        <a href="https://linkedin.com" target="_blank" rel="noopener">LinkedIn</a>
-        <a href="https://facebook.com" target="_blank" rel="noopener">Facebook</a>
-        <a href="https://instagram.com" target="_blank" rel="noopener">Instagram</a>
-        <a href="https://youtube.com" target="_blank" rel="noopener">YouTube</a>
-      </div>
-    </div>
-  </footer>
+  </div>
+  <div class="copyright">
+      <p>&copy; 2025 CivicSync. All rights reserved.</p>
+  </div>
+</footer>
+
 </body>
 </html>
