@@ -40,7 +40,7 @@ async function resetPassword() {
         } else {
             showMessage("Password reset successful! Redirecting to login...", "success");
             setTimeout(() => {
-                window.location.href = "/loginpage/loginpage";
+                window.location.href = "https://civicsync.netlify.app/loginPage/loginPage.html";
             }, 2000);
         }
     } catch (err) {

@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         LastName, 
                         Username // ✅ This will be stored in `user_metadata`
                     },
-                    emailRedirectTo: "/loginPage/loginPage.html"  
+                    emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"  
                 }
             });
 
