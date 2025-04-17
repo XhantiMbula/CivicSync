@@ -52,6 +52,7 @@ body {
 .action_btn:hover {
     scale: 1.05;
     color: #fff;
+    outline: white 1px solid;
 }
 
 .action_btn:active {
@@ -107,28 +108,25 @@ a:hover {
     color: white;
 }
   
-  .getStarted {
-    text-align: center;
-  }
-
-  .getStarted {
-    margin-top: 20px;
-    margin-bottom: 40px;
-  }
   
-  .indexContent button {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    padding: 20px 35px;
+  .indexContent .action_btn {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding: 20px 40px;
     color: white;
     border: none;
     outline: none;
     font-weight: bold;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     background-color: #002906;
     border-radius: 6px;
     cursor: pointer;
   }
+
+  .indexContent .action_btn:hover {
+    color: #fff;
+    outline: white 1px solid;
+}
 
 
 
