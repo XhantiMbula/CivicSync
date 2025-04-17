@@ -13,6 +13,16 @@ body {
     min-height: 100vh;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    padding: 0;
+}
+
+p {
+    margin: 0;
+    padding: 0;
+}
+
 .navbar {
     width: 100%;
     height: 60px;
@@ -90,14 +100,23 @@ a:hover {
 }
 
 
+.mainContent {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 40px;
+    gap: 40px; /* adds space between the columns */
+    flex-wrap: nowrap; /* force side-by-side unless very narrow */
+    box-sizing: border-box;
+  }
+  
+
 
 .indexContent {
     display: flex;
     height: fit-content;
-    width: 55%;
-    padding-left: 5vh;
-    padding-right: 5vh;
-    margin-left: 8vh;
+    width: 60%;
+    margin: 0;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -110,8 +129,8 @@ a:hover {
   
   
   .indexContent .action_btn {
-    margin-top: 15px;
-    margin-bottom: 15px;
+    margin-top: 30px;
+    margin-bottom: 30px;
     padding: 20px 40px;
     color: white;
     border: none;
@@ -128,7 +147,20 @@ a:hover {
     outline: white 1px solid;
 }
 
+.sideContent {
+    min-height: 300px;
+    background-color: #ffffff15;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
 
+  .sideContent {
+    width: 40%;
+    padding: 20px;
+    margin: 0;
+    box-sizing: border-box;
+  }
 
 
 .site-footer {
@@ -138,6 +170,37 @@ a:hover {
     width: 100%;
     box-sizing: border-box;
 }
+
+
+.slideshow-container {
+    position: relative;
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  
+  .slide {
+    display: none;
+  }
+  
+  .slide img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+  
+  .fade {
+    animation: fadeEffect 1s ease-in-out;
+  }
+  
+  @keyframes fadeEffect {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+  }
+
+
+
 
 .footer-content {
     max-width: 1200px;
