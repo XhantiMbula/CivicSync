@@ -50,7 +50,7 @@ async function loginUser() {
         window.location.href = "AdminDashboard";
     } else {
         console.log("Regular user detected, redirecting...");
-        window.location.href = "UserDashboard";
+        window.location.href = "/UserDashboard/userDashboard.html";
     }
 }
 
@@ -65,7 +65,7 @@ async function forgotPassword() {
     console.log("Sending password reset email to:", email);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "/resetPassword/resetPassword.html"
+        redirectTo: "https://civicsync.netlify.app/resetPassword/resetPassword.html"
     });
 
     if (error) {
