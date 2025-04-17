@@ -45,7 +45,7 @@ async function loginUser() {
 
         if (adminData) {
             console.log("Admin detected, redirecting...");
-            window.location.href = "AdminDashboard";
+            window.location.href = "/adminDashboard/adminDashboard.html";
         } else {
             console.log("Regular user detected, redirecting...");
             window.location.href = "/UserDashboard/userDashboard.html";
