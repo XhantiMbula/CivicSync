@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 const { data: uploadData, error: uploadError } = await supabase.storage
-                    .from('images')
+                    .from('request-images')
                     .upload(fileName, file);
 
                 if (uploadError) {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Step 2: Get the public URL of the uploaded image
                 const { data: urlData } = supabase.storage
-                    .from('request-images')
+                    .from('images')
                     .getPublicUrl(fileName);
 
                 imageURL = urlData.publicUrl;
