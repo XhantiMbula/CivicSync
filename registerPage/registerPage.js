@@ -1,98 +1,132 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded, initializing Supabase...");
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    if (typeof supabase === "undefined") {
-        console.error("Supabase is not loaded.");
+const supabaseUrl = 'https://lywylvbgsnmqwcwgiyhc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg';
+
+// Initialize Supabase Client
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+console.log("Supabase initialized:", supabase);
+
+async function registerUser() {
+    const FirstName = document.getElementById("name").value.trim();
+    const LastName = document.getElementById("surname").value.trim();
+    const Username = document.getElementById("username").value.trim();
+    const Email = document.getElementById("email").value.trim();
+    const Phone = document.getElementById("phone").value.trim();
+    const Password = document.getElementById("password").value;
+    const ConfirmPassword = document.getElementById("confirm-password").value;
+
+    if (!FirstName || !LastName || !Username || !Email || !Phone || !Password || !ConfirmPassword) {
+        showMessage("Please fill in all fields.", "error");
         return;
     }
 
-    const supabaseUrl = "https://lywylvbgsnmqwcwgiyhc.supabase.co";
-    const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg";
-
-    window.supabaseClient = supabase.createClient(supabaseUrl, supabaseAnonKey);
-    console.log("Supabase initialized:", window.supabaseClient);
-
-    async function sendVerificationEmail(email) {
-        try {
-            const { error } = await window.supabaseClient.auth.resend({
-                type: "signup",
-                email: email
-            });
-
-            if (error) throw error;
-
-            showMessage("Verification email sent! Check your inbox.", "success");
-        } catch (err) {
-            showMessage(`Error sending verification email: ${err.message}`, "error");
-        }
+    if (Password !== ConfirmPassword) {
+        showMessage("Passwords do not match.", "error");
+        return;
     }
 
-    async function registerUser() {
-        const FirstName = document.getElementById("name").value.trim();
-        const LastName = document.getElementById("surname").value.trim();
-        const Username = document.getElementById("username").value.trim();
-        const Email = document.getElementById("email").value.trim();
-        const Phone = document.getElementById("phone").value.trim();
-        const Password = document.getElementById("password").value;
-        const ConfirmPassword = document.getElementById("confirm-password").value;
+    // Password requirements validation
+    if (Password.length < 8) {
+        showMessage("Password must be at least 8 characters long.", "error");
+        return;
+    }
 
-        if (!FirstName || !LastName || !Username || !Email || !Password || !ConfirmPassword) {
-            showMessage("Please fill in all fields.", "error");
+    if (!Password.match(/[A-Z]/) || !Password.match(/[a-z]/) || !Password.match(/[0-9]/) || !Password.match(/[^A-Za-z0-9]/)) {
+        showMessage("Password must contain uppercase, lowercase, number, and special character.", "error");
+        return;
+    }
+
+    try {
+        // Check if username already exists
+        const { data: usernameExists, error: usernameError } = await supabase
+            .from("UserTable")
+            .select("UserUsername")
+            .eq("UserUsername", Username)
+            .single();
+
+        if (usernameExists) {
+            showMessage("Username already exists. Please choose a different username.", "error");
             return;
         }
 
-        if (Password !== ConfirmPassword) {
-            showMessage("Passwords do not match.", "error");
+        // Check if email already exists
+        const { data: emailExists, error: emailError } = await supabase
+            .from("UserTable")
+            .select("UserEmail")
+            .eq("UserEmail", Email)
+            .single();
+
+        if (emailExists) {
+            showMessage("Email already exists. Please use a different email or login.", "error");
             return;
         }
 
-        try {
-            // Register the user with metadata
-            const { data, error } = await window.supabaseClient.auth.signUp({
-                email: Email,
-                password: Password,
-                options: {
-                    data: { 
-                        FirstName, 
-                        LastName, 
-                        Username,
-                        phone: Phone || null
-                    },
-                    emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"
-                }
-            });
+        // Check if phone number already exists
+        const { data: phoneExists, error: phoneError } = await supabase
+            .from("UserTable")
+            .select("UserPhonenumber")
+            .eq("UserPhonenumber", Phone)
+            .single();
 
-            if (error) throw error;
+        if (phoneExists) {
+            showMessage("Phone number already exists. Please use a different phone number.", "error");
+            return;
+        }
 
-            const user = data.user;
-            if (!user) {
-                throw new Error("User registration successful, but no user ID available.");
+        // Register the user with metadata
+        const { data, error } = await supabase.auth.signUp({
+            email: Email,
+            password: Password,
+            options: {
+                data: { 
+                    FirstName, 
+                    LastName, 
+                    Username,
+                    phone: Phone || null
+                },
+                emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"
             }
+        });
 
-            console.log("User registered with metadata:", user);
-
-            // The trigger will handle inserting into UserTable
-            // Send verification email
-            await sendVerificationEmail(Email);
-
-            showMessage("Registration successful! Check your email to verify your account.", "success");
-
-        } catch (err) {
-            showMessage(`Error: ${err.message}`, "error");
-            console.error("Signup error details:", err);
+        if (error) {
+            console.error("Signup error:", error);
+            showMessage("Registration failed: " + error.message, "error");
+            return;
         }
+
+        const user = data.user;
+        if (!user) {
+            throw new Error("User registration successful, but no user ID available.");
+        }
+
+        console.log("User registered with metadata:", user);
+
+        // The trigger will handle inserting into UserTable
+
+        showMessage("Registration successful! Check your email to verify your account.", "success");
+
+    } catch (err) {
+        showMessage(`Error: ${err.message}`, "error");
+        console.error("Signup error details:", err);
     }
+}
 
-    function showMessage(msg, type) {
-        const messageBox = document.getElementById("message-box");
-        messageBox.innerHTML = msg;
-        messageBox.className = type;
-        messageBox.style.display = "block";
+function showMessage(msg, type) {
+    const messageBox = document.getElementById("message-box");
+    messageBox.innerHTML = msg;
+    messageBox.className = type;
+    messageBox.style.display = "block";
 
-        setTimeout(() => {
-            messageBox.style.display = "none";
-        }, 4000);
-    }
+    setTimeout(() => {
+        messageBox.style.display = "none";
+    }, 4000);
+}
 
-    document.querySelector("button").addEventListener("click", registerUser);
+// Attach event listener after DOM is loaded
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("register-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        registerUser();
+    });
 });

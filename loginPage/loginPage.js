@@ -1,7 +1,7 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = "https://lywylvbgsnmqwcwgiyhc.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg";
+const supabaseUrl = 'https://lywylvbgsnmqwcwgiyhc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg';
 
 // Initialize Supabase Client
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -32,20 +32,22 @@ async function loginUser() {
         // Get user ID from Supabase
         const userId = data.user.id;
 
-        // Check if the user exists in AdminTable
-        const { data: adminData, error: adminError } = await supabase
-            .from("AdminTable")
-            .select("AdminID")
-            .eq("Email", email)
+        // Check user role from UserTable
+        const { data: userData, error: userError } = await supabase
+            .from("UserTable")
+            .select("Role")
+            .eq("UserEmail", email)
             .single();
 
-        if (adminError) {
-            console.error("Admin check error:", adminError);
+        if (userError) {
+            console.error("User role check error:", userError);
+            showMessage("Error checking user role.", "error");
+            return;
         }
 
-        if (adminData) {
+        if (userData.Role === 'Admin') {
             console.log("Admin detected, redirecting...");
-            window.location.href = "/adminDashboard/adminDashboard.html";
+            window.location.href = "/AdminDashboard/adminDashboard.html";
         } else {
             console.log("Regular user detected, redirecting...");
             window.location.href = "/UserDashboard/userDashboard.html";
@@ -87,6 +89,9 @@ function showMessage(msg, type) {
 
 // Attach event listeners after the DOM has loaded
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("login-btn").addEventListener("click", loginUser);
+    document.getElementById("login-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        loginUser();
+    });
     document.getElementById("forgot-password-btn").addEventListener("click", forgotPassword);
 });
