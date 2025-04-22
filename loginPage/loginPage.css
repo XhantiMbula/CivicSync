@@ -1,275 +1,211 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 body {
-    font-family: Poppins, sans-serif;
-    width: 100%;
-    height: 100vh;
-    background-color: #00A31E;
+    background-image: url('https://lywylvbgsnmqwcwgiyhc.supabase.co/storage/v1/object/public/images//LoginBackground.png');
     background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    background-position: center center;
+    height: 100vh;
+    overflow-y: auto;
 }
 
-/* Center .loginContainer */
-.loginContainer {
+.main-container {
     display: flex;
-    justify-content: center; /* Centers container horizontally */
-    align-items: center; /* Centers container vertically (optional) */
     width: 100%;
-    margin-top: 80px; /* Pushes below the fixed navbar */
-}
-
-/* Keep .container's existing styles */
-.container {
-    width: 90%;  
-    max-width: 350px; /* Limits width on large screens */
-    background: white;
-    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.left-section {
+    width: 45%;
+    background-color: rgba(0, 163, 30, 0.92); /* 70% transparency for the green section */
+    color: white;
+    padding: 60px 40px;
+    position: relative;
+}
+
+.right-section {
+    width: 55%;
+    background-color: rgba(255, 255, 255, 0.8); /* 70% transparency for the white section */
+    padding: 60px 40px;
+}
+
+.back-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+}
+
+.back-link {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    transition: opacity 0.3s;
+}
+
+.back-link:hover {
+    opacity: 0.8;
+}
+
+.back-link i {
+    margin-right: 10px;
+}
+
+.welcome-title {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.welcome-subtitle {
+    font-size: 16px;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+.btn-register {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.btn-signin:hover {
+    background-color: white;
+    color: #00A31E;
+}
+
+.login-account {
     text-align: center;
+    margin-bottom: 30px;
 }
 
-/* Added padding inside inputs */
-input {
-    width: calc(100% - 20px); /* Prevents touching edges */
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* Ensures padding doesn't exceed width */
+.login-account h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
 }
 
-/* Adjusted button to match input styling */
-button {
+.social-login {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.social-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.social-text {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group input {
     width: 100%;
-    padding: 10px;
-    background-color: #002906;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    outline: none;
+}
+
+.form-group i {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    color: #888;
+}
+
+.form-group input {
+    padding-left: 40px;
+}
+
+.btn-signup {
+    width: 100%;
+    padding: 15px;
+    background-color: #00A31E;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 30px;
+    font-size: 16px;
     cursor: pointer;
-    margin-top: 10px; /* Added spacing */
-}
-
-button:hover {
-    background-color: #002906;
-}
-
-/* Ensure links are properly aligned */
-p {
+    transition: background-color 0.3s ease;
     margin-top: 10px;
 }
 
-/* Make sure it looks good on smaller screens */
-@media (max-width: 400px) {
-    .container {
-        width: 95%; /* Takes most of the screen width */
-        padding: 20px; /* Adjusted padding */
-    }
+.btn-signup:hover {
+    background-color: #008815;
 }
 
-header {
-    position: relative;
-    padding: 0 2rem;
+.forgot-password {
+    margin-top: 30px;
 }
 
-li {
-    list-style: none;
+.forgot-password h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
 }
 
-a {
-    text-decoration: none;
-    color: #fff;
-    font-size: 1rem;
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #888;
 }
 
-p a {
+.register-link a {
     color: #00A31E;
     text-decoration: none;
 }
 
-a:hover {
-    color: #002906;
+.register-link a:hover {
+    text-decoration: underline;
 }
 
-.site-footer a:hover {
-    color: #e6ee00;
-}
-
-.navbar {
-    width: 100%;
-    height: 60px;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.navbar .logo a {
-    font-size: 1.5rem;
-    font-weight: bold;
-
-}
-
-.navbar .links {
-    display: flex;
-    gap: 1.5rem;
-}
-
-.navbar .toggle_btn {
-    color: #fff;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: none;
-}
-
-.action_btn {
-    background-color: #002906;
-    color: #fff;
-    padding: 0.5rem 1rem;
-    border: none;
-    outline: none;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.action_btn:hover {
-    scale: 1.05;
-    color: #fff;
-}
-
-.action_btn:active {
-    scale: 0.95;
-}
-/* ****** Copyright ****** */
-.copyright_footer {
-    position: fixed;
-    color: white;
-    bottom: 0;
-    width: 100%;
-    background-color: #002906;
-    line-height: 2;
-    text-align: center;
-    left: 0;
-}
-
-#copyright_footer p{
-    font-size: 1rem;
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    text-transform: uppercase;
-    color: aliceblue;
-}
-
-/* ****** DROPDOWN MENU ****** */
-
-.dropdown_menu {
-    display: none;
-    position: absolute;
-    right: 2rem;
-    top: 60px;
-    height: 0;
-    width: 300px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    border-radius: 10px;
-    overflow: hidden;
-    transition: height 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.dropdown_menu.open{
-    height: 240px;
-}
-
-.dropdown_menu li {
-    padding: 0.7rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.dropdown_menu .action_btn {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-.site-footer {
-    background-color: #000000;
-    color: white;
-    padding: 30px 0;
-    margin-top: 50px;
-}
-
-.footer-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-}
-
-.footer-section {
-    flex: 1;
-    min-width: 300px;
-    margin-bottom: 20px;
-    padding: 0 15px;
-}
-
-.footer-section h3 {
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-}
-
-.footer-section ul {
-    list-style: none;
-    padding: 0;
-}
-
-.footer-section ul li {
-    margin-bottom: 5px;
-}
-
-.social-links a {
-    color: white;
-    margin-right: 15px;
-    font-size: 1.5rem;
-}
-
-.copyright {
-    text-align: center;
-    padding-top: 20px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-@media (max-width: 550px) {
-    .footer-section {
-        flex: 100%;
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
     }
-}
-
-/* ****** RESPONSIVE DESIGN * ******/
-
-@media (max-width: 992px) {
-    .navbar .links,
-    .navbar .action_btn {
-        display: none;
+    .left-section, .right-section {
+        width: 100%;
+        padding: 40px 20px;
     }
-
-    .navbar .toggle_btn {
-        display: block;
-    }
-
-    .dropdown_menu {
-        display: block;
-    }
-}
-
-@media (max-width: 550px) {
-    .dropdown_menu {
-        left: 2rem;
-        width: unset;
+    .left-section {
+        height: auto;
     }
 }
