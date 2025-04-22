@@ -8,8 +8,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileIcon = document.querySelector('.profile-icon');
     const dashboardContainer = document.querySelector('.dashboard-container');
 
-    addRequestButton.addEventListener("click", () => {
-        modal.style.display = "block";
+    // Initialize Supabase client (already in HTML, but ensure session persistence)
+    if (!window.supabase) {
+        console.error('Supabase client not initialized.');
+        alert('Application error: Supabase client not found.');
+        return;
+    }
+
+    // Check user authentication and debug UserID
+    async function getUser() {
+        try {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error || !user) {
+                console.error('Authentication error:', error?.message || 'No user found');
+                console.log('User data:', user); // Debug user object
+                alert('You must be logged in to submit a request.');
+                window.location.href = '/login.html';
+                return null;
+            }
+            console.log('Authenticated UserID:', user.id); // Debug UserID
+            return user;
+        } catch (err) {
+            console.error('Error checking authentication:', err);
+            alert('An error occurred while verifying your session.');
+            return null;
+        }
+    }
+
+    // Toast-like alert for better UX
+    function showToast(message, type = 'error') {
+        alert(message); // Replace with Toastify if desired
+    }
+
+    // Check user on page load
+    async function checkUserOnLoad() {
+        const user = await getUser();
+        if (!user) {
+            window.location.href = '/login.html';
+        }
+    }
+    checkUserOnLoad();
+
+    addRequestButton.addEventListener("click", async () => {
+        const user = await getUser();
+        if (user) {
+            modal.style.display = "block";
+        }
     });
 
     closeBtn.addEventListener("click", () => {
@@ -29,93 +73,122 @@ document.addEventListener('DOMContentLoaded', () => {
     requestForm.addEventListener("submit", async (event) => {
         event.preventDefault();
 
+        // Get authenticated user
+        const user = await getUser();
+        if (!user) return;
+
         const title = document.getElementById("title").value;
         const category = document.getElementById("category").value;
         const imageInput = document.getElementById("image");
         const description = document.getElementById("description").value;
         const location = document.getElementById("location").value;
         const status = "Pending";
-        const userId = "current-user-id"; // Replace with actual user ID from Supabase Auth
+        const userId = user.id;
+
+        console.log('Submitting request with UserID:', userId); // Debug UserID before insert
 
         let imageURL = "";
 
-        // Step 1: Upload image to Supabase Storage if an image is provided
+        // Step 1: Upload image to Supabase Storage
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
-            const fileName = `${Date.now()}-${file.name}`; // Unique file name to avoid overwrites
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload a valid image file.', 'error');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('Image size must be less than 5MB.', 'error');
+                return;
+            }
+
+            const fileName = `request-images/${userId}/${Date.now()}-${file.name}`;
 
             try {
                 const { data: uploadData, error: uploadError } = await supabase.storage
                     .from('request-images')
-                    .upload(fileName, file);
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
 
                 if (uploadError) {
                     console.error('Image upload failed:', uploadError.message);
-                    alert('Failed to upload image. Please try again.');
+                    showToast(`Failed to upload image: ${uploadError.message}`, 'error');
                     return;
                 }
 
-                // Step 2: Get the public URL of the uploaded image
                 const { data: urlData } = supabase.storage
-                    .from('images')
+                    .from('request-images')
                     .getPublicUrl(fileName);
 
                 imageURL = urlData.publicUrl;
+                if (!imageURL) {
+                    console.error('Failed to retrieve public URL.');
+                    showToast('Image uploaded, but could not retrieve URL.', 'error');
+                    return;
+                }
+                console.log('Image URL:', imageURL); // Debug image URL
             } catch (error) {
                 console.error('Error during image upload:', error);
-                alert('An error occurred while uploading the image.');
+                showToast('An error occurred while uploading the image.', 'error');
                 return;
             }
         } else {
-            console.warn('No image provided. Proceeding without an image.');
+            console.warn('No image provided.');
         }
 
-        // Step 3: Insert the request into the RequestTable
+        // Step 2: Insert request into RequestTable
         try {
-            const { data: requestData, error: requestError } = await supabase
+            const requestData = {
+                RequestTitle: title,
+                RequestCategory: category,
+                RequestImageURL: imageURL,
+                RequestDescription: description,
+                RequestLocation: location,
+                RequestStatus: status,
+                UserID: userId,
+                created_at: new Date().toISOString()
+            };
+            console.log('Request data to insert:', requestData); // Debug request data
+
+            const { data, error: requestError } = await supabase
                 .from('RequestTable')
-                .insert([
-                    {
-                        RequestTitle: title,
-                        RequestCategory: category,
-                        RequestImageURL: imageURL,
-                        RequestDescription: description,
-                        RequestLocation: location,
-                        RequestStatus: status,
-                        UserID: userId,
-                        created_at: new Date().toISOString() // Supabase will override this if the column has a default
-                    }
-                ]);
+                .insert([requestData])
+                .select();
 
             if (requestError) {
                 console.error('Request insertion failed:', requestError.message);
-                alert('Failed to submit request. Please try again.');
+                showToast(`Failed to submit request: ${requestError.message}`, 'error');
                 return;
             }
 
-            console.log('Request submitted successfully:', requestData);
+            console.log('Request submitted successfully:', data);
+            showToast('Request submitted successfully!', 'success');
 
-            // Step 4: Add the request to the local table (same as before)
-            addNewRequestToTable(title, category, imageURL, description, location, status);
+            // Step 3: Add to local table
+            addNewRequestToTable(title, category, imageURL, description, location, category, status);
             modal.style.display = "none";
             requestForm.reset();
         } catch (error) {
             console.error('Error during request submission:', error);
-            alert('An error occurred while submitting the request.');
+            showToast('An error occurred while submitting the request.', 'error');
         }
     });
 
-    function addNewRequestToTable(title, category, image, description, location, status) {
+    function addNewRequestToTable(title, category, image, description, location, category2, status) {
         const newRow = requestTable.insertRow();
         const numberCell = newRow.insertCell();
         const titleCell = newRow.insertCell();
+        const categoryCell = newRow.insertCell();
         const imageCell = newRow.insertCell();
         const descriptionCell = newRow.insertCell();
         const locationCell = newRow.insertCell();
+        const categoryCell2 = newRow.insertCell();
         const statusCell = newRow.insertCell();
 
         numberCell.textContent = "Form " + (requestTable.rows.length - 1);
         titleCell.textContent = title;
+        categoryCell.textContent = category;
 
         if (image) {
             const imgElement = document.createElement("img");
@@ -129,11 +202,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         descriptionCell.textContent = description;
         locationCell.textContent = location;
+        categoryCell2.textContent = category2;
         statusCell.textContent = status;
     }
 
+    // Load existing requests
+    async function loadUserRequests() {
+        const user = await getUser();
+        if (!user) return;
+
+        try {
+            const { data: requests, error } = await supabase
+                .from('RequestTable')
+                .select('*')
+                .eq('UserID', user.id);
+
+            if (error) {
+                console.error('Error fetching requests:', error.message);
+                showToast(`Error fetching requests: ${error.message}`, 'error');
+                return;
+            }
+
+            requests.forEach(request => {
+                addNewRequestToTable(
+                    request.RequestTitle,
+                    request.RequestCategory,
+                    request.RequestImageURL,
+                    request.RequestDescription,
+                    request.RequestLocation,
+                    request.RequestCategory,
+                    request.RequestStatus
+                );
+            });
+        } catch (error) {
+            console.error('Error loading requests:', error);
+            showToast('Error loading your requests.', 'error');
+        }
+    }
+    loadUserRequests();
+
+    // Profile dropdown (simplified, unchanged except for user data)
     if (profileIcon) {
-        profileIcon.addEventListener('click', () => {
+        profileIcon.addEventListener('click', async () => {
+            const user = await getUser();
+            if (!user) return;
+
             const existingProfileDropdown = document.getElementById('profile-dropdown');
             if (existingProfileDropdown) {
                 existingProfileDropdown.remove();
@@ -146,22 +259,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const userData = {
                 profilePicture: 'default-profile.png',
-                username: 'JohnDoe123',
-                location: 'Cape Town, South Africa',
+                username: user.email || 'User',
+                location: 'Unknown Location'
             };
 
             let profileHTML = `
                 <div class="profile-header">
-                    <div class="profile-picture-container">
-                        <img src="${userData.profilePicture}" alt="Profile Picture" class="profile-picture clickable">
-                        <input type="file" id="upload-picture" accept="image/*" style="display: none;">
-                        <label for="upload-picture" class="upload-label"><i class="fas fa-camera"></i> Upload</label>
-                    </div>
-                    <h3 class="username" contenteditable="true">${userData.username}</h3>
-                    <p class="location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span class="location-text" contenteditable="true">${userData.location}</span>
-                    </p>
+                    <img src="${userData.profilePicture}" alt="Profile Picture" class="profile-picture">
+                    <h3>${userData.username}</h3>
+                    <p class="location"><i class="fas fa-map-marker-alt"></i> ${userData.location}</p>
                 </div>
                 <ul class="profile-actions">
                     <li><a href="#activity"><i class="fas fa-history"></i> View Activity</a></li>
@@ -172,64 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
             profileDropdown.innerHTML = profileHTML;
             dashboardContainer.appendChild(profileDropdown);
 
-            const uploadPictureInput = profileDropdown.querySelector('#upload-picture');
-            const profilePictureImg = profileDropdown.querySelector('.profile-picture');
-            const usernameElement = profileDropdown.querySelector('.username');
-            const locationElement = profileDropdown.querySelector('.location-text');
             const logoutLink = profileDropdown.querySelector('.logout-link');
-
-            const profilePictureContainer = profileDropdown.querySelector('.profile-picture-container');
-            profilePictureContainer.addEventListener('click', () => {
-                uploadPictureInput.click();
+            logoutLink.addEventListener('click', async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/login.html';
             });
-
-            uploadPictureInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        profilePictureImg.src = e.target.result;
-                        console.log('New profile picture uploaded:', e.target.result);
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            usernameElement.addEventListener('blur', (event) => {
-                const newUsername = event.target.innerText.trim();
-                if (newUsername !== userData.username) {
-                    console.log('Username changed to:', newUsername);
-                    userData.username = newUsername;
-                }
-            });
-
-            usernameElement.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    usernameElement.blur();
-                }
-            });
-
-            locationElement.addEventListener('blur', (event) => {
-                const newLocation = event.target.innerText.trim();
-                if (newLocation !== userData.location) {
-                    console.log('Location changed to:', newLocation);
-                    userData.location = newLocation;
-                }
-            });
-
-            locationElement.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    locationElement.blur();
-                }
-            });
-
-            if (logoutLink) {
-                logoutLink.addEventListener('click', () => {
-                    console.log('Logout clicked');
-                });
-            }
 
             function closeDropdown(event) {
                 if (!profileIcon.contains(event.target) && !profileDropdown.contains(event.target)) {
