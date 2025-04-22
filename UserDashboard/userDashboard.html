@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard</title>
     <link rel="stylesheet" href="userDashboard.css">
-    <script src="userDashboard.js"></script>
+    <script src="userDashboard.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Add Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
-        // Initialize Supabase client
-        const supabase = Supabase.createClient(
-            'https://lywylvbgsnmqwcwgiyhc.supabase.co', // Replace with your Supabase URL
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'      // Replace with your Supabase anon key
+        // Initialize Supabase client and make it globally available
+        window.supabase = supabase.createClient(
+            'https://lywylvbgsnmqwcwgiyhc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
         );
     </script>
 </head>
@@ -86,16 +86,16 @@
 
         <div class="feed-section">
             <div class="feed-column completed-requests">
-                <h3</h3>
+                <h3>Completed Requests</h3>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
                     <div class="feed-item-content">
                         <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 123 Main St, Anytown</p>
                     </div>
                 </div>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
                     <div class="feed-item-content">
                         <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 456 Side Rd, Someplace</p>
@@ -103,35 +103,34 @@
                 </div>
             </div>
             <div class="feed-column updated-requests">
-                <h3></h3>
+                <h3>Updated Requests</h3>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
                     <div class="feed-item-content">
                         <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
                     </div>
                 </div>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
                     <div class="feed-item-content">
-                    
                         <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 101 Pine Ave, Another Town</p>
                     </div>
                 </div>
             </div>
             <div class="feed-column pending-requests">
-                <h3></h3>
+                <h3>Pending Requests</h3>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
                     <div class="feed-item-content">
-                <p class="feed-item-description">Description</p>
+                        <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
                     </div>
                 </div>
                 <div class="feed-item">
-                    <img src="placeholder-image.jpg" alt="Request Image">
-                    <div class="feed-item-content">       
+                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
+                    <div class="feed-item-content">
                         <p class="feed-item-description">Description</p>
                         <p class="feed-item-location">Location: 333 Elm St, A Faraway Town</p>
                     </div>
@@ -174,13 +173,13 @@
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+            <p>© 2025 CivicSync. All rights reserved.</p>
         </div>
     </footer>
 
     <div id="request-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <span class="close">×</span>
             <div class="modal-header">
                 <h2>Add New Request</h2>
             </div>
@@ -216,7 +215,5 @@
             </div>
         </div>
     </div>
-
-  
 </body>
 </html>
