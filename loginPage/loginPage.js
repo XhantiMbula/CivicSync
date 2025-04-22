@@ -45,9 +45,9 @@ async function loginUser() {
             return;
         }
 
-        if (userData.Role === 'admin') {
+        if (userData.Role === 'Admin') {
             console.log("Admin detected, redirecting...");
-            window.location.href = "/adminDashboard/adminDashboard.html";
+            window.location.href = "/AdminDashboard/adminDashboard.html";
         } else {
             console.log("Regular user detected, redirecting...");
             window.location.href = "/UserDashboard/userDashboard.html";

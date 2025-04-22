@@ -6,12 +6,12 @@
     <title>Register - CivicSync</title>
     <!-- ✅ Load Supabase Client FIRST -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+ 
     <!-- ✅ Link CSS -->
     <link rel="stylesheet" href="registerPage.css">
-
+ 
     <!-- ✅ Load JavaScript AFTER Supabase is Available -->
-    <script src="registerPage.js" defer></script>
+    <script type="module" src="registerPage.js" defer></script>
 </head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="registerPage.css">
@@ -39,6 +39,7 @@
                 <p class="social-text">or use your email for registration</p>
             </div>
             <form id="register-form">
+                <div id="message-box" class="message-box"></div>
                 <div class="form-group">
                     <i class="fas fa-user"></i>
                     <input type="text" id="name" placeholder="First Name" required>
