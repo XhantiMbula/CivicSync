@@ -21,10 +21,24 @@
 </div>
 
 <div class="mainContent">
-  <div class="heroSlideShow">
-    <!-- Slideshow container for images -->
-     
-  </div>
+  <!--The main container div to hold all the other divs of the Landing page
+    As well as keep the Divs stacked underneath each other-->
+    <div class="heroSlideShow">
+      <!--The hero slideshow div to hold the images of the landing page
+        As well as keep the images stacked underneath each other-->
+      <div class="slideshow-container">
+        <div class="slide fade">
+          <img src="assets/HeroSlideShow/broken-streetlights.jpg" alt="Community working together">
+        </div>
+        <div class="slide fade">
+          <img src="assets/HeroSlideShow/image-4.png" alt="Road repairs in action">
+        </div>
+        <div class="slide fade">
+          <img src="assets/HeroSlideShow/potholes-south-africa.jpg" alt="Cleaned public park">
+        </div>
+      </div>
+    </div>
+    
 <div class="indexContent">
   <h1>Welcome to CivicSync</h1>
   <h2>Your Voice, Your Community, Your Change</h2>
@@ -44,15 +58,6 @@
  </div>
  <div class="sideContent">
   <div class="slideshow-container">
-    <div class="slide fade">
-      <img src="https://picsum.photos/id/237/200/300" alt="Community working together">
-    </div>
-    <div class="slide fade">
-      <img src="https://picsum.photos/200/300?random=2" alt="Road repairs in action">
-    </div>
-    <div class="slide fade">
-      <img src="https://picsum.photos/200/300?random=3" alt="Cleaned public park">
-    </div>
   </div>
    </div>
 
@@ -91,6 +96,25 @@
       <p>&copy; 2025 CivicSync. All rights reserved.</p>
   </div>
 </footer>
+
+<script>
+  let slideIndex = 0;
+  const slides = document.querySelectorAll(".heroSlideShow .slide");
+
+  function showSlides() {
+    slides.forEach(slide => slide.style.display = "none");
+
+    slideIndex++;
+    if (slideIndex > slides.length) { slideIndex = 1; }
+
+    slides[slideIndex - 1].style.display = "block";
+    setTimeout(showSlides, 6000); // Change image every 6 seconds
+  }
+
+  showSlides(); // Start slideshow
+</script>
+
+
 
 </body>
 </html>
