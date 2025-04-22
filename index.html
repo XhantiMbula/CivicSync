@@ -21,9 +21,26 @@
 </div>
 
 <div class="mainContent">
+  <!--The main container div to hold all the other divs of the Landing page
+    As well as keep the Divs stacked underneath each other-->
+    <div class="heroSlideShow">
+      <div class="slideshow-text">
+        <h1>Welcome to CivicSync</h1>
+        <h2>Your Voice, Your Community, Your Change</h2>
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/broken-streetlights.jpg" alt="Community working together">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/image-4.png" alt="Road repairs in action">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/potholes-south-africa.jpg" alt="Cleaned public park">
+      </div>
+    </div>
+    
 <div class="indexContent">
-  <h1>Welcome to CivicSync</h1>
-  <h2>Your Voice, Your Community, Your Change</h2>
+  
   <p>Welcome to CivicSync — Your Voice, Your Community, Your Change
     We believe that strong communities are built on communication, action, and accountability. That's why we've created a space where you—the residents, the workers, the everyday people—can easily report civil issues and public concerns that affect your surroundings.
     Whether it's a leaking pipe, a damaged road, illegal dumping, or faulty streetlights, your reports help bring attention to what matters. Once submitted, our admin team reviews each case, and if approved, it gets assigned to qualified contractors who handle the issue promptly and professionally.
@@ -36,24 +53,10 @@
 
   <a href="/loginPage/loginPage.html" class="action_btn">Get Started</a>
 
-  <h2>How It Works</h2>
-  <p>Report: Use our platform to report any civil issues or public concerns in your community.</p>
-  <p>Review: Our admin team reviews each case to ensure it meets our reporting criteria.</p> 
-  <p>Assign: Approved reports are assigned to qualified contractors for resolution.</p>
-  <p>Update: Stay informed with real-time updates on the status of your report.</p>
-  
+
  </div>
  <div class="sideContent">
   <div class="slideshow-container">
-    <div class="slide fade">
-      <img src="https://picsum.photos/id/237/200/300" alt="Community working together">
-    </div>
-    <div class="slide fade">
-      <img src="https://picsum.photos/200/300?random=2" alt="Road repairs in action">
-    </div>
-    <div class="slide fade">
-      <img src="https://picsum.photos/200/300?random=3" alt="Cleaned public park">
-    </div>
   </div>
    </div>
 
@@ -92,6 +95,34 @@
       <p>&copy; 2025 CivicSync. All rights reserved.</p>
   </div>
 </footer>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) {
+        slide.classList.add('active');
+      }
+    });
+  }
+
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  }
+
+  // Initialize the first slide
+  showSlide(currentSlide);
+
+  // Change slides every 6 seconds
+  setInterval(nextSlide, 6000);
+</script>
+
+
+
 
 </body>
 </html>
