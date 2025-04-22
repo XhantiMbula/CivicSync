@@ -24,24 +24,23 @@
   <!--The main container div to hold all the other divs of the Landing page
     As well as keep the Divs stacked underneath each other-->
     <div class="heroSlideShow">
-      <!--The hero slideshow div to hold the images of the landing page
-        As well as keep the images stacked underneath each other-->
-      <div class="slideshow-container">
-        <div class="slide fade">
-          <img src="assets/HeroSlideShow/broken-streetlights.jpg" alt="Community working together">
-        </div>
-        <div class="slide fade">
-          <img src="assets/HeroSlideShow/image-4.png" alt="Road repairs in action">
-        </div>
-        <div class="slide fade">
-          <img src="assets/HeroSlideShow/potholes-south-africa.jpg" alt="Cleaned public park">
-        </div>
+      <div class="slideshow-text">
+        <h1>Welcome to CivicSync</h1>
+        <h2>Your Voice, Your Community, Your Change</h2>
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/broken-streetlights.jpg" alt="Community working together">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/image-4.png" alt="Road repairs in action">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/potholes-south-africa.jpg" alt="Cleaned public park">
       </div>
     </div>
     
 <div class="indexContent">
-  <h1>Welcome to CivicSync</h1>
-  <h2>Your Voice, Your Community, Your Change</h2>
+  
   <p>Welcome to CivicSync — Your Voice, Your Community, Your Change
     We believe that strong communities are built on communication, action, and accountability. That's why we've created a space where you—the residents, the workers, the everyday people—can easily report civil issues and public concerns that affect your surroundings.
     Whether it's a leaking pipe, a damaged road, illegal dumping, or faulty streetlights, your reports help bring attention to what matters. Once submitted, our admin team reviews each case, and if approved, it gets assigned to qualified contractors who handle the issue promptly and professionally.
@@ -98,21 +97,30 @@
 </footer>
 
 <script>
-  let slideIndex = 0;
-  const slides = document.querySelectorAll(".heroSlideShow .slide");
+  const slides = document.querySelectorAll('.slide');
+  let currentSlide = 0;
 
-  function showSlides() {
-    slides.forEach(slide => slide.style.display = "none");
-
-    slideIndex++;
-    if (slideIndex > slides.length) { slideIndex = 1; }
-
-    slides[slideIndex - 1].style.display = "block";
-    setTimeout(showSlides, 6000); // Change image every 6 seconds
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) {
+        slide.classList.add('active');
+      }
+    });
   }
 
-  showSlides(); // Start slideshow
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  }
+
+  // Initialize the first slide
+  showSlide(currentSlide);
+
+  // Change slides every 6 seconds
+  setInterval(nextSlide, 6000);
 </script>
+
 
 
 
