@@ -6,7 +6,7 @@ body {
 }
 
 .main-container {
-  min-height: calc(100vh - 60px - 60px); /* Adjust for nav and footer */
+  min-height: calc(100vh - 60px - 60px);
   padding: 20px;
 }
 
@@ -136,7 +136,7 @@ body {
 /* Dashboard Container */
 .dashboard-container {
   display: flex;
-  height: calc(100vh - 220px); /* Adjust for nav, header, stats, footer */
+  height: calc(100vh - 220px);
   width: 100%;
 }
 
@@ -177,9 +177,9 @@ body {
 }
 
 .request-card.selected {
-  background-color: #e6f4ea; /* Light green background */
-  border: 2px solid #28a745; /* Green border */
-  box-shadow: 0 0 10px rgba(40, 167, 69, 0.8); /* Green glow */
+  background-color: #e6f4ea;
+  border: 2px solid #28a745;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.8);
 }
 
 .request-card img {
@@ -230,7 +230,7 @@ body {
   gap: 10px;
 }
 
-.approve-btn, .delete-btn {
+.approve-btn, .reject-btn {
   padding: 8px 15px;
   border: none;
   border-radius: 4px;
@@ -253,18 +253,205 @@ body {
   cursor: not-allowed;
 }
 
-.delete-btn {
+.reject-btn {
   background-color: #dc3545;
   color: #fff;
 }
 
-.delete-btn:hover {
+.reject-btn:hover {
   background-color: #c82333;
+}
+
+.reject-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 .map-container {
   width: 70%;
   height: 100%;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px;
+  border: none;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal .close {
+  color: #555;
+  float: right;
+  font-size: 32px;
+  font-weight: bold;
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.modal .close:hover,
+.modal .close:focus {
+  color: #02882a;
+  opacity: 1;
+}
+
+.modal-header {
+  padding-bottom: 20px;
+  border-bottom: 2px solid #02882a;
+  margin-bottom: 25px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: #02882a;
+  font-size: 2em;
+}
+
+.modal-body {
+  padding-bottom: 25px;
+  color: #333;
+  line-height: 1.6;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  color: #555;
+  font-weight: bold;
+}
+
+.modal-body textarea {
+  width: calc(100% - 24px);
+  padding: 12px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1em;
+  resize: vertical;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.modal-cancel-button,
+.modal-submit-button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.modal-cancel-button {
+  background-color: #f4f4f4;
+  color: #333;
+  border: 1px solid #ccc;
+}
+
+.modal-cancel-button:hover {
+  background-color: #e0e0e0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+.modal-submit-button {
+  background-color: #02882a;
+  color: white;
+  border: none;
+}
+
+.modal-submit-button:hover {
+  background-color: #016309;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+  position: absolute;
+  top: 60px;
+  right: 100px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  z-index: 1001;
+  width: 300px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.notification-list li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.notification-list li:last-child {
+  border-bottom: none;
+}
+
+.notification-approval {
+  background-color: #e6f4ea;
+}
+
+.notification-rejection {
+  background-color: #f8d7da;
+}
+
+.notification-list li strong {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.notification-list li small {
+  display: block;
+  color: #777;
+  margin-top: 5px;
+}
+
+.no-notifications {
+  text-align: center;
+  color: #777;
+  font-style: italic;
 }
 
 /* Footer */
@@ -284,4 +471,33 @@ body {
 
 .footer a:hover {
   text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-container {
+      flex-direction: column;
+      height: auto;
+  }
+
+  .request-list {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #ddd;
+  }
+
+  .map-container {
+      width: 100%;
+      height: 400px;
+  }
+
+  .stats-overview {
+      flex-direction: column;
+  }
+
+  .notification-dropdown {
+      right: 20px;
+      width: 90%;
+      max-width: 300px;
+  }
 }

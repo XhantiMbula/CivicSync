@@ -14,7 +14,7 @@
     <div class="nav-items">
       <div class="nav-item notifications">
         <i class="fas fa-bell"></i>
-        <span class="badge">3</span>
+        <span class="badge" id="notification-badge">0</span>
       </div>
       <div class="nav-item profile">
         <i class="fas fa-user"></i>
@@ -36,7 +36,7 @@
   <div class="main-container">
     <!-- Header -->
     <header class="dashboard-header">
-      <h1>Municipal Dashboard</h1>
+      <h1>Admin Dashboard</h1>
       <p>Welcome, Xhanti Mbula! Manage municipal service requests efficiently.</p>
     </header>
 
@@ -69,6 +69,26 @@
       </div>
       <!-- Right side: Google Map -->
       <div id="map" class="map-container"></div>
+    </div>
+  </div>
+
+  <!-- Action Modal -->
+  <div id="action-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-header">
+        <h2 id="modal-title">Action</h2>
+      </div>
+      <div class="modal-body">
+        <form id="action-form">
+          <label for="message">Message (optional):</label>
+          <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+          <div class="modal-footer">
+            <button type="button" class="modal-cancel-button">Cancel</button>
+            <button type="submit" class="modal-submit-button" id="modal-submit">Submit</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
