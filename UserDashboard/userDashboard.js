@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.innerHTML = `
                     <td>Form ${index + 1}</td>
                     <td>${request.RequestTitle}</td>
-                    <td>${request.RequestCategory}</td>
+                   
                     <td>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" style="max-width: 100px;">` : 'No Image'}</td>
                     <td>${request.RequestDescription}</td>
                     <td>${request.RequestLocation}</td>
