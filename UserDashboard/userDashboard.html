@@ -35,6 +35,8 @@
         </div>
 
         <div class="request-complaint-section">
+            <div class="welcome-head"><h2>Welcome </h2> </div>
+
             <div class="request-box">
                 <div>Request</div>
                 <button id="add-request-button" class="request-button">+</button>
@@ -140,7 +142,7 @@
         <div class="request-complaint-section complaint-section">
             <div class="complaint-box">
                 <div>Complaint</div>
-                <button class="complaint-button">+</button>
+                <button id="addComplaintBtn">Add Complaint</button>
             </div>
         </div>
     </div>
@@ -215,5 +217,24 @@
             </div>
         </div>
     </div>
+    
+
+
+    <div id="complaintModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Add Complaint</h2>
+            <form id="complaintForm">
+                <label for="complaintSubject">Complaint Subject:</label>
+                <input type="text" id="complaintSubject" name="complaintSubject" required>
+                
+                <label for="complaintDescription">Complaint Description:</label>
+                <textarea id="complaintDescription" name="complaintDescription" required></textarea>
+                
+                <button type="submit" class="modal-submit-button">Submit</button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

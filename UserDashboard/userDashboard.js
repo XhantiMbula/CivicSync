@@ -468,3 +468,18 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
 });
+
+document.getElementById('addComplaintBtn').addEventListener('click', function() {
+        document.getElementById('complaintModal').style.display = 'block';
+    });
+    
+    document.getElementsByClassName('close-btn')[0].addEventListener('click', function() {
+        document.getElementById('complaintModal').style.display = 'none';
+    });
+    
+    window.addEventListener('click', function(event) {
+        if (event.target == document.getElementById('complaintModal')) {
+            document.getElementById('complaintModal').style.display = 'none';
+        }
+    });
+    
