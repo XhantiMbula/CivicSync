@@ -1,0 +1,118 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+  }
+  body {
+    background-color: #FFFFFF; /* White background */
+    color: #000000; /* Black text */
+  }
+  .container {
+    display: flex;
+    min-height: 100vh;
+  }
+  /* Sidebar */
+  .sidebar {
+    width: 250px;
+    background-color: #f5f5f5;
+    padding: 2rem;
+    border-right: 1px solid #000000; /* Black border */
+  }
+  .sidebar h2 {
+    font-size: 1.5rem;
+    color: #002906; /* Dark Green for heading */
+    margin-bottom: 1rem;
+  }
+  .sidebar ul {
+    list-style: none;
+  }
+  .sidebar li {
+    margin-bottom: 1rem;
+  }
+  .sidebar a {
+    color: #000000; /* Black text */
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .sidebar a:hover {
+    color: #00A31E; /* Green on hover */
+  }
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 2rem;
+  }
+  .main-content h1 {
+    font-size: 2rem;
+    color: #002906; /* Dark Green for heading */
+    margin-bottom: 2rem;
+  }
+  .section {
+    background-color: #FFFFFF; /* White background */
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #000000; /* Black border */
+    border-radius: 5px;
+  }
+  .section h2 {
+    font-size: 1.2rem;
+    color: #002906; /* Dark Green for subheading */
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #000000; /* Black border */
+    padding-bottom: 0.5rem;
+  }
+  .section p {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #000000; /* Black text */
+  }
+  .section a {
+    color: #00A31E; /* Green for links */
+    text-decoration: none;
+  }
+  .section a:hover {
+    text-decoration: underline;
+  }
+  .section .editable {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section input, .section select {
+    padding: 0.5rem;
+    border: 1px solid #000000; /* Black border */
+    border-radius: 5px;
+    width: 100%;
+    max-width: 300px;
+    margin-top: 0.5rem;
+  }
+  .section button {
+    padding: 0.5rem 1rem;
+    background-color: #00A31E; /* Green button */
+    color: #FFFFFF; /* White text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  .section button:hover {
+    background-color: #002906; /* Dark Green on hover */
+  }
+  .notifications ul {
+    list-style: none;
+  }
+  .notifications li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #000000; /* Black border */
+  }
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+    .sidebar {
+      width: 100%;
+      border-right: none;
+      border-bottom: 1px solid #000000; /* Black border */
+    }
+  }
