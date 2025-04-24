@@ -1,9 +1,9 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabaseUrl = "https://lywylvbgsnmqwcwgiyhc.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg";
+const supabaseUrl = 'https://lywylvbgsnmqwcwgiyhc.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg';
 
-// ✅ Initialize Supabase Client
+// Initialize Supabase Client
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 console.log("Supabase initialized:", supabase);
 
@@ -16,41 +16,44 @@ async function loginUser() {
         return;
     }
 
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+        // Sign in user
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-    // ✅ Sign in user
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+            console.error("Login error:", error);
+            showMessage("Login failed: " + error.message, "error");
+            return;
+        }
 
-    if (error) {
-        console.error("Login error:", error);
+        console.log("User logged in successfully:", data);
+        console.log("User token:", data.session.access_token);
+
+        // Get user ID from Supabase
+        const userId = data.user.id;
+
+        // Check user role from UserTable
+        const { data: userData, error: userError } = await supabase
+            .from("UserTable")
+            .select("Role")
+            .eq("UserEmail", email)
+            .single();
+
+        if (userError) {
+            console.error("User role check error:", userError);
+            showMessage("Error checking user role.", "error");
+            return;
+        }
+
+        if (userData.Role === 'Admin') {
+            console.log("Admin detected, redirecting...");
+            window.location.href = "/AdminDashboard/adminDashboard.html";
+        } else {
+            console.log("Regular user detected, redirecting...");
+            window.location.href = "/UserDashboard/userDashboard.html";
+        }
+    } catch (error) {
         showMessage("Login failed: " + error.message, "error");
-        return;
-    }
-
-    console.log("User logged in successfully:", data);
-    console.log("User token:", data.session.access_token);
-
-    // ✅ Get user ID from Supabase
-    const userId = data.user.id;
-
-    // ✅ Check if the user exists in AdminTable
-    const { data: adminData, error: adminError } = await supabase
-        .from("AdminTable")
-        .select("AdminID")
-        .eq("Email", email)
-        .single();
-
-    if (adminError) {
-        console.error("Admin check error:", adminError);
-    }
-
-    if (adminData) {
-        console.log("Admin detected, redirecting...");
-        window.location.href = "https://studylocker-gg.netlify.app/adminDashboard";
-    } else {
-        console.log("Regular user detected, redirecting...");
-        window.location.href = "https://studylocker-gg.netlify.app/userDashboard";
     }
 }
 
@@ -62,18 +65,14 @@ async function forgotPassword() {
         return;
     }
 
-    console.log("Sending password reset email to:", email);
+    try {
+        await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: "https://civicsync.netlify.app/resetPassword/resetPassword.html"
+        });
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://studylocker-gg.netlify.app/ResetPassword/resetPassword.html"
-    });
-
-    if (error) {
-        console.error("Error sending reset email:", error);
-        showMessage("Error sending reset email: " + error.message, "error");
-    } else {
-        console.log("Password reset email sent successfully!");
         showMessage("Password reset email sent successfully! Please check your inbox.", "success");
+    } catch (error) {
+        showMessage("Error sending reset email: " + error.message, "error");
     }
 }
 
@@ -88,8 +87,11 @@ function showMessage(msg, type) {
     }, 4000);
 }
 
-// ✅ Attach event listeners after the DOM has loaded
+// Attach event listeners after the DOM has loaded
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("login-btn").addEventListener("click", loginUser);
+    document.getElementById("login-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        loginUser();
+    });
     document.getElementById("forgot-password-btn").addEventListener("click", forgotPassword);
 });

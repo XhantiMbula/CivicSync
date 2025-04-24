@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CivicSync - Empowering Communities</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-  <link rel="stylesheet" href="public/Welcome page/styles.css">
-  
+  <title>CivicSync</title>
+  <link rel="stylesheet" href="indexPage.css">
 </head>
+
 <body>
   <!-- Top Header -->
   <div class="top-header">
@@ -234,33 +232,54 @@
           <li><i class="fa fa-map-marker"></i> 123 Main Road, Suite 401, Cape Town, WC 8001</li>
         </ul>
       </div>
-      <div class="footer-column">
-        <h3>Quick Links</h3>
-        <ul>
-          <li><a href="/services">Services</a></li>
-          <li><a href="/training">Training</a></li>
-          <li><a href="/contact">Contact</a></li>
-          <li><a href="/loginPage/loginPage.html">SignIn</a></li>
-        </ul>
+      <div class="footer-section">
+          <h3>Report an Incident</h3>
+          <p>Use our platform to report:</p>
+          <ul>
+              <li>Sunken roads</li>
+              <li>Fire hazards</li>
+              <li>Power outages</li>
+              <li>Other community issues</li>
+          </ul>
       </div>
-      <div class="footer-column">
-        <h3>Follow Us</h3>
-        <div class="social-icons">
-          <a href="https://linkedin.com" target="_blank" rel="noopener"><i class="fa fa-linkedin"></i></a>
-          <a href="https://facebook.com" target="_blank" rel="noopener"><i class="fa fa-facebook"></i></a>
-          <a href="https://instagram.com" target="_blank" rel="noopener"><i class="fa fa-instagram"></i></a>
-          <a href="https://youtube.com" target="_blank" rel="noopener"><i class="fa fa-youtube"></i></a>
-        </div>
+      <div class="footer-section">
+          <h3>Follow Us</h3>
+          <div class="social-links">
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
       </div>
-    </div>
-    <div class="footer-bottom">
-      <p>© 2025 CivicSync | All Rights Reserved</p>
-    </div>
-  </footer>
+  </div>
+  <div class="copyright">
+      <p>&copy; 2025 CivicSync. All rights reserved.</p>
+  </div>
+</footer>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
-  <script>
-    new WOW().init();
-  </script>
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) {
+        slide.classList.add('active');
+      }
+    });
+  }
+
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  }
+
+  // Initialize the first slide
+  showSlide(currentSlide);
+
+  // Change slides every 6 seconds
+  setInterval(nextSlide, 4000);
+</script>
+
 </body>
 </html>

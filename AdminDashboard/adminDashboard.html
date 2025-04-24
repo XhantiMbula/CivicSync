@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSync Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="adminDashboard.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="logo">CivicSync</div>
+    <div class="nav-items">
+      <div class="nav-item notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge">3</span>
+      </div>
+      <div class="nav-item profile">
+        <i class="fas fa-user"></i>
+        <div class="dropdown">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#" id="logout">Logout</a>
+        </div>
+      </div>
+      <select id="language-selector">
+        <option value="en">English</option>
+        <option value="zu">Zulu</option>
+        <option value="af">Afrikaans</option>
+      </select>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h1>Municipal Dashboard</h1>
+      <p>Welcome, Xhanti Mbula! Manage municipal service requests efficiently.</p>
+    </header>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="stat-card">
+        <h3>Total Requests</h3>
+        <p id="total-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pending</h3>
+        <p id="pending-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Approved</h3>
+        <p id="approved-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Rejected</h3>
+        <p id="rejected-requests">0</p>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+      <!-- Left side: Scrollable request cards -->
+      <div class="request-list">
+        <h2>Service Requests</h2>
+        <div id="requests" class="requests-scrollable"></div>
+      </div>
+      <!-- Right side: Google Map -->
+      <div id="map" class="map-container"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 CivicSync by Syntax Syndicate. All rights reserved.</p>
+    <p>Contact: <a href="mailto:xhantimbula@syntaxsyndicate.co.za">xhantimbula@syntaxsyndicate.co.za</a> | +27 64 071 6111</p>
+  </footer>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places"></script>
+  <!-- Custom JavaScript -->
+  <script src="adminDashboard.js"></script>
+</body>
+</html>
