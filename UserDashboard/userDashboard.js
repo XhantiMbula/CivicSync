@@ -9,31 +9,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const dashboardContainer = document.querySelector('.dashboard-container');
     const logoutLink = document.querySelector('.logout');
     const welcomeHead = document.querySelector('.welcome-head h2');
+    const notificationIcon = document.querySelector('.notification-icon');
+    const notificationBadge = document.getElementById('notification-badge');
 
     // Feed sections
     const completedRequestsSection = document.querySelector('.completed-requests');
     const updatedRequestsSection = document.querySelector('.updated-requests');
     const pendingRequestsSection = document.querySelector('.pending-requests');
 
-    // Initialize Supabase client (already in HTML)
+    // Initialize Supabase client
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
         alert('Application error: Supabase client not found.');
         return;
     }
 
-    // Check user authentication and debug UserID
+    // Check user authentication
     async function getUser() {
         try {
             const { data: { user }, error } = await supabase.auth.getUser();
             if (error || !user) {
                 console.error('Authentication error:', error?.message || 'No user found');
-                console.log('User data:', user);
                 alert('You must be logged in to access the dashboard.');
                 window.location.href = '/loginPage/loginPage.html';
                 return null;
             }
-            console.log('Authenticated UserID:', user.id);
             return user;
         } catch (err) {
             console.error('Error checking authentication:', err);
@@ -42,22 +42,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toast-like alert for better UX
+    // Toast-like alert
     function showToast(message, type = 'error') {
         alert(message); // Replace with Toastify if desired
     }
 
-    // Check user on page load
+    // Check user and load data
     async function checkUserOnLoad() {
         const user = await getUser();
-        if (!user) {
-            window.location.href = '/loginPage/loginPage.html';
-            return;
-        }
-        // Update welcome message with username
+        if (!user) return;
         const { data: userData, error } = await supabase
             .from('UserTable')
-            .select('"UserUsername"')
+            .select('UserUsername')
             .eq('UserID', user.id)
             .single();
         if (error) {
@@ -65,10 +61,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             welcomeHead.textContent = `Welcome ${userData.UserUsername || 'User'}`;
         }
+        loadUserRequests();
+        loadFeed();
+        loadNotifications();
     }
     checkUserOnLoad();
 
-    // Logout functionality
+    // Logout
     logoutLink.addEventListener('click', async () => {
         const { error } = await supabase.auth.signOut();
         if (error) {
@@ -82,9 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Modal controls
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
-        if (user) {
-            modal.style.display = "block";
-        }
+        if (user) modal.style.display = "block";
     });
 
     closeBtn.addEventListener("click", () => {
@@ -96,15 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener("click", (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
+        if (event.target === modal) modal.style.display = "none";
     });
 
     // Submit new request
     requestForm.addEventListener("submit", async (event) => {
         event.preventDefault();
-
         const user = await getUser();
         if (!user) return;
 
@@ -116,10 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const status = "Pending";
         const userId = user.id;
 
-        console.log('Submitting request with UserID:', userId);
-
         let imageURL = "";
-
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
             if (!file.type.startsWith('image/')) {
@@ -132,44 +123,27 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const fileName = `request-images/${userId}/${Date.now()}-${file.name}`;
-
             try {
-                const { data: uploadData, error: uploadError } = await supabase.storage
+                const { error: uploadError } = await supabase.storage
                     .from('request-images')
-                    .upload(fileName, file, {
-                        cacheControl: '3600',
-                        upsert: false
-                    });
-
-                if (uploadError) {
-                    console.error('Image upload failed:', uploadError.message);
-                    showToast(`Failed to upload image: ${uploadError.message}`, 'error');
-                    return;
-                }
+                    .upload(fileName, file, { cacheControl: '3600', upsert: false });
+                if (uploadError) throw new Error(`Image upload failed: ${uploadError.message}`);
 
                 const { data: urlData } = supabase.storage
                     .from('request-images')
                     .getPublicUrl(fileName);
-
                 imageURL = urlData.publicUrl;
-                if (!imageURL) {
-                    console.error('Failed to retrieve public URL.');
-                    showToast('Image uploaded, but could not retrieve URL.', 'error');
-                    return;
-                }
-                console.log('Image URL:', imageURL);
+                if (!imageURL) throw new Error('Failed to retrieve public URL.');
             } catch (error) {
                 console.error('Error during image upload:', error);
                 showToast('An error occurred while uploading the image.', 'error');
                 return;
             }
-        } else {
-            console.warn('No image provided.');
         }
 
         try {
             const requestData = {
-                RequestID: crypto.randomUUID(), // Generate UUID for RequestID
+                RequestID: crypto.randomUUID(),
                 RequestTitle: title,
                 RequestCategory: category,
                 RequestImageURL: imageURL,
@@ -179,23 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 UserID: userId,
                 created_at: new Date().toISOString()
             };
-            console.log('Request data to insert:', requestData);
-
-            const { data, error: requestError } = await supabase
+            const { error: requestError } = await supabase
                 .from('RequestTable')
-                .insert([requestData])
-                .select();
+                .insert([requestData]);
+            if (requestError) throw new Error(`Request insertion failed: ${requestError.message}`);
 
-            if (requestError) {
-                console.error('Request insertion failed:', requestError.message);
-                showToast(`Failed to submit request: ${requestError.message}`, 'error');
-                return;
-            }
-
-            console.log('Request submitted successfully:', data);
             showToast('Request submitted successfully!', 'success');
-
-            // Refresh table and feed
             loadUserRequests();
             loadFeed();
             modal.style.display = "none";
@@ -206,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Load user requests into the table
+    // Load user requests
     async function loadUserRequests() {
         const user = await getUser();
         if (!user) return;
@@ -217,22 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select('*')
                 .eq('UserID', user.id)
                 .order('created_at', { ascending: false });
+            if (error) throw new Error(`Error fetching requests: ${error.message}`);
 
-            if (error) {
-                console.error('Error fetching requests:', error.message);
-                showToast(`Error fetching requests: ${error.message}`, 'error');
-                return;
-            }
-
-            // Clear existing rows
             requestTableBody.innerHTML = '';
-
             requests.forEach((request, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>Form ${index + 1}</td>
                     <td>${request.RequestTitle}</td>
-                   
                     <td>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" style="max-width: 100px;">` : 'No Image'}</td>
                     <td>${request.RequestDescription}</td>
                     <td>${request.RequestLocation}</td>
@@ -251,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Load feed sections (Completed, Updated, Pending)
+    // Load feed
     async function loadFeed() {
         const user = await getUser();
         if (!user) return;
@@ -262,14 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select('*')
                 .eq('UserID', user.id)
                 .order('created_at', { ascending: false });
+            if (error) throw new Error(`Error fetching feed requests: ${error.message}`);
 
-            if (error) {
-                console.error('Error fetching feed requests:', error.message);
-                showToast(`Error fetching feed requests: ${error.message}`, 'error');
-                return;
-            }
-
-            // Clear existing feed items
             completedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
             updatedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
             pendingRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
@@ -286,7 +235,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="feed-item-location">Location: ${request.RequestLocation}</p>
                     </div>
                 `;
-
                 if (request.RequestStatus === 'Completed') {
                     completedRequestsSection.appendChild(feedItem);
                 } else if (request.RequestStatus === 'Updated') {
@@ -296,7 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Add placeholders if sections are empty
             if (!completedRequestsSection.querySelector('.feed-item')) {
                 completedRequestsSection.innerHTML += '<p>No completed requests.</p>';
             }
@@ -312,6 +259,94 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Load notifications
+    async function loadNotifications() {
+        const user = await getUser();
+        if (!user) return;
+
+        try {
+            const { data: messages, error } = await supabase
+                .from('RequestMessages')
+                .select('*, RequestTable(RequestTitle)')
+                .eq('UserID', user.id)
+                .eq('IsRead', false)
+                .order('created_at', { ascending: false });
+            if (error) throw new Error(`Error fetching notifications: ${error.message}`);
+
+            notificationBadge.textContent = messages.length;
+        } catch (error) {
+            console.error('Error loading notifications:', error);
+            showToast('Error loading notifications.', 'error');
+        }
+    }
+
+    // Notification dropdown
+    notificationIcon.addEventListener('click', async () => {
+        const user = await getUser();
+        if (!user) return;
+
+        const existingDropdown = document.getElementById('notification-dropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+            return;
+        }
+
+        try {
+            const { data: messages, error } = await supabase
+                .from('RequestMessages')
+                .select('*, RequestTable(RequestTitle)')
+                .eq('UserID', user.id)
+                .order('created_at', { ascending: false });
+            if (error) throw new Error(`Error fetching notifications: ${error.message}`);
+
+            const dropdown = document.createElement('div');
+            dropdown.id = 'notification-dropdown';
+            dropdown.classList.add('notification-dropdown');
+
+            if (messages.length === 0) {
+                dropdown.innerHTML = '<p class="no-notifications">No new notifications.</p>';
+            } else {
+                let html = '<ul class="notification-list">';
+                messages.forEach(message => {
+                    const statusClass = message.MessageType === 'Approval' ? 'notification-approval' : 'notification-rejection';
+                    html += `
+                        <li class="${statusClass}">
+                            <strong>${message.RequestTable.RequestTitle}</strong><br>
+                            ${message.MessageContent}<br>
+                            <small>${new Date(message.created_at).toLocaleString()}</small>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                dropdown.innerHTML = html;
+            }
+
+            dashboardContainer.appendChild(dropdown);
+
+            // Mark notifications as read
+            const unreadMessageIds = messages.filter(m => !m.IsRead).map(m => m.MessageID);
+            if (unreadMessageIds.length > 0) {
+                const { error: updateError } = await supabase
+                    .from('RequestMessages')
+                    .update({ IsRead: true })
+                    .in('MessageID', unreadMessageIds);
+                if (updateError) console.error('Error marking notifications as read:', updateError);
+                notificationBadge.textContent = '0';
+            }
+
+            function closeDropdown(event) {
+                if (!notificationIcon.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.remove();
+                    document.removeEventListener('click', closeDropdown);
+                }
+            }
+            setTimeout(() => document.addEventListener('click', closeDropdown), 10);
+        } catch (error) {
+            console.error('Error displaying notifications:', error);
+            showToast('Error displaying notifications.', 'error');
+        }
+    });
+
     // Edit request
     async function editRequest(requestId) {
         const { data: request, error } = await supabase
@@ -319,26 +354,21 @@ document.addEventListener('DOMContentLoaded', () => {
             .select('*')
             .eq('RequestID', requestId)
             .single();
-
         if (error) {
             console.error('Error fetching request for edit:', error.message);
             showToast(`Error fetching request: ${error.message}`, 'error');
             return;
         }
 
-        // Populate the modal with existing data
         document.getElementById('title').value = request.RequestTitle;
         document.getElementById('category').value = request.RequestCategory;
         document.getElementById('description').value = request.RequestDescription;
         document.getElementById('location').value = request.RequestLocation;
-        // Note: Image editing is not implemented here; you can add it if needed
 
         modal.style.display = 'block';
 
-        // Change form submission to update instead of insert
         requestForm.onsubmit = async (event) => {
             event.preventDefault();
-
             const updatedTitle = document.getElementById('title').value;
             const updatedCategory = document.getElementById('category').value;
             const updatedDescription = document.getElementById('description').value;
@@ -351,7 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     RequestCategory: updatedCategory,
                     RequestDescription: updatedDescription,
                     RequestLocation: updatedLocation,
-                    RequestStatus: 'Updated', // Mark as updated
+                    RequestStatus: 'Updated',
                     updated_at: new Date().toISOString()
                 })
                 .eq('RequestID', requestId);
@@ -365,14 +395,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadFeed();
                 modal.style.display = 'none';
                 requestForm.reset();
-                // Reset form submission to default (for adding new requests)
-                requestForm.onsubmit = null;
-                requestForm.addEventListener('submit', requestFormSubmitHandler);
+                requestForm.onsubmit = requestFormSubmitHandler;
             }
         };
     }
 
-    // Store the original form submission handler
     const requestFormSubmitHandler = requestForm.onsubmit;
 
     // Delete request
@@ -382,7 +409,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .from('RequestTable')
                 .delete()
                 .eq('RequestID', requestId);
-
             if (error) {
                 console.error('Error deleting request:', error.message);
                 showToast(`Error deleting request: ${error.message}`, 'error');
@@ -401,10 +427,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { data: userData, error } = await supabase
             .from('UserTable')
-            .select('"UserUsername", "UserLocation"')
+            .select('UserUsername, UserLocation')
             .eq('UserID', user.id)
             .single();
-
         if (error) {
             console.error('Error fetching user data:', error.message);
             showToast('Error loading profile data.', 'error');
@@ -427,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
             location: userData.UserLocation || 'Unknown Location'
         };
 
-        let profileHTML = `
+        profileDropdown.innerHTML = `
             <div class="profile-header">
                 <img src="${userDataFormatted.profilePicture}" alt="Profile Picture" class="profile-picture">
                 <h3>${userDataFormatted.username}</h3>
@@ -439,7 +464,6 @@ document.addEventListener('DOMContentLoaded', () => {
             </ul>
         `;
 
-        profileDropdown.innerHTML = profileHTML;
         dashboardContainer.appendChild(profileDropdown);
 
         const logoutLink = profileDropdown.querySelector('.logout-link');
@@ -454,17 +478,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.removeEventListener('click', closeDropdown);
             }
         }
-
-        setTimeout(() => {
-            document.addEventListener('click', closeDropdown);
-        }, 10);
+        setTimeout(() => document.addEventListener('click', closeDropdown), 10);
     });
 
-    // Initial load
-    loadUserRequests();
-    loadFeed();
-
-    // Expose edit and delete functions globally for button onclick
+    // Expose functions globally
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
 });
