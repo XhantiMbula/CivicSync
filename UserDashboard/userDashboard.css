@@ -15,7 +15,7 @@ body {
     gap: 25px;
     max-width: none;
     margin: 0;
-    padding: 25px 25px; /* Added padding on sides */
+    padding: 25px 25px;
     border-radius: 12px;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -26,7 +26,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 0; /* Reduced vertical padding */
+    padding: 20px 0;
     margin-bottom: 30px;
 }
 
@@ -39,8 +39,8 @@ body {
 
 .header-icons {
     display: flex;
-    align-items: center; /* Align items vertically */
-    gap: 20px; /* Space between icons and logout */
+    align-items: center;
+    gap: 20px;
 }
 
 .notification-icon {
@@ -54,7 +54,7 @@ body {
     position: absolute;
     top: -8px;
     right: -8px;
-    background-color: #dc3545; /* Red color for badge */
+    background-color: #dc3545;
     color: white;
     border-radius: 50%;
     padding: 5px 8px;
@@ -63,7 +63,7 @@ body {
 
 .profile-icon {
     cursor: pointer;
-    color: #00A31E; /* Green profile icon */
+    color: #00A31E;
     font-size: 1.8em;
 }
 
@@ -84,7 +84,7 @@ body {
     display: flex;
     justify-content: space-around;
     gap: 25px;
-    padding: 0; /* Removed side padding */
+    padding: 0;
     margin-bottom: 30px;
 }
 
@@ -165,7 +165,6 @@ body {
     background-color: rgba(240,240,240,0.5);
 }
 
-
 .feed-section {
     display: flex;
     flex-direction: row-reverse;
@@ -224,10 +223,9 @@ body {
     transition: border-radius 0.3s ease;
 }
 
-.feed-item:hover img{
+.feed-item:hover img {
     border-radius: 8px 8px 0 0;
 }
-
 
 .feed-item-content {
     display: flex;
@@ -250,84 +248,7 @@ body {
     opacity: 0.9;
 }
 
-.checkbox-wrapper {
-    margin-right: 15px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-}
-
-.checkbox-wrapper label {
-    color: #000000;
-    margin-left: 10px;
-    font-weight: bold;
-    font-size: 1.1em;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.checkbox-wrapper input[type="checkbox"] {
-    margin: 0;
-    vertical-align: middle;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .dashboard-container {
-        padding: 15px 0;
-        border-radius: 0;
-    }
-
-    .header {
-        flex-direction: column;
-        text-align: center;
-        padding: 15px 20px;
-    }
-
-    .header .app-name {
-        margin-bottom: 15px;
-    }
-
-    .header-icons {
-        flex-direction: row; /* Align icons horizontally on smaller screens */
-        justify-content: center; /* Center them */
-        gap: 15px;
-        margin-top: 10px; /* Add some space below app name */
-    }
-
-    .request-complaint-section {
-        flex-direction: column;
-        gap: 20px;
-        padding: 0 20px;
-    }
-
-    .request-box, .complaint-box {
-        width: 100%;
-        padding: 20px;
-    }
-
-    .feed-section {
-        flex-direction: column;
-        padding: 20px 0;
-        border-radius: 0;
-    }
-
-    .feed-column {
-        width: 100%;
-        margin-left: 0;
-        margin-bottom: 25px;
-    }
-
-    .feed-item {
-        padding: 20px;
-        margin-bottom: 25px;
-    }
-}
-
 /* Footer Styles */
-
 .site-footer {
     background-color: #000000;
     color: white;
@@ -385,14 +306,14 @@ body {
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.complaint-section{
+.complaint-section {
     order: 4;
     margin-bottom: 30px;
     padding: 0 25px;
 }
 
 .complaint-button {
-    background-color: #00A31E; /* Bright green button */
+    background-color: #00A31E;
     color: white;
     border: none;
     padding: 12px 25px;
@@ -405,11 +326,11 @@ body {
 }
 
 .complaint-button:hover {
-    background-color: #002906; /* Dark green hover */
+    background-color: #002906;
     transform: translateY(-2px);
 }
 
-/* Modal Styles (Appealing with Color and Improved Fields) */
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -436,11 +357,6 @@ body {
     animation: slideIn 0.3s ease-out;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-30px); }
     to { opacity: 1; transform: translateY(0); }
@@ -456,34 +372,30 @@ body {
     right: 20px;
     cursor: pointer;
     opacity: 0.7;
-    transition: color 0.2s ease, opacity 0.2s ease;
 }
 
 .modal .close:hover,
 .modal .close:focus {
     color: #002906;
     opacity: 1;
-    text-decoration: none;
 }
 
 .modal-header {
     padding-bottom: 20px;
-    border-bottom: 2px solid #00A31E; /* Accent color for the header bottom border */
+    border-bottom: 2px solid #00A31E;
     margin-bottom: 25px;
 }
 
 .modal-header h2 {
     margin-top: 0;
     color: #002906;
-    font-size: 2.2em; /* Slightly larger header text */
-    font-weight: bold;
-    letter-spacing: 0.5px; /* Subtle letter spacing */
+    font-size: 2.2em;
 }
 
 .modal-body {
     padding-bottom: 25px;
-    color: #333; /* Darker body text */
-    line-height: 1.6; /* Improved readability */
+    color: #333;
+    line-height: 1.6;
 }
 
 .modal-body label {
@@ -497,7 +409,7 @@ body {
 .modal-body input[type="file"],
 .modal-body textarea,
 .modal-body select {
-    width: calc(100% - 24px); /* Adjust width for padding and border */
+    width: calc(100% - 24px);
     padding: 12px;
     margin-bottom: 20px;
     border: 1px solid #ccc;
@@ -527,12 +439,10 @@ body {
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .modal-cancel-button:hover {
     background-color: #e0e0e0;
-    color: #000;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
 }
 
@@ -547,7 +457,202 @@ body {
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
 }
 
-/* Responsive adjustments for the modal */
+/* Notification Dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 60px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    z-index: 1001;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.notification-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notification-list li {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+    color: #333;
+}
+
+.notification-list li:last-child {
+    border-bottom: none;
+}
+
+.notification-approval {
+    background-color: #e6f4ea;
+}
+
+.notification-rejection {
+    background-color: #f8d7da;
+}
+
+.notification-list li strong {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.notification-list li small {
+    display: block;
+    color: #777;
+    margin-top: 5px;
+}
+
+.no-notifications {
+    text-align: center;
+    color: #777;
+    font-style: italic;
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    z-index: 1001;
+    width: 200px;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.profile-picture {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.profile-header h3 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    font-size: 1.2em;
+}
+
+.profile-header .location {
+    font-size: 0.9em;
+    color: #777;
+    margin-bottom: 0;
+}
+
+.profile-actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-actions li a, .profile-actions li {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    transition: background-color 0.2s ease;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-actions li a i, .profile-actions li i {
+    margin-right: 8px;
+}
+
+.profile-actions li:hover {
+    background-color: #f0f0f0;
+}
+
+.profile-actions .logout-link {
+    color: #dc3545;
+}
+
+.profile-actions .logout-link:hover {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 15px 0;
+        border-radius: 0;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+        padding: 15px 20px;
+    }
+
+    .header .app-name {
+        margin-bottom: 15px;
+    }
+
+    .header-icons {
+        flex-direction: row;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .request-complaint-section {
+        flex-direction: column;
+        gap: 20px;
+        padding: 0 20px;
+    }
+
+    .request-box, .complaint-box {
+        width: 100%;
+        padding: 20px;
+    }
+
+    .feed-section {
+        flex-direction: column;
+        padding: 20px 0;
+        border-radius: 0;
+    }
+
+    .feed-column {
+        width: 100%;
+        margin-left: 0;
+        margin-bottom: 25px;
+    }
+
+    .feed-item {
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .notification-dropdown {
+        right: 20px;
+        width: 90%;
+        max-width: 300px;
+    }
+
+    .profile-dropdown {
+        right: 20px;
+        width: 90%;
+        max-width: 200px;
+    }
+}
+
 @media (max-width: 600px) {
     .modal-content {
         margin: 10% auto;
@@ -564,16 +669,16 @@ body {
     .modal-submit-button {
         width: 100%;
     }
+
     .modal-body input[type="file"] {
-        /* Hide the default file input */
         opacity: 0;
         position: absolute;
         z-index: -1;
     }
-    
+
     .modal-body label[for="image"] {
         display: inline-block;
-        background-color: #00A31E; /* Green background */
+        background-color: #00A31E;
         color: white;
         padding: 12px 20px;
         border-radius: 8px;
@@ -581,15 +686,14 @@ body {
         font-size: 1em;
         transition: background-color 0.3s ease, box-shadow 0.3s ease;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px; /* Add some space below the button */
+        margin-bottom: 20px;
     }
-    
+
     .modal-body label[for="image"]:hover {
-        background-color: #002906; /* Darker green on hover */
+        background-color: #002906;
         box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     }
-    
-    /* Style for when a file is selected (optional) */
+
     .modal-body .file-selected {
         display: block;
         margin-top: 10px;
@@ -598,74 +702,3 @@ body {
         font-style: italic;
     }
 }
-    .profile-dropdown {
-        position: absolute; /* Or fixed, depending on your layout */
-        top: 60px; /* Adjust based on your header height */
-        right: 20px; /* Adjust based on the profile icon's position */
-        background-color: #fff;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        padding: 15px;
-        z-index: 1001; /* Ensure it's above other elements */
-        width: 200px; /* Adjust width as needed */
-    }
-    
-    .profile-header {
-        text-align: center;
-        margin-bottom: 15px;
-    }
-    
-    .profile-picture {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 10px;
-    }
-    
-    .profile-header h3 {
-        margin-top: 0;
-        margin-bottom: 5px;
-        font-size: 1.2em;
-    }
-    
-    .profile-header .location {
-        font-size: 0.9em;
-        color: #777;
-        margin-bottom: 0;
-    }
-    
-    .profile-actions {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .profile-actions li a, .profile-actions li {
-        display: block;
-        padding: 10px;
-        text-decoration: none;
-        color: #333;
-        transition: background-color 0.2s ease;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    
-    .profile-actions li a i, .profile-actions li i {
-        margin-right: 8px;
-    }
-    
-    .profile-actions li:hover {
-        background-color: #f0f0f0;
-    }
-    
-    .profile-actions .logout-link {
-        color: #dc3545; /* Red color for logout */
-    }
-    
-    .profile-actions .logout-link:hover {
-        background-color: rgba(220, 53, 69, 0.1); /* Light red on hover */
-        color: #dc3545;
-    }
-    
