@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSync</title>
+  <link rel="stylesheet" href="indexPage.css">
+</head>
+
+<body>
+  
+  <div class="navbar">
+    <div class="logo"><a href="#">CivicSync</a></div>
+    <ul class="links">
+    </ul>
+    <a href="/registerPage/registerPage.html" class="action_btn">Sign-Up</a>
+    <a href="/loginPage/loginPage.html" class="action_btn">Log-In</a>
+    <div class="toggle_btn">
+        <i class="fa-solid fa-bars"></i>
+    </div>
+</div>
+
+
+  <!--The main container div to hold all the other divs of the Landing page
+    As well as keep the Divs stacked underneath each other-->
+    <div class="heroSlideShow">
+      <div class="slideshow-text">
+        <h1>Welcome to CivicSync</h1>
+        <h2>Your Voice, Your Community, Your Change</h2>
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/broken-streetlights.jpg" alt="Community working together">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/image-4.png" alt="Road repairs in action">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/potholes-south-africa.jpg" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/blown-fuse-how-to-check-and-fix.png.webp" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/couleurs-patio-drummond-mobilier-urbain-bancs-gris-minera.jpg" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/flat-seat-swings.jpg" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/broken-road-destruction-of-road-surface-photo.jpg" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/burst-pipes-emergency-plumbing.jpg" alt="Cleaned public park">
+      </div>
+      <div class="slide fade">
+        <img src="assets/HeroSlideShow/shutterstock_197135594-600x338-800x0-c-default.jpg" alt="Cleaned public park">
+      </div>
+    </div>
+    
+    <div class="mainContent">
+<div class="indexContent">
+  <p>
+    Across countless neighborhoods, vital infrastructure and public services are falling through the cracks. 
+    From leaking water pipes and hazardous potholes to overflowing dumpsters and broken streetlights, these everyday issues silently pile up—unseen by the right people, unaddressed for far too long. 
+    <br>The core problem? Outdated reporting systems, lack of responsiveness, and a disconnect between citizens and those responsible for maintaining their environments.
+    <br>Residents are often left feeling powerless, unsure of who to contact, or convinced their concerns won’t make a difference. Over time, this leads to frustration, deteriorating trust in local governance, and communities that look and feel neglected. The result is more than just physical decline—it’s a growing sense that voices aren’t being heard and that change is out of reach.
+  </p>
+
+ </div>
+
+ <div class="sideContent">
+  <div class="solutionStatement">
+    <h2>Our Solution</h2>
+    <p>
+      That’s where CivicSync comes in.
+      <br>
+CivicSync is more than a platform—it’s a powerful bridge between communities and action. With just a few clicks, residents can report local issues directly to municipal teams and trusted contractors who are ready to respond. No red tape. No confusion. Just clear, efficient communication that gets results.
+Every report is tracked in real-time, keeping you informed from the moment it's submitted to the moment it's resolved. CivicSync ensures transparency, builds trust, and gives every citizen a direct role in shaping a safer, cleaner, and more responsive community.
+<br>
+Because when people are heard, neighborhoods thrive—and change becomes possible.
+</p>
+  </div>
+  <div class="getStartedDiv">
+    <a href="/loginPage/loginPage.html" class="action_btn">Get Started</a>
+  </div>
+   </div>
+
+</div>
+<div class="mainContent2">
+  <div class="aboutUsDiv">
+    <h2>About Us</h2>
+    <p>
+      That’s where CivicSync comes in.
+      <br>
+CivicSync is more than a platform—it’s a powerful bridge between communities and action. With just a few clicks, residents can report local issues directly to municipal teams and trusted contractors who are ready to respond. No red tape. No confusion. Just clear, efficient communication that gets results.
+Every report is tracked in real-time, keeping you informed from the moment it's submitted to the moment it's resolved. CivicSync ensures transparency, builds trust, and gives every citizen a direct role in shaping a safer, cleaner, and more responsive community.
+<br>
+Because when people are heard, neighborhoods thrive—and change becomes possible.
+</p>
+  </div>
+</div>
+  <!--End of the main container div to hold all the other divs of the Landing page
+    As well as keep the Divs stacked underneath each other-->
+
+
+<footer class="site-footer">
+  <div class="footer-content">
+      <div class="footer-section">
+          <h3>Contact Us</h3>
+          <p>Report incidents like sunken roads, fires, or other community issues:</p>
+          <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+          <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
+      </div>
+      <div class="footer-section">
+          <h3>Report an Incident</h3>
+          <p>Use our platform to report:</p>
+          <ul>
+              <li>Sunken roads</li>
+              <li>Fire hazards</li>
+              <li>Power outages</li>
+              <li>Other community issues</li>
+          </ul>
+      </div>
+      <div class="footer-section">
+          <h3>Follow Us</h3>
+          <div class="social-links">
+              <a href="#"><i class="fab fa-facebook"></i></a>
+              <a href="#"><i class="fab fa-twitter"></i></a>
+              <a href="#"><i class="fab fa-instagram"></i></a>
+          </div>
+      </div>
+  </div>
+  <div class="copyright">
+      <p>&copy; 2025 CivicSync. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let currentSlide = 0;
+
+  function showSlide(index) {
+    slides.forEach((slide, i) => {
+      slide.classList.remove('active');
+      if (i === index) {
+        slide.classList.add('active');
+      }
+    });
+  }
+
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slides.length;
+    showSlide(currentSlide);
+  }
+
+  // Initialize the first slide
+  showSlide(currentSlide);
+
+  // Change slides every 6 seconds
+  setInterval(nextSlide, 4000);
+</script>
+
+</body>
+</html>
