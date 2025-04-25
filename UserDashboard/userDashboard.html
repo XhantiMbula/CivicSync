@@ -218,5 +218,56 @@
         </div>
     </div>
 
-</body>
+   <!--Modal for viewing Complaint-->
+    <div id="viewComplaintModal" class="modal1">
+      <div class="modal-content1">
+        <span class="closeBtn1">&times;</span>
+        <h2>View Complaints</h2>
+        <table id="complaint-table">
+          <thead>
+            <tr>
+              <th>Complaint Subject</th>
+              <th>Complaint Description</th>
+              <th>Complaint Response</th>
+            </tr>
+          </thead>
+          <tbody id="complaint-list">
+            <!-- Complaint items will be dynamically added here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal for adding Complaint -->
+<div id="complaintModal" class="modal1">
+      <div class="modal-content1">
+        <span class="closeBtn">&times;</span>
+        <h2>Add Complaint</h2>
+        <form id="complaintForm">
+          <label for="complaintSubject">Complaint Subject:</label>
+          <input type="text" id="complaintSubject" name="complaintSubject" required>
+          
+          <label for="complaintDescription">Complaint Description:</label>
+          <textarea id="complaintDescription" name="complaintDescription" required></textarea>
+          
+          <label for="complaintResponse">Complaint Response:</label>
+          <input type="text" id="complaintResponse" name="complaintResponse" value="Pending" readonly>
+          
+          <button type="submit">Submit</button>
+        </form>
+      </div>
+    </div>
+    
+<!-- Modal for viewing Complaint -->
+    <div id="viewComplaintModal" class="modal2">
+          <div class="modal-content1">
+            <span class="closeBtn2">&times;</span>
+            <h2>View Complaints</h2>
+            <div class="complaint-cards-container">
+              <!-- Cards will be dynamically generated here -->
+            </div>
+          </div>
+        </div>
+        
+
 </html>

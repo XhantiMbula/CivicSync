@@ -485,5 +485,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Expose functions globally
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
+
+    //
+document.getElementById('addComplaintBtn').onclick = function() {
+      document.getElementById('complaintModal').style.display = 'block';
+    }
+    
+    document.getElementsByClassName('closeBtn')[0].onclick = function() {
+      document.getElementById('complaintModal').style.display = 'none';
+    }
+    
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('complaintModal')) {
+        document.getElementById('complaintModal').style.display = 'none';
+      }
+    }
+    
 });
 
+
+document.getElementById('viewComplaintBtn').onclick = function() {
+      document.getElementById('viewComplaintModal').style.display = 'block'
+    }
+    
+    document.getElementsByClassName('closeBtn')[1].onclick = function() {
+     style.display = 'none'
+    }
+    
+    window.onclick = function(event) {
+      if (event.target == document.getElementById('viewComplaintModal')) {
+        document.getElementById('viewComplaintModal').style.display = 'none'
+      }
+    }
+    

@@ -693,6 +693,7 @@ body {
         background-color: #002906;
         box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
     }
+    }
 
     .modal-body .file-selected {
         display: block;
@@ -701,4 +702,80 @@ body {
         color: #555;
         font-style: italic;
     }
+    
+.modal1 
+{
+     display: none;
+     position: fixed;
+     z-index: 1;
+     left: 0;
+     top: 0;
+     width: 100%;
+     height: 100%;
+     overflow: auto;
+     background-color: rgba(0, 0, 0, 0.4);
+    }
+    
+    .modal-content1 {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    }
+    
+    .closeBtn1 {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    
+
+    .modal2 {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .closeBtn2 {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .closeBtn2:hover,
+    .closeBtn2:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .complaint-cards-container {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .complaint-card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin: 10px;
+        flex: 0 0 auto;
+        width: 300px;
+    }
+        
+
+.closeBtn1:hover,
+.closeBtn1:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
