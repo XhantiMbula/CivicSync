@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
+    
     // Profile dropdown
     profileIcon.addEventListener('click', async () => {
         const user = await getUser();
