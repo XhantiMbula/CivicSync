@@ -142,6 +142,15 @@ nav .container {
   font-size: 20px;
 }
 
+.btn-get-started{
+  padding: 20px;
+  border-radius: 8px;
+  outline: #002906 2px solid;
+  background-color: rgba(24, 24, 24, 0.4);
+}
+
+
+
 /* Services Section */
 .services {
   padding: 60px 0;
