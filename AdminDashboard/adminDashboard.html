@@ -65,6 +65,15 @@
       <!-- Left side: Scrollable request cards -->
       <div class="request-list">
         <h2>Service Requests</h2>
+        <div class="filter-container">
+          <label for="status-filter">Filter by Status:</label>
+          <select id="status-filter">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
         <div id="requests" class="requests-scrollable"></div>
       </div>
       <!-- Right side: Google Map -->
@@ -88,6 +97,22 @@
             <button type="submit" class="modal-submit-button" id="modal-submit">Submit</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div id="details-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-header">
+        <h2>Request Details</h2>
+      </div>
+      <div class="modal-body" id="details-content">
+        <!-- Populated by JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-cancel-button" id="details-close">Close</button>
       </div>
     </div>
   </div>
