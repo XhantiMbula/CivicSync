@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Submit new request
-    requestForm.addEventListener("submit", async (event) => {
+    requestForm.addEventListener("submit", async (event) => {11
         event.preventDefault();
         const user = await getUser();
         if (!user) return;
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" style="max-width: 100px;">` : 'No Image'}</td>
                     <td>${request.RequestDescription}</td>
                     <td>${request.RequestLocation}</td>
-                    <td>${request.RequestCategory}</td>
+
                     <td>${request.RequestStatus}</td>
                     <td>
                         <button onclick="editRequest('${request.RequestID}')">Edit</button>
@@ -486,3 +486,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
 });
+
