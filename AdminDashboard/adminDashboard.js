@@ -1,32 +1,39 @@
-// Initialize Supabase client
-const supabaseClient = supabase.createClient('https://lywylvbgsnmqwcwgiyhc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg');
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Initialize Google Map
+// Initialize Supabase client
+const supabaseClient = createClient('https://lywylvbgsnmqwcwgiyhc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg');
+
+// Define initMap globally for Google Maps callback
+window.initMap = function() {
+  if (!window.google || !window.google.maps) {
+    console.error('Google Maps API not loaded');
+    return;
+  }
+  window.map = new window.google.maps.Map(document.getElementById('map'), {
+    center: { lat: -33.9249, lng: 18.4241 }, // Center on Cape Town
+    zoom: 10,
+  });
+};
+
+// Initialize map-related variables (avoid top-level google references)
 let map;
 let selectedCard = null;
 let selectedMarker = null;
 const markerIcons = {
   default: {
     url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-    scaledSize: new google.maps.Size(40, 40)
+    scaledSize: null // Set dynamically after API loads
   },
   selected: {
     url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-    scaledSize: new google.maps.Size(40, 40)
+    scaledSize: null // Set dynamically after API loads
   }
 };
-
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: -33.9249, lng: 18.4241 }, // Center on Cape Town
-    zoom: 10,
-  });
-}
 
 // Modal controls (Action Modal)
 const actionModal = document.getElementById('action-modal');
 const modalTitle = document.getElementById('modal-title');
-const modalSubmit = document.getElementById('modal-submit');
+const modalSubmit = document.querySelector('.modal-submit-button');
 const actionForm = document.getElementById('action-form');
 const actionCloseBtn = actionModal.querySelector('.close');
 const actionCancelBtn = actionModal.querySelector('.modal-cancel-button');
@@ -71,6 +78,10 @@ function openDetailsModal(request, userData, messages) {
       <div class="info-item">
         <span class="info-label">Description:</span>
         <span class="info-value">${request.RequestDescription}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Category:</span>
+        <span class="info-value">${request.RequestCategory || 'Other'}</span>
       </div>
       <div class="info-item">
         <span class="info-label">Location:</span>
@@ -219,6 +230,165 @@ notificationIcon.addEventListener('click', async () => {
   }
 });
 
+// Render analytics charts
+let statusChartInstance = null;
+let trendChartInstance = null;
+
+function renderAnalytics(data) {
+  if (typeof Chart === 'undefined') {
+    console.error('Chart.js not loaded. Analytics charts cannot be rendered.');
+    return;
+  }
+
+  // Define categories (update these based on your actual categories)
+  const categories = ['Water', 'Electricity', 'Road Maintenance', 'Waste Management', 'Other'];
+
+  // Calculate KPIs
+  const waterCount = data.filter(r => (r.RequestCategory || 'Other') === 'Water').length;
+  const electricityCount = data.filter(r => (r.RequestCategory || 'Other') === 'Electricity').length;
+  const processingTimes = data
+    .filter(r => r.RequestStatus.toLowerCase() !== 'pending' && r.updated_at)
+    .map(r => (new Date(r.updated_at) - new Date(r.created_at)) / (1000 * 60 * 60 * 24));
+  const avgProcessingTime = processingTimes.length > 0
+    ? (processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length).toFixed(1)
+    : 0;
+
+  // Update KPIs (ensure HTML IDs match: kpi-water, kpi-electricity, kpi-processing-time)
+  document.getElementById('kpi-water').textContent = waterCount;
+  document.getElementById('kpi-electricity').textContent = electricityCount;
+  document.getElementById('kpi-processing-time').textContent = `${avgProcessingTime} days`;
+
+  // Category Distribution Pie Chart
+  const categoryCounts = categories.map(category =>
+    data.filter(r => (r.RequestCategory || 'Other') === category).length
+  );
+
+  if (statusChartInstance) statusChartInstance.destroy();
+  statusChartInstance = new Chart(document.getElementById('statusChart'), {
+    type: 'pie',
+    data: {
+      labels: categories,
+      datasets: [{
+        data: categoryCounts,
+        backgroundColor: ['#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd'],
+        borderColor: ['#2b6cb0', '#f57c00', '#00695c', '#c2185b', '#757575'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        title: { display: true, text: 'Request Category Distribution' }
+      }
+    }
+  });
+
+  // Submission Trend Line Chart (by category)
+  const last30Days = new Date();
+  last30Days.setDate(last30Days.getDate() - 30);
+  const dailyCountsByCategory = categories.reduce((acc, category) => {
+    acc[category] = {};
+    for (let d = new Date(last30Days); d <= new Date(); d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0];
+      acc[category][dateStr] = 0;
+    }
+    return acc;
+  }, {});
+
+  data.forEach(r => {
+    const category = r.RequestCategory || 'Other';
+    if (!categories.includes(category)) return; // Skip if category not in predefined list
+    const dateStr = new Date(r.created_at).toISOString().split('T')[0];
+    if (dateStr in dailyCountsByCategory[category]) {
+      dailyCountsByCategory[category][dateStr]++;
+    }
+  });
+
+  const labels = Object.keys(dailyCountsByCategory[categories[0]]);
+  const datasets = categories.map((category, index) => ({
+    label: category,
+    data: Object.values(dailyCountsByCategory[category]),
+    borderColor: ['#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd'][index],
+    backgroundColor: ['rgba(77, 171, 245, 0.2)', 'rgba(255, 202, 40, 0.2)', 'rgba(38, 166, 154, 0.2)', 'rgba(240, 98, 146, 0.2)', 'rgba(189, 189, 189, 0.2)'][index],
+    fill: true,
+    tension: 0.4
+  }));
+
+  if (trendChartInstance) trendChartInstance.destroy();
+  trendChartInstance = new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { display: true, title: { display: true, text: 'Date' } },
+        y: { display: true, title: { display: true, text: 'Number of Requests' }, beginAtZero: true }
+      },
+      plugins: {
+        legend: { display: true },
+        title: { display: true, text: 'Requests by Category Over Last 30 Days' }
+      }
+    }
+  });
+}
+
+// Table sorting and collapsible rows
+function sortTable(data, sortKey, ascending) {
+  return data.sort((a, b) => {
+    let valA, valB;
+    switch (sortKey) {
+      case 'title':
+        valA = a.RequestTitle.toLowerCase();
+        valB = b.RequestTitle.toLowerCase();
+        break;
+      case 'status':
+        valA = a.RequestStatus.toLowerCase();
+        valB = b.RequestStatus.toLowerCase();
+        break;
+      case 'submitted':
+        valA = new Date(a.created_at);
+        valB = new Date(b.created_at);
+        break;
+      case 'username':
+        valA = (a.UserTable?.UserUsername || '').toLowerCase();
+        valB = (a.UserTable?.UserUsername || '').toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+    if (valA < valB) return ascending ? -1 : 1;
+    if (valA > valB) return ascending ? 1 : -1;
+    return 0;
+  });
+}
+
+function toggleRowDetails(row, request) {
+  const existingDetails = row.nextElementSibling;
+  if (existingDetails && existingDetails.classList.contains('table-details-row')) {
+    existingDetails.remove();
+    return;
+  }
+
+  const detailsRow = document.createElement('tr');
+  detailsRow.className = 'table-details-row';
+  detailsRow.innerHTML = `
+    <td colspan="7">
+      <div class="table-details-content">
+        <p><strong>Full Description:</strong> ${request.RequestDescription}</p>
+        ${request.RequestImageURL ? `
+          <p><strong>Image:</strong></p>
+          <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="table-detail-image">
+        ` : ''}
+      </div>
+    </td>
+  `;
+  row.insertAdjacentElement('afterend', detailsRow);
+}
+
 // Fetch requests and display them
 async function fetchRequests(filterStatus = 'all') {
   try {
@@ -243,10 +413,96 @@ async function fetchRequests(filterStatus = 'all') {
     const requestsDiv = document.getElementById('requests');
     requestsDiv.innerHTML = ''; // Clear existing cards
 
-    const geocoder = new google.maps.Geocoder();
+    const tableBody = document.querySelector('#requests-table tbody');
+    tableBody.innerHTML = ''; // Clear existing table rows
+
+    // Wait for Google Maps API to load
+    if (!window.google || !window.google.maps || !window.map) {
+      console.warn('Google Maps API not loaded yet. Map functionality will be limited.');
+      // Populate table and cards without map
+      const tableData = data.filter(r => r.RequestStatus.toLowerCase() === 'approved' || r.RequestStatus.toLowerCase() === 'rejected');
+      tableData.forEach(request => {
+        const row = document.createElement('tr');
+        row.dataset.requestId = request.RequestID;
+        const description = request.RequestDescription.length > 100
+          ? request.RequestDescription.substring(0, 100) + '...'
+          : request.RequestDescription;
+        row.innerHTML = `
+          <td>${request.RequestTitle}</td>
+          <td>${description}</td>
+          <td>${request.RequestLocation}</td>
+          <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
+          <td>${new Date(request.created_at).toLocaleString()}</td>
+          <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
+          <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      data.forEach(request => {
+        const createdAt = new Date(request.created_at);
+        const isOverdue = (new Date() - createdAt) > 7 * 24 * 60 * 60 * 1000;
+        const card = document.createElement('div');
+        card.className = `request-card ${isOverdue ? 'overdue' : ''}`;
+        card.dataset.requestId = request.RequestID;
+        const statusClass = request.RequestStatus.toLowerCase() === 'pending'
+          ? 'status-pending'
+          : request.RequestStatus.toLowerCase() === 'approved'
+          ? 'status-approved'
+          : 'status-rejected';
+        card.innerHTML = `
+          <h3>${request.RequestTitle}</h3>
+          <img src="${request.RequestImageURL}" alt="${request.RequestTitle}">
+          <p><strong>Description:</strong> ${request.RequestDescription}</p>
+          <p><strong>Category:</strong> ${request.RequestCategory || 'Other'}</p>
+          <p><strong>Location:</strong> ${request.RequestLocation}</p>
+          <p><strong>Status:</strong> <span class="status ${statusClass}">${request.RequestStatus}</span></p>
+          <p><strong>Submitted:</strong> ${createdAt.toLocaleString()}</p>
+          <div class="button-group">
+            <button class="approve-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Approved' ? 'disabled' : ''}>Approve</button>
+            <button class="reject-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Rejected' ? 'disabled' : ''}>Reject</button>
+            <button class="details-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}">View Details</button>
+          </div>
+        `;
+        requestsDiv.appendChild(card);
+      });
+
+      renderAnalytics(data);
+      return;
+    }
+
+    // Set marker sizes now that Google Maps is loaded
+    markerIcons.default.scaledSize = new window.google.maps.Size(40, 40);
+    markerIcons.selected.scaledSize = new window.google.maps.Size(40, 40);
+    map = window.map; // Use the globally initialized map
+
+    const geocoder = new window.google.maps.Geocoder();
     const markers = [];
 
-    // Process each request
+    // Populate table with Approved/Rejected requests
+    const tableData = data.filter(r => r.RequestStatus.toLowerCase() === 'approved' || r.RequestStatus.toLowerCase() === 'rejected');
+    tableData.forEach(request => {
+      const row = document.createElement('tr');
+      row.dataset.requestId = request.RequestID;
+      const description = request.RequestDescription.length > 100
+        ? request.RequestDescription.substring(0, 100) + '...'
+        : request.RequestDescription;
+      row.innerHTML = `
+        <td>${request.RequestTitle}</td>
+        <td>${description}</td>
+        <td>${request.RequestLocation}</td>
+        <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
+        <td>${new Date(request.created_at).toLocaleString()}</td>
+        <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
+        <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+
+    // Render analytics
+    renderAnalytics(data);
+
+    // Process cards and map
     data.forEach(request => {
       const createdAt = new Date(request.created_at);
       const isOverdue = (new Date() - createdAt) > 7 * 24 * 60 * 60 * 1000; // Older than 7 days
@@ -266,6 +522,7 @@ async function fetchRequests(filterStatus = 'all') {
         <h3>${request.RequestTitle}</h3>
         <img src="${request.RequestImageURL}" alt="${request.RequestTitle}">
         <p><strong>Description:</strong> ${request.RequestDescription}</p>
+        <p><strong>Category:</strong> ${request.RequestCategory || 'Other'}</p>
         <p><strong>Location:</strong> ${request.RequestLocation}</p>
         <p><strong>Status:</strong> <span class="status ${statusClass}">${request.RequestStatus}</span></p>
         <p><strong>Submitted:</strong> ${createdAt.toLocaleString()}</p>
@@ -303,7 +560,7 @@ async function fetchRequests(filterStatus = 'all') {
       // Geocode the location and add a marker
       geocoder.geocode({ address: request.RequestLocation }, (results, status) => {
         if (status === 'OK') {
-          const marker = new google.maps.Marker({
+          const marker = new window.google.maps.Marker({
             map: map,
             position: results[0].geometry.location,
             title: request.RequestTitle,
@@ -312,7 +569,7 @@ async function fetchRequests(filterStatus = 'all') {
           marker.requestId = request.RequestID;
           markers.push(marker);
 
-          const infoWindow = new google.maps.InfoWindow({
+          const infoWindow = new window.google.maps.InfoWindow({
             content: `<h3>${request.RequestTitle}</h3><p>${request.RequestLocation}</p>`,
           });
           marker.addListener('click', () => {
@@ -335,7 +592,7 @@ async function fetchRequests(filterStatus = 'all') {
 
     // Adjust map bounds
     if (markers.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
+      const bounds = new window.google.maps.LatLngBounds();
       markers.forEach(marker => bounds.extend(marker.getPosition()));
       map.fitBounds(bounds);
     }
@@ -345,7 +602,7 @@ async function fetchRequests(filterStatus = 'all') {
   }
 }
 
-// Handle Approve/Reject actions
+// Handle Approve/Reject actions and table interactions
 let isProcessing = false;
 document.addEventListener('click', async (e) => {
   if (isProcessing) return; // Prevent multiple clicks
@@ -386,6 +643,47 @@ document.addEventListener('click', async (e) => {
         console.error('Error loading request details:', error);
         alert('Failed to load request details. Please try again.');
       }
+    } else if (e.target.closest('.table-details-btn')) {
+      const button = e.target.closest('.table-details-btn');
+      const requestId = button.dataset.id;
+      const row = button.closest('tr');
+      const request = (await supabaseClient
+        .from('RequestTable')
+        .select('*')
+        .eq('RequestID', requestId)
+        .single()).data;
+      toggleRowDetails(row, request);
+    } else if (e.target.closest('th[data-sort]')) {
+      const th = e.target.closest('th');
+      const sortKey = th.dataset.sort;
+      const ascending = th.dataset.ascending !== 'true';
+      th.dataset.ascending = ascending;
+      
+      const tableData = (await supabaseClient
+        .from('RequestTable')
+        .select('*, UserTable(UserID, UserUsername, UserLocation)')
+        .in('RequestStatus', ['Approved', 'Rejected'])).data;
+      const sortedData = sortTable(tableData, sortKey, ascending);
+      
+      const tableBody = document.querySelector('#requests-table tbody');
+      tableBody.innerHTML = '';
+      sortedData.forEach(request => {
+        const row = document.createElement('tr');
+        row.dataset.requestId = request.RequestID;
+        const description = request.RequestDescription.length > 100
+          ? request.RequestDescription.substring(0, 100) + '...'
+          : request.RequestDescription;
+        row.innerHTML = `
+          <td>${request.RequestTitle}</td>
+          <td>${description}</td>
+          <td>${request.RequestLocation}</td>
+          <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
+          <td>${new Date(request.created_at).toLocaleString()}</td>
+          <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
+          <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
+        `;
+        tableBody.appendChild(row);
+      });
     }
   } finally {
     isProcessing = false;
@@ -432,7 +730,7 @@ actionForm.addEventListener('submit', async (e) => {
     // Update request status
     const { error: updateError } = await supabaseClient
       .from('RequestTable')
-      .update({ RequestStatus: status })
+      .update({ RequestStatus: status, updated_at: new Date().toISOString() })
       .eq('RequestID', requestId);
     if (updateError) throw new Error(`Error updating request status: ${updateError.message}`);
 
@@ -499,9 +797,8 @@ document.getElementById('language-selector').addEventListener('change', (e) => {
 });
 
 // Initialize the dashboard
-window.onload = async () => {
-  initMap();
-  fetchRequests();
+document.addEventListener('DOMContentLoaded', async () => {
+  await fetchRequests();
   const { data: { user } } = await supabaseClient.auth.getUser();
   if (user) loadAdminNotifications(user.id);
-};
+});
