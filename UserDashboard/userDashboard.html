@@ -48,10 +48,10 @@
                 <tr>
                     <th></th>
                     <th>Title</th>
+                    <th>Category</th>
                     <th>Image</th>
                     <th>Description</th>
                     <th>Location</th>
-                    <th>Category</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -142,6 +142,7 @@
             <div class="complaint-box">
                 <div>Complaint</div>
                 <button id="addComplaintBtn">Add Complaint</button>
+                <button id="viewComplaintBtn">View Complaints</button>  
             </div>
         </div>
     </div>
@@ -216,24 +217,6 @@
             </div>
         </div>
     </div>
-    
-
-
-    <div id="complaintModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Add Complaint</h2>
-            <form id="complaintForm">
-                <label for="complaintSubject">Complaint Subject:</label>
-                <input type="text" id="complaintSubject" name="complaintSubject" required>
-                
-                <label for="complaintDescription">Complaint Description:</label>
-                <textarea id="complaintDescription" name="complaintDescription" required></textarea>
-                
-                <button type="submit" class="modal-submit-button">Submit</button>
-            </form>
-        </div>
-    </div>
 
 </body>
 </html>
