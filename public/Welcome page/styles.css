@@ -48,12 +48,12 @@ body {
 
 .social-links a {
   margin-left: 10px;
-  color: #000;
+  color: #002906;
   text-decoration: none;
 }
 
 .social-links a:hover {
-  color: var(--primary-color);
+  color: #00a31e;
 }
 
 /* Navigation */
@@ -72,7 +72,7 @@ nav .container {
 .logo a {
   font-size: 24px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #002906;
   text-decoration: none;
 }
 
@@ -82,14 +82,14 @@ nav .container {
 }
 
 .nav-links a {
-  color: var(--text-color);
+  color: #002906;
   font-weight: 500;
   margin-right: 20px;
   text-decoration: none;
 }
 
 .nav-links a:hover {
-  color: var(--primary-color);
+  color: #00a31e;
 }
 
 .search-bar input {
@@ -141,6 +141,14 @@ nav .container {
 .hero-text p {
   font-size: 20px;
 }
+
+.btn-get-started{
+  padding: 20px;
+  border-radius: 8px;
+  outline: #002906 2px solid;
+}
+
+
 
 /* Services Section */
 .services {
@@ -208,13 +216,14 @@ nav .container {
 /* News Feed Section */
 .news-feed {
   padding: 50px 0;
+  background-color: #002906;
 }
 
 .news-feed h2 {
   text-align: center;
   font-size: 32px;
   margin-bottom: 30px;
-  color: var(--text-color);
+  color: white;
 }
 
 .news-grid {
@@ -232,7 +241,7 @@ nav .container {
 
 .category {
   display: inline-block;
-  background-color: var(--primary-color);
+  background-color: #002906;
   color: #fff;
   padding: 5px 10px;
   border-radius: 3px;
@@ -298,6 +307,13 @@ nav .container {
 #map {
   height: 450px;
   width: 100%;
+}
+
+.mapDiv{
+  background-color: #002906;
+  color: white;
+  padding-top: 20px;
+  padding-bottom: 40px;
 }
 
 /* Buttons */
