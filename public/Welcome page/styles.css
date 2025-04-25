@@ -48,12 +48,12 @@ body {
 
 .social-links a {
   margin-left: 10px;
-  color: #000;
+  color: #002906;
   text-decoration: none;
 }
 
 .social-links a:hover {
-  color: var(--primary-color);
+  color: #00a31e;
 }
 
 /* Navigation */
@@ -72,7 +72,7 @@ nav .container {
 .logo a {
   font-size: 24px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #002906;
   text-decoration: none;
 }
 
@@ -82,14 +82,14 @@ nav .container {
 }
 
 .nav-links a {
-  color: var(--text-color);
+  color: #002906;
   font-weight: 500;
   margin-right: 20px;
   text-decoration: none;
 }
 
 .nav-links a:hover {
-  color: var(--primary-color);
+  color: #00a31e;
 }
 
 .search-bar input {
