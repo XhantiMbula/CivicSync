@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <!--Link CSS-->
+    <link rel="stylesheet" href="profile.css">
+    <!--Link JavaScript-->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+    <script src="profile.js" defer></script>
+</head>
+
+<body>
+
+    <div class="profile-container">
+        <div class="back-container">
+            <a href="../UserDashboard/userDashboard.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </a>
+        </div>
+        <header class="profile-header">
+            <h1>Profile</h1>
+        </header>
+
+        <div class="profile-details">
+            <div class="profile-h3">
+                <h3>Personal Details</h3>
+            </div>
+            <div class="profile-personal-info">
+                <p>Username: <input type="text" id="username" disabled></p>
+                <p>Name: <input type="text" id="name" disabled></p>
+                <p>Email: <input type="text" id="email" disabled></p>
+                <p>Number: <input type="text" id="number" disabled></p>
+                <p>Password: <input type="password" id="password" disabled></p>
+            </div>
+            <button id="edit-profile-btn">Edit Profile</button>
+        </div>
+
+        <div class="profile-actions">
+            <button id="logout-btn">Logout</button>
+        </div>
+
+        <div class="notifications-section">
+            <h3>Recent Notifications</h3>
+        </div>
+
+    </div>
+
+    <!--Footer-->
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Report incidents like sunken roads, fires, or other community issues:</p>
+                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Report an Incident</h3>
+                <p>Use our platform to report:</p>
+                <ul>
+                    <li>Sunken roads</li>
+                    <li>Fire hazards</li>
+                    <li>Power outages</li>
+                    <li>Other community issues</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
