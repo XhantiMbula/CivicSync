@@ -6,31 +6,17 @@
   <title>CivicSync</title>
   <link rel="stylesheet" href="/public/Welcome page/styles.css">
   <link rel="stylesheet" href="indexPage.css">
+  <link rel="stylesheet" href="Services/services.css">
 </head>
 
 <body>
-  <!-- Top Header 
-  <div class="top-header">
-    <div class="container">
-      <div class="contact-info">
-        <span><i class="fa fa-phone"></i> +27 123 456 789</span>
-        <span><i class="fa fa-envelope"></i> support@civicsync.co.za</span>
-      </div>
-      <div class="social-links">
-        <a href="#"><i class="fa fa-facebook"></i></a>
-        <a href="#"><i class="fa fa-twitter"></i></a>
-        <a href="#"><i class="fa fa-instagram"></i></a>
-      </div>
-    </div>
-  </div> -->
-
   <!-- Navigation Bar -->
   <nav>
     <div class="container">
       <div class="logo"><a href="/">CivicSync</a></div>
       <div class="nav-links">
         <a href="/about">About</a>
-        <a href="/services">Services</a>
+        <a href="#" onclick="scrollToSection('services-section')">Services</a>
         <a href="/training">Training</a>
         <a href="/contact">Contact Us</a>
         <a href="/loginPage/loginPage.html">SignIn</a>
@@ -55,19 +41,6 @@
       </div>
     </div>
   </nav>
-
-  <!-- Hero Section -->
- <!-- <section class="hero">
-    <div class="hero-overlay"></div>
-    <div class="hero-text wow animate__fadeIn" data-wow-duration="1.5s">
-      <p>APRIL 15, 2025 • CivicSync TEAM</p>
-      <h1>Welcome to CivicSync</h1>
-      <p>Empowering Cape Town townships with efficient communication for better municipal services.</p>
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="/get-started" class="btn-get-started">Get Started</a>
-      </div>
-    </div>
-  </section>  -->
 
   <!-- Hero Slide Show -->
   <div class="heroSlideShow">
@@ -108,19 +81,44 @@
       <img src="assets/HeroSlideShow/shutterstock_197135594-600x338-800x0-c-default.jpg" alt="Cleaned public park">
     </div>
   </div>
+
+
   <!-- Services Section -->
-  <section class="services">
+  <section class="services" id="services-section">
+    <div class="container">
+      <h2>Our Services</h2>
+      <div class="service-filter">
+        <button onclick="filterService('all')">All</button>
+        <button onclick="filterService('water')">Water</button>
+        <button onclick="filterService('maintenance')">Maintenance</button>
+      </div>
+      <div class="service-list">
+        <div class="service-item" data-category="water">
+          <h3>Water Services</h3>
+          <p>We provide support for water-related issues, including pipe repairs and leak reporting.</p>
+        </div>
+        <div class="service-item" data-category="maintenance">
+          <h3>Maintenance Services</h3>
+          <p>Our maintenance services cover road repairs, streetlight fixes, and more.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- Services Section -->
+  <section class="services" id="services-section">
     <div class="container centered">
       <h2>Our Offerings</h2>
   
       <div class="infobox-grid">
-        <a href="/services" class="infobox-link">
-          <div class="infobox wow animate__fadeInUp" data-wow-delay="0.2s">
-            <div class="infobox-icon"><i class="fa fa-handshake-o"></i></div>
-            <h3>Services</h3>
-            <p>Connecting communities with essential municipal services.</p>
+        <div class="infobox wow animate__fadeInUp" data-wow-delay="0.2s">
+          <div class="infobox-icon"><i class="fa fa-handshake-o"></i></div>
+          <h3>Services</h3>
+          <p>Connecting communities with essential municipal services.</p>
+          <div class="services-dropdown">
+            <button onclick="window.location.href='/services?category=water'">Water</button>
+            <button onclick="window.location.href='/services?category=maintenance'">Maintenance</button>
           </div>
-        </a>
+        </div>
   
         <a href="/training" class="infobox-link">
           <div class="infobox wow animate__fadeInUp" data-wow-delay="0.4s">
@@ -140,6 +138,7 @@
       </div>
     </div>
   </section>
+
 
 
   <!-- News Feed Section -->
@@ -203,6 +202,23 @@
       <button onclick="alert('Redirect to review form or modal!')">Write a Review</button>
     </div>
   </section>
+
+  <!-- Google Maps -->
+  <div class="mapDiv" style="text-align: center; margin: 0;">
+    <h2>Government Offices in South Africa</h2>
+    <iframe 
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3311.0247350861474!2d18.457162775724137!3d-33.92898412122425!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5d1ad2747da3%3A0x5b96e5d4f367c1a4!2s97%20Durham%20Ave%2C%20Salt%20River%2C%20Cape%20Town%2C%207925%2C%20South%20Africa!5e0!3m2!1sen!2sza!4v1714056792940!5m2!1sen!2sza" 
+  width="100%" 
+  height="450" 
+  style="border:0;" 
+  allowfullscreen="" 
+  loading="lazy" 
+  referrerpolicy="no-referrer-when-downgrade">
+</iframe>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
   <script>
     // Initialize testimonial slider
     $('.testimonial-slider').slick({
@@ -224,46 +240,6 @@
     }
     window.onload = loadUpdates;
   </script>
-
-  <!-- Google Maps -->
-  <div class="mapDiv" style="text-align: center; margin: 0;">
-    <h2>Government Offices in South Africa</h2>
-    <iframe 
-  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3311.0247350861474!2d18.457162775724137!3d-33.92898412122425!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1dcc5d1ad2747da3%3A0x5b96e5d4f367c1a4!2s97%20Durham%20Ave%2C%20Salt%20River%2C%20Cape%20Town%2C%207925%2C%20South%20Africa!5e0!3m2!1sen!2sza!4v1714056792940!5m2!1sen!2sza" 
-  width="100%" 
-  height="450" 
-  style="border:0;" 
-  allowfullscreen="" 
-  loading="lazy" 
-  referrerpolicy="no-referrer-when-downgrade">
-</iframe>
-
-  </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
-<script>
-  // Initialize testimonial slider
-  $('.testimonial-slider').slick({
-    dots: true,
-    infinite: true,
-    speed: 300,
-    slidesToShow: 1,
-    adaptiveHeight: true
-  });
-
-  // Example: Fetch updates dynamically (replace with real API/Database call)
-  function loadUpdates() {
-    const feed = document.getElementById('updates-feed');
-    feed.innerHTML = `
-      <p><strong>News:</strong> New municipal service launched in Cape Town!</p>
-      <p><strong>Testimony:</strong> "This platform made my life easier!" - Sarah</p>
-      <p><strong>Training:</strong> Next session on October 25th.</p>
-    `;
-  }
-  window.onload = loadUpdates;
-</script>
 
   <!-- Footer -->
   <footer class="site-footer">
@@ -321,7 +297,17 @@
 
   // Change slides every 6 seconds
   setInterval(nextSlide, 4000);
+
+  // Smooth scrolling function
+  function scrollToSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 </script>
+
+<script src="Services/services.js"></script>
 
 </body>
 </html>
