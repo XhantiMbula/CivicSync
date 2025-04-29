@@ -176,7 +176,7 @@
     </div>
   </section>
 
-  <section class="testimonials">
+  <!-- <section class="testimonials">
     <h2>WHAT OUR CLIENTS SAY</h2>
     <div class="carousel">
       <div class="testimonial-card">
@@ -223,9 +223,17 @@
       `;
     }
     window.onload = loadUpdates;
-  </script>
+  </script> -->
 
-  <!-- Google Maps -->
+  <!-- Elfsight Testimonials Slider | Untitled Testimonials Slider -->
+<script src="https://static.elfsight.com/platform/platform.js" async></script>
+<div class="elfsight-app-243375ef-a25b-40fa-bb1c-6e44e1abe0ee" data-elfsight-app-lazy></div>
+
+  <!-- Elfsight All-in-One Reviews | Untitled All-in-One Reviews -->
+<script src="https://static.elfsight.com/platform/platform.js" async></script>
+<div class="elfsight-app-2aa6bcb3-3345-48d9-adc7-53139137d8d7" data-elfsight-app-lazy></div>
+
+  <!-- <!-- Google Maps 
   <div class="mapDiv" style="text-align: center; margin: 0;">
     <h2>Government Offices in South Africa</h2>
     <iframe 
@@ -238,32 +246,155 @@
   referrerpolicy="no-referrer-when-downgrade">
 </iframe>
 
-  </div>
-</div>
+  </div> -->
+
+  <script async
+  src="https://maps.googleapis.com/maps/api/js?AIzaSyC0nesej5j8AkSvePNqGTilk3-LilW8qA8&callback=initMap">
+</script>
+<script>
+  function initMap() {
+    // Create a map centered in South Africa
+    const map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 6,
+      center: { lat: -30.5595, lng: 22.9375 }, // Center of South Africa
+    });
+
+    // Define the locations
+    const locations = [
+    {
+            position: { lat: -33.876944, lng: 18.626389 },
+            title: "City of Cape Town Electricity Services Head Office",
+            category: "electricity",
+          },
+    
+  {
+            position: { lat: -34.062801, lng: 18.764387 },
+            title: "Khayelitsha Fire and Rescue Station",
+            category: "fire",
+          },
+          
+  {
+    position: { lat: -34.062801, lng: 18.764387 },
+    title: "Macassar Fire Station",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.043446, lng: 18.593046 },
+    title: "Mitchell's Plain Fire Station",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.087601, lng: 18.842699 },
+    title: "Helderberg Fire Watch",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.002579, lng: 18.687668 },
+    title: "Mfuleni Youth Development Forum",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.072319, lng: 18.832619 },
+    title: "Sir Lowry's Pass Fire Station",
+    category: "fire",
+  },
+  {
+    position: { lat: -33.951935, lng: 18.635471 },
+    title: "Belhar Fire Station",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.070461, lng: 18.827198 },
+    title: "Fire Space",
+    category: "fire",
+  },
+  {
+    position: { lat: -33.933453, lng: 18.679382 },
+    title: "Kuils River Fire Station",
+    category: "electricity",
+  },
+  {
+    position: { lat: -33.878277, lng: 18.707438 },
+    title: "Brackenfell Fire Station",
+    category: "fire",
+  },
+  {
+    position: { lat: -34.102238, lng: 18.855230 },
+    title: "Re-Active Fire Equipment Specialist",
+    category: "electricity",
+  },
+  {
+    position: { lat: -34.136723, lng: 18.425726 },
+    title: "Fish Hoek Fire Station",
+    category: "electricity",
+  },
+  {
+    position: { lat: -34.021095, lng: 18.442411 },
+    title: "Constantia Fire Station",
+    category: "electricity",
+  },
+  {
+    position: { lat: -33.904930, lng: 18.632246 },
+    title: "Bellville Fire Station",
+    category: "electricity",
+  },
+  {
+    position: { lat: -33.918884, lng: 18.591177 },
+    title: "Boland Fire Services-Since 1978",
+    category: "electricity",
+  },
+  {
+    position: { lat: -34.085987, lng: 18.843439 },
+    title: "Somerset West Fire Station",
+    category: "electricity",
+  },
+  {
+    position: { lat: -33.927502, lng: 18.542801 },
+    title: "Epping Fire Department",
+    category: "electricity",
+  },
+  {
+    position: { lat: -34.001137, lng: 18.566042 },
+    title: "Gugulethu Fire Station",
+    category: "electricity",
+  }
+      // Add more locations as needed
+    ];
+
+    const icons = {
+          fire: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+          police: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          electricity: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+        };
+
+    // Add markers to the map
+    locations.forEach((loc) => {
+          new google.maps.Marker({
+            position: loc.position,
+            map,
+            title: loc.title,
+            icon: icons[loc.category],
+          });
+        });
+      }
+    </script>
+    <style>
+      #map {
+        height: 500px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body onload="initMap()">
+    <h2 style="text-align:center;">Government Offices in South Africa</h2>
+    <div id="map"></div>
+  </body>
+</html>
+
+
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
-<script>
-  // Initialize testimonial slider
-  $('.testimonial-slider').slick({
-    dots: true,
-    infinite: true,
-    speed: 300,
-    slidesToShow: 1,
-    adaptiveHeight: true
-  });
-
-  // Example: Fetch updates dynamically (replace with real API/Database call)
-  function loadUpdates() {
-    const feed = document.getElementById('updates-feed');
-    feed.innerHTML = `
-      <p><strong>News:</strong> New municipal service launched in Cape Town!</p>
-      <p><strong>Testimony:</strong> "This platform made my life easier!" - Sarah</p>
-      <p><strong>Training:</strong> Next session on October 25th.</p>
-    `;
-  }
-  window.onload = loadUpdates;
-</script>
 
   <!-- Footer -->
   <footer class="site-footer">
