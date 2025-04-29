@@ -18,10 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeComplaintBtn = complaintModal.querySelector('.closeBtn');
     const closeViewComplaintBtn = viewComplaintModal.querySelector('.closeBtn2');
     const complaintForm = document.getElementById('complaintForm');
-
-    const completedRequestsSection = document.querySelector('.completed-requests');
-    const updatedRequestsSection = document.querySelector('.updated-requests');
-    const pendingRequestsSection = document.querySelector('.pending-requests');
+    const modalHeader = modal.querySelector('.modal-header h2');
 
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
@@ -124,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showToast(message, type = 'error') {
-        alert(message);
+        alert(message); // Replace with a proper toast library if needed
     }
 
     async function checkUserOnLoad() {
@@ -141,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
             welcomeHead.textContent = `Welcome ${userData.UserUsername || 'User'}`;
         }
         loadUserRequests();
-        loadFeed();
+        loadCommunityFeed();
         loadNotifications();
     }
     checkUserOnLoad();
@@ -159,12 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
         if (user) {
-            currentRequestId = null; // Reset for new request
-            imageInput.required = true; // Image required for new requests
-            document.getElementById('image-preview')?.remove(); // Remove any existing image preview
+            currentRequestId = null;
+            imageInput.required = true;
+            document.getElementById('image-preview')?.remove();
             requestForm.reset();
+            modalHeader.textContent = 'Add New Request';
             modal.style.display = "block";
-            locationOptions[0].checked = true; // Reset to manual
+            locationOptions[0].checked = true;
             locationInput.disabled = false;
             locationInput.value = '';
         }
@@ -172,16 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
-        currentRequestId = null; // Reset on close
+        currentRequestId = null;
         imageInput.required = true;
         document.getElementById('image-preview')?.remove();
+        modalHeader.textContent = 'Add New Request';
     });
 
     modalCancelButton.addEventListener("click", () => {
         modal.style.display = "none";
-        currentRequestId = null; // Reset on cancel
+        currentRequestId = null;
         imageInput.required = true;
         document.getElementById('image-preview')?.remove();
+        modalHeader.textContent = 'Add New Request';
     });
 
     window.addEventListener("click", (event) => {
@@ -190,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentRequestId = null;
             imageInput.required = true;
             document.getElementById('image-preview')?.remove();
+            modalHeader.textContent = 'Add New Request';
         }
         if (event.target === complaintModal) complaintModal.style.display = "none";
         if (event.target === viewComplaintModal) viewComplaintModal.style.display = "none";
@@ -204,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById("category").value;
         const description = document.getElementById("description").value;
         const location = document.getElementById("location").value;
-        const status = currentRequestId ? "Pending" : "Pending";
+        const status = currentRequestId ? "Updated" : "Pending";
         const userId = user.id;
 
         let imageURL = currentRequestId ? (document.getElementById('image-preview')?.src || "") : "";
@@ -240,7 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (currentRequestId) {
-                // Update existing request
                 const requestData = {
                     RequestTitle: title,
                     RequestCategory: category,
@@ -258,7 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 showToast('Request updated successfully!', 'success');
             } else {
-                // Create new request
                 if (!imageURL) {
                     showToast('Image is required for new requests.', 'error');
                     return;
@@ -283,12 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             loadUserRequests();
-            loadFeed();
+            loadCommunityFeed();
             modal.style.display = "none";
             requestForm.reset();
             currentRequestId = null;
             imageInput.required = true;
             document.getElementById('image-preview')?.remove();
+            modalHeader.textContent = 'Add New Request';
         } catch (error) {
             console.error('Error during request submission:', error);
             showToast('An error occurred while submitting the request.', 'error');
@@ -309,21 +309,107 @@ document.addEventListener('DOMContentLoaded', () => {
 
             requestTableBody.innerHTML = '';
             requests.forEach((request, index) => {
-                const row = document.createElement('div');
-                row.classList.add('table-row');
-                row.innerHTML = `
-                    <div>${request.RequestTitle}</div>
-                    <div>${request.RequestCategory}</div>
-                    <div>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image">` : 'No Image'}</div>
-                    <div>${request.RequestDescription}</div>
-                    <div>${request.RequestLocation}</div>
-                    <div>${request.RequestStatus}</div>
-                    <div>
-                        <button onclick="editRequest('${request.RequestID}')">Edit</button>
-                        <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
+                const truncatedDesc = request.RequestDescription.length > 100
+                    ? request.RequestDescription.substring(0, 100) + '...'
+                    : request.RequestDescription;
+                const card = document.createElement('div');
+                card.classList.add('request-card');
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3>${request.RequestTitle}</h3>
+                        <i class="fas fa-chevron-down expand-icon"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-field">
+                            <span class="field-label">Category:</span>
+                            <span>${request.RequestCategory}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Image:</span>
+                            ${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" class="card-image">` : 'No Image'}
+                        </div>
+                        <div class="card-field description-field">
+                            <span class="field-label">Description:</span>
+                            <span class="description-text">${truncatedDesc}</span>
+                            ${request.RequestDescription.length > 100 ? `<span class="full-description hidden">${request.RequestDescription}</span>` : ''}
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Location:</span>
+                            <span>${request.RequestLocation}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Status:</span>
+                            <span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="editRequest('${request.RequestID}')">Edit</button>
+                            <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
+                        </div>
                     </div>
                 `;
-                requestTableBody.appendChild(row);
+                requestTableBody.appendChild(card);
+
+                // Animation on load
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+
+                // Expand/collapse
+                const header = card.querySelector('.card-header');
+                header.addEventListener('click', () => {
+                    const content = card.querySelector('.card-content');
+                    const icon = card.querySelector('.expand-icon');
+                    const descriptionText = card.querySelector('.description-text');
+                    const fullDescription = card.querySelector('.full-description');
+                    if (content.classList.contains('expanded')) {
+                        content.classList.remove('expanded');
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                        if (fullDescription) {
+                            descriptionText.textContent = truncatedDesc;
+                            fullDescription.classList.add('hidden');
+                        }
+                    } else {
+                        content.classList.add('expanded');
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                        if (fullDescription) {
+                            descriptionText.textContent = request.RequestDescription;
+                            fullDescription.classList.remove('hidden');
+                        }
+                    }
+                });
+            });
+
+            // Sorting
+            const sortableHeaders = document.querySelectorAll('.table-header .sortable');
+            sortableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const sortKey = header.dataset.sort;
+                    const isAscending = !header.classList.contains('sort-asc');
+                    sortableHeaders.forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                        h.querySelector('i').classList.remove('fa-sort-up', 'fa-sort-down');
+                        h.querySelector('i').classList.add('fa-sort');
+                    });
+                    header.classList.add(isAscending ? 'sort-asc' : 'sort-desc');
+                    header.querySelector('i').classList.add(isAscending ? 'fa-sort-up' : 'fa-sort-down');
+                    header.querySelector('i').classList.remove('fa-sort');
+
+                    requests.sort((a, b) => {
+                        const valA = a[sortKey] || '';
+                        const valB = b[sortKey] || '';
+                        return isAscending
+                            ? valA.localeCompare(valB)
+                            : valB.localeCompare(valA);
+                    });
+
+                    loadUserRequests(); // Reload sorted
+                });
             });
         } catch (error) {
             console.error('Error loading requests:', error);
@@ -331,60 +417,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function loadFeed() {
-        const user = await getUser();
-        if (!user) return;
-
+    async function loadCommunityFeed() {
         try {
             const { data: requests, error } = await supabase
                 .from('RequestTable')
                 .select('*')
-                .eq('UserID', user.id)
                 .order('created_at', { ascending: false });
             if (error) {
-                console.error('Error fetching feed requests:', error.message);
-                showToast('Error loading feed.', 'error');
+                console.error('Error fetching community feed:', error.message);
+                showToast('Error loading community feed.', 'error');
                 return;
             }
 
-            completedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
-            updatedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
-            pendingRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
+            const feedContainer = document.getElementById('community-feed');
+            feedContainer.innerHTML = '';
 
-            requests.forEach(request => {
-                const feedItem = document.createElement('div');
-                feedItem.classList.add('feed-item');
-                feedItem.innerHTML = `
-                    <img src="${request.RequestImageURL || 'https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found'}" 
-                         alt="Request Image" 
-                         onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">${request.RequestDescription}</p>
-                        <p class="feed-item-location">Location: ${request.RequestLocation}</p>
+            requests.forEach((request, index) => {
+                const card = document.createElement('div');
+                card.classList.add('masonry-card', `category-${request.RequestCategory.toLowerCase().replace(/\s+/g, '-')}`);
+                card.dataset.tilt = '';
+                card.innerHTML = `
+                    <div class="card-image-wrapper">
+                        <img src="${request.RequestImageURL || 'https://dummyimage.com/300x200/cccccc/ffffff&text=Image+Not+Found'}" 
+                             alt="Request Image" 
+                             onerror="this.src='https://dummyimage.com/300x200/cccccc/ffffff&text=Image+Not+Found';">
+                        <div class="category-icon">
+                            <i class="fas ${getCategoryIcon(request.RequestCategory)}"></i>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3>${request.RequestTitle}</h3>
+                        <p class="card-description">${request.RequestDescription.length > 150 ? request.RequestDescription.substring(0, 150) + '...' : request.RequestDescription}</p>
+                        <p class="card-location"><i class="fas fa-map-marker-alt"></i> ${request.RequestLocation}</p>
+                        <span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
+                        <button class="view-details hidden">View Details</button>
                     </div>
                 `;
-                if (request.RequestStatus === 'Completed') {
-                    completedRequestsSection.appendChild(feedItem);
-                } else if (request.RequestStatus === 'Updated') {
-                    updatedRequestsSection.appendChild(feedItem);
-                } else if (request.RequestStatus === 'Pending') {
-                    pendingRequestsSection.appendChild(feedItem);
-                }
+                feedContainer.appendChild(card);
+
+                // Animation on scroll
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                        observer.unobserve(card);
+                    }
+                }, { threshold: 0.1 });
+                observer.observe(card);
+
+                // View Details toggle
+                const viewDetailsBtn = card.querySelector('.view-details');
+                card.addEventListener('mouseenter', () => viewDetailsBtn.classList.remove('hidden'));
+                card.addEventListener('mouseleave', () => viewDetailsBtn.classList.add('hidden'));
+                viewDetailsBtn.addEventListener('click', () => {
+                    const description = card.querySelector('.card-description');
+                    if (description.classList.contains('expanded')) {
+                        description.classList.remove('expanded');
+                        description.textContent = request.RequestDescription.length > 150
+                            ? request.RequestDescription.substring(0, 150) + '...'
+                            : request.RequestDescription;
+                        viewDetailsBtn.textContent = 'View Details';
+                    } else {
+                        description.classList.add('expanded');
+                        description.textContent = request.RequestDescription;
+                        viewDetailsBtn.textContent = 'Hide Details';
+                    }
+                });
             });
 
-            if (!completedRequestsSection.querySelector('.feed-item')) {
-                completedRequestsSection.innerHTML += '<p>No completed requests.</p>';
-            }
-            if (!updatedRequestsSection.querySelector('.feed-item')) {
-                updatedRequestsSection.innerHTML += '<p>No updated requests.</p>';
-            }
-            if (!pendingRequestsSection.querySelector('.feed-item')) {
-                pendingRequestsSection.innerHTML += '<p>No pending requests.</p>';
+            // Initialize VanillaTilt
+            if (window.VanillaTilt) {
+                VanillaTilt.init(document.querySelectorAll('.masonry-card'), {
+                    max: 15,
+                    speed: 400,
+                    glare: true,
+                    'max-glare': 0.3
+                });
             }
         } catch (error) {
-            console.error('Error loading feed:', error);
-            showToast('Error loading feed.', 'error');
+            console.error('Error loading community feed:', error);
+            showToast('Error loading community feed.', 'error');
         }
+    }
+
+    function getCategoryIcon(category) {
+        const icons = {
+            'Crime': 'fa-shield-alt',
+            'Infrastructure': 'fa-road',
+            'Electricity': 'fa-bolt',
+            'Plumbing': 'fa-faucet',
+            'Public Spaces': 'fa-tree',
+            'Government Housing': 'fa-home'
+        };
+        return icons[category] || 'fa-question';
     }
 
     async function loadNotifications() {
@@ -485,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         currentRequestId = requestId;
-        imageInput.required = false; // Image not required for updates
+        imageInput.required = false;
         document.getElementById('title').value = request.RequestTitle;
         document.getElementById('category').value = request.RequestCategory;
         document.getElementById('description').value = request.RequestDescription;
@@ -493,7 +621,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('input[name="location-type"][value="manual"]').checked = true;
         locationInput.disabled = false;
 
-        // Display existing image
         document.getElementById('image-preview')?.remove();
         if (request.RequestImageURL) {
             const imgPreview = document.createElement('img');
@@ -505,6 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imageInput.parentNode.insertBefore(imgPreview, imageInput);
         }
 
+        modalHeader.textContent = 'Edit Request';
         modal.style.display = 'block';
     }
 
@@ -520,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showToast('Request deleted successfully!', 'success');
                 loadUserRequests();
-                loadFeed();
+                loadCommunityFeed();
             }
         }
     }
@@ -596,10 +724,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     viewComplaintBtn.addEventListener('click', async () => {
         viewComplaintModal.style.display = 'block';
-        // Placeholder for loading complaints (implement as needed)
         const container = viewComplaintModal.querySelector('.complaint-cards-container');
         container.innerHTML = '<p>Loading complaints...</p>';
-        // Add logic to fetch and display complaints from Supabase
+        // Placeholder for complaint loading
     });
 
     closeViewComplaintBtn.addEventListener('click', () => {

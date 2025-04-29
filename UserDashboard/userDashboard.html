@@ -9,13 +9,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js" defer></script>
     <script>
         window.supabase = supabase.createClient(
             'https://lywylvbgsnmqwcwgiyhc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
         );
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
 </head>
 <body>
     <nav class="navbar">
@@ -63,12 +64,12 @@
             <h2>Your Requests</h2>
             <div class="interactive-table" id="request-table">
                 <div class="table-header">
-                    <div data-sort="title">Title <i class="fas fa-sort"></i></div>
-                    <div data-sort="category">Category <i class="fas fa-sort"></i></div>
+                    <div data-sort="title" class="sortable">Title <i class="fas fa-sort"></i></div>
+                    <div data-sort="category" class="sortable">Category <i class="fas fa-sort"></i></div>
                     <div>Image</div>
                     <div>Description</div>
-                    <div data-sort="location">Location <i class="fas fa-sort"></i></div>
-                    <div data-sort="status">Status <i class="fas fa-sort"></i></div>
+                    <div data-sort="location" class="sortable">Location <i class="fas fa-sort"></i></div>
+                    <div data-sort="status" class="sortable">Status <i class="fas fa-sort"></i></div>
                     <div>Actions</div>
                 </div>
                 <div class="table-body">
@@ -79,37 +80,8 @@
 
         <div class="feed-section animate-section">
             <h2>Community Feed</h2>
-            <div class="feed-columns">
-                <div class="feed-column completed-requests glass-card">
-                    <h3>Completed Requests</h3>
-                    <div class="feed-item">
-                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                        <div class="feed-item-content">
-                            <p class="feed-item-description">Description</p>
-                            <p class="feed-item-location">Location: 123 Main St, Anytown</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="feed-column updated-requests glass-card">
-                    <h3>Updated Requests</h3>
-                    <div class="feed-item">
-                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                        <div class="feed-item-content">
-                            <p class="feed-item-description">Description</p>
-                            <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="feed-column pending-requests glass-card">
-                    <h3>Pending Requests</h3>
-                    <div class="feed-item">
-                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                        <div class="feed-item-content">
-                            <p class="feed-item-description">Description</p>
-                            <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
-                        </div>
-                    </div>
-                </div>
+            <div class="masonry-grid" id="community-feed">
+                <!-- Populated by JavaScript -->
             </div>
         </div>
     </div>
@@ -163,7 +135,9 @@
                         <option value="Government Housing">Government Housing</option>
                     </select>
                     <label for="image">Image/Picture:</label>
-                    <input type="file" id="image" name="image" accept="image/*" required>
+                    <div id="image-container">
+                        <input type="file" id="image" name="image" accept="image/*" required>
+                    </div>
                     <label for="description">Description:</label>
                     <textarea id="description" name="description" rows="4" required></textarea>
                     <label>Location:</label>
