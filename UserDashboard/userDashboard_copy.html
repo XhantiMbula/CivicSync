@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - CivicSync</title>
+    <link rel="stylesheet" href="userDashboard.css">
+    <script src="userDashboard.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js" defer></script>
+    <script>
+        window.supabase = supabase.createClient(
+            'https://lywylvbgsnmqwcwgiyhc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
+        );
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="app-name">CivicSync</div>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#contacts">Contacts</a>
+            <div class="header-icons">
+                <div class="notification-icon">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notification-badge">0</span>
+                </div>
+                <div class="profile-icon">
+                    <a href="../Profile/profile.html" class="profile-link">
+                        <i class="fas fa-user-circle"></i>
+                    </a>
+                </div>
+                <div class="logout">Logout</div>
+            </div>
+        </div>
+        <div class="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-section animate-section">
+            <h2 class="welcome-head">Welcome</h2>
+        </div>
+
+        <div class="request-complaint-section animate-section">
+            <div class="request-box glass-card">
+                <div><i class="fas fa-plus-circle"></i> Request</div>
+                <button id="add-request-button" class="request-button">+ New Request</button>
+            </div>
+            <div class="complaint-box glass-card">
+                <div><i class="fas fa-exclamation-circle"></i> Complaint</div>
+                <button id="addComplaintBtn" class="complaint-button">Add Complaint</button>
+                <button id="viewComplaintBtn" class="complaint-button">View Complaints</button>
+            </div>
+        </div>
+
+        <div class="table-container animate-section">
+            <h2>Your Requests</h2>
+            <div class="interactive-table" id="request-table">
+                <div class="table-header">
+                    <div data-sort="title" class="sortable">Title <i class="fas fa-sort"></i></div>
+                    <div data-sort="category" class="sortable">Category <i class="fas fa-sort"></i></div>
+                    <div>Image</div>
+                    <div>Description</div>
+                    <div data-sort="location" class="sortable">Location <i class="fas fa-sort"></i></div>
+                    <div data-sort="status" class="sortable">Status <i class="fas fa-sort"></i></div>
+                    <div>Actions</div>
+                </div>
+                <div class="table-body">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <div class="feed-section animate-section">
+            <h2>Community Feed</h2>
+            <div class="masonry-grid" id="community-feed">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer animate-section">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
+                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Our Services</h3>
+                <ul>
+                    <li>Incident Reporting</li>
+                    <li>Community Engagement</li>
+                    <li>Real-Time Updates</li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Follow Us</h3>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>© 2025 CivicSync. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="request-modal" class="modal">
+        <div class="modal-content animate-modal">
+            <span class="close">×</span>
+            <div class="modal-header">
+                <h2>Add New Request</h2>
+            </div>
+            <div class="modal-body">
+                <form id="add-request-form">
+                    <label for="title">Title:</label>
+                    <input type="text" id="title" name="title" required>
+                    <label for="category">Category:</label>
+                    <select id="category" name="category">
+                        <option value="Crime">Crime</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Public Spaces">Public Spaces</option>
+                        <option value="Government Housing">Government Housing</option>
+                    </select>
+                    <label for="image">Image/Picture:</label>
+                    <div id="image-container">
+                        <input type="file" id="image" name="image" accept="image/*" required>
+                    </div>
+                    <label for="description">Description:</label>
+                    <textarea id="description" name="description" rows="4" required></textarea>
+                    <label>Location:</label>
+                    <div class="location-options">
+                        <label><input type="radio" name="location-type" value="manual" checked> Enter Address</label>
+                        <label><input type="radio" name="location-type" value="current"> Use Current Location</label>
+                    </div>
+                    <input type="text" id="location" name="location" placeholder="Enter address" required>
+                    <div class="modal-footer">
+                        <button type="button" class="modal-cancel-button">Cancel</button>
+                        <button type="submit" class="modal-submit-button">Submit Request</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="complaintModal" class="modal1">
+        <div class="modal-content1">
+            <span class="closeBtn">×</span>
+            <h2>Add Complaint</h2>
+            <form id="complaintForm">
+                <label for="complaintSubject">Complaint Subject:</label>
+                <input type="text" id="complaintSubject" name="complaintSubject" required>
+                <label for="complaintDescription">Complaint Description:</label>
+                <textarea id="complaintDescription" name="complaintDescription" required></textarea>
+                <label for="complaintResponse">Complaint Response:</label>
+                <input type="text" id="complaintResponse" name="complaintResponse" value="Pending" readonly>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewComplaintModal" class="modal2">
+        <div class="modal-content1">
+            <span class="closeBtn2">×</span>
+            <h2>View Complaints</h2>
+            <div class="complaint-cards-container">
+                <!-- Cards will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
