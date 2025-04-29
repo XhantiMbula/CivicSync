@@ -8,18 +8,16 @@
     <!--Link CSS-->
     <link rel="stylesheet" href="profile.css">
     <!--Link JavaScript-->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+    <!-- Load Supabase UMD library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+
+    <!-- Load your script -->
     <script src="profile.js" defer></script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
-    <script>
-        window.supabase = supabase.createClient(
-            'https://lywylvbgsnmqwcwgiyhc.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
-        );
-    </script>
 </head>
 
 <body>
@@ -41,6 +39,7 @@
             <div class="profile-personal-info">
                 <p>Username: <input type="text" id="username" disabled></p>
                 <p>Name: <input type="text" id="name" disabled></p>
+                <p>Surname: <input type="text" id="surname" disabled></p>
                 <p>Email: <input type="text" id="email" disabled></p>
                 <p>Number: <input type="text" id="number" disabled></p>
                 <p>Password: <input type="password" id="password" disabled></p>
