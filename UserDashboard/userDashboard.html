@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard</title>
+    <title>User Dashboard - CivicSync</title>
     <link rel="stylesheet" href="userDashboard.css">
     <script src="userDashboard.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Add Supabase CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script>
-        // Initialize Supabase client and make it globally available
         window.supabase = supabase.createClient(
             'https://lywylvbgsnmqwcwgiyhc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
@@ -19,9 +17,12 @@
     </script>
 </head>
 <body>
-    <div class="dashboard-container">
-        <div class="header">
-            <div class="app-name">Civic Sync</div>
+    <nav class="navbar">
+        <div class="app-name">CivicSync</div>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#about">About</a>
+            <a href="#contacts">Contacts</a>
             <div class="header-icons">
                 <div class="notification-icon">
                     <i class="fas fa-bell"></i>
@@ -35,136 +36,96 @@
                 <div class="logout">Logout</div>
             </div>
         </div>
+        <div class="hamburger">
+            <i class="fas fa-bars"></i>
+        </div>
+    </nav>
 
-        <div class="request-complaint-section">
-            <div class="welcome-head"><h2>Welcome </h2> </div>
+    <div class="dashboard-container">
+        <div class="welcome-section animate-section">
+            <h2 class="welcome-head">Welcome</h2>
+        </div>
 
-            <div class="request-box">
-                <div>Request</div>
-                <button id="add-request-button" class="request-button">+</button>
+        <div class="request-complaint-section animate-section">
+            <div class="request-box glass-card">
+                <div><i class="fas fa-plus-circle"></i> Request</div>
+                <button id="add-request-button" class="request-button">+ New Request</button>
+            </div>
+            <div class="complaint-box glass-card">
+                <div><i class="fas fa-exclamation-circle"></i> Complaint</div>
+                <button id="addComplaintBtn" class="complaint-button">Add Complaint</button>
+                <button id="viewComplaintBtn" class="complaint-button">View Complaints</button>
             </div>
         </div>
 
-        <table class="forms-table" id="request-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Image</th>
-                    <th>Description</th>
-                    <th>Location</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Form 1</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>Form 2</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>...more</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <h2>Feed</h2>
-
-        <div class="feed-section">
-            <div class="feed-column completed-requests">
-                <h3>Completed Requests</h3>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 123 Main St, Anytown</p>
-                    </div>
+        <div class="table-container animate-section">
+            <h2>Your Requests</h2>
+            <div class="interactive-table" id="request-table">
+                <div class="table-header">
+                    <div data-sort="title">Title <i class="fas fa-sort"></i></div>
+                    <div data-sort="category">Category <i class="fas fa-sort"></i></div>
+                    <div>Image</div>
+                    <div>Description</div>
+                    <div data-sort="location">Location <i class="fas fa-sort"></i></div>
+                    <div data-sort="status">Status <i class="fas fa-sort"></i></div>
+                    <div>Actions</div>
                 </div>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 456 Side Rd, Someplace</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feed-column updated-requests">
-                <h3>Updated Requests</h3>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
-                    </div>
-                </div>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 101 Pine Ave, Another Town</p>
-                    </div>
-                </div>
-            </div>
-            <div class="feed-column pending-requests">
-                <h3>Pending Requests</h3>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
-                    </div>
-                </div>
-                <div class="feed-item">
-                    <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.onerror=null; this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
-                    <div class="feed-item-content">
-                        <p class="feed-item-description">Description</p>
-                        <p class="feed-item-location">Location: 333 Elm St, A Faraway Town</p>
-                    </div>
+                <div class="table-body">
+                    <!-- Populated by JavaScript -->
                 </div>
             </div>
         </div>
-        <div class="request-complaint-section complaint-section">
-            <div class="complaint-box">
-                <div>Complaint</div>
-                <button id="addComplaintBtn">Add Complaint</button>
-                <button id="viewComplaintBtn">View Complaints</button>  
+
+        <div class="feed-section animate-section">
+            <h2>Community Feed</h2>
+            <div class="feed-columns">
+                <div class="feed-column completed-requests glass-card">
+                    <h3>Completed Requests</h3>
+                    <div class="feed-item">
+                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
+                        <div class="feed-item-content">
+                            <p class="feed-item-description">Description</p>
+                            <p class="feed-item-location">Location: 123 Main St, Anytown</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="feed-column updated-requests glass-card">
+                    <h3>Updated Requests</h3>
+                    <div class="feed-item">
+                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
+                        <div class="feed-item-content">
+                            <p class="feed-item-description">Description</p>
+                            <p class="feed-item-location">Location: 789 New Ln, Otherplace</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="feed-column pending-requests glass-card">
+                    <h3>Pending Requests</h3>
+                    <div class="feed-item">
+                        <img src="https://placehold.co/200x150" alt="Request Image" onerror="this.src='https://dummyimage.com/200x150/cccccc/ffffff&text=Image+Not+Found';">
+                        <div class="feed-item-content">
+                            <p class="feed-item-description">Description</p>
+                            <p class="feed-item-location">Location: 222 Oak St, Yet Another Place</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    
-    <footer class="site-footer">
+
+    <footer class="site-footer animate-section">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Contact Us</h3>
-                <p>Report incidents like sunken roads, fires, or other community issues:</p>
                 <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
                 <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
             </div>
             <div class="footer-section">
-                <h3>Report an Incident</h3>
-                <p>Use our platform to report:</p>
+                <h3>Our Services</h3>
                 <ul>
-                    <li>Sunken roads</li>
-                    <li>Fire hazards</li>
-                    <li>Power outages</li>
-                    <li>Other community issues</li>
+                    <li>Incident Reporting</li>
+                    <li>Community Engagement</li>
+                    <li>Real-Time Updates</li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -182,7 +143,7 @@
     </footer>
 
     <div id="request-modal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content animate-modal">
             <span class="close">×</span>
             <div class="modal-header">
                 <h2>Add New Request</h2>
@@ -190,8 +151,7 @@
             <div class="modal-body">
                 <form id="add-request-form">
                     <label for="title">Title:</label>
-                    <input type="text" id="title" name="title" required><br><br>
-
+                    <input type="text" id="title" name="title" required>
                     <label for="category">Category:</label>
                     <select id="category" name="category">
                         <option value="Crime">Crime</option>
@@ -200,17 +160,13 @@
                         <option value="Plumbing">Plumbing</option>
                         <option value="Public Spaces">Public Spaces</option>
                         <option value="Government Housing">Government Housing</option>
-                    </select><br><br>
-
+                    </select>
                     <label for="image">Image/Picture:</label>
-                    <input type="file" id="image" name="image" accept="image/*" required><br><br>
-
+                    <input type="file" id="image" name="image" accept="image/*" required>
                     <label for="description">Description:</label>
-                    <textarea id="description" name="description" rows="4" cols="50" required></textarea><br><br>
-
+                    <textarea id="description" name="description" rows="4" required></textarea>
                     <label for="location">Location:</label>
-                    <input type="text" id="location" name="location" required><br><br>
-
+                    <input type="text" id="location" name="location" required>
                     <div class="modal-footer">
                         <button type="button" class="modal-cancel-button">Cancel</button>
                         <button type="submit" class="modal-submit-button">Submit Request</button>
@@ -219,6 +175,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

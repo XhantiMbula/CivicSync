@@ -3,28 +3,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const addRequestButton = document.getElementById("add-request-button");
     const closeBtn = document.querySelector(".close");
     const requestForm = document.getElementById("add-request-form");
-    const requestTableBody = document.querySelector("#request-table tbody");
+    const requestTableBody = document.querySelector("#request-table .table-body");
     const modalCancelButton = document.querySelector(".modal-cancel-button");
     const profileIcon = document.querySelector('.profile-icon');
     const dashboardContainer = document.querySelector('.dashboard-container');
     const logoutLink = document.querySelector('.logout');
-    const welcomeHead = document.querySelector('.welcome-head h2');
+    const welcomeHead = document.querySelector('.welcome-head');
     const notificationIcon = document.querySelector('.notification-icon');
     const notificationBadge = document.getElementById('notification-badge');
 
-    // Feed sections
     const completedRequestsSection = document.querySelector('.completed-requests');
     const updatedRequestsSection = document.querySelector('.updated-requests');
     const pendingRequestsSection = document.querySelector('.pending-requests');
 
-    // Initialize Supabase client
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
         alert('Application error: Supabase client not found.');
         return;
     }
 
-    // Check user authentication
     async function getUser() {
         try {
             const { data: { user }, error } = await supabase.auth.getUser();
@@ -42,12 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Toast-like alert
     function showToast(message, type = 'error') {
-        alert(message); // Replace with Toastify if desired
+        alert(message);
     }
 
-    // Check user and load data
     async function checkUserOnLoad() {
         const user = await getUser();
         if (!user) return;
@@ -67,7 +62,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     checkUserOnLoad();
 
-    // Logout
     logoutLink.addEventListener('click', async () => {
         const { error } = await supabase.auth.signOut();
         if (error) {
@@ -78,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Modal controls
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
         if (user) modal.style.display = "block";
@@ -96,8 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === modal) modal.style.display = "none";
     });
 
-    // Submit new request
-    requestForm.addEventListener("submit", async (event) => {11
+    requestForm.addEventListener("submit", async (event) => {
         event.preventDefault();
         const user = await getUser();
         if (!user) return;
@@ -169,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Load user requests
     async function loadUserRequests() {
         const user = await getUser();
         if (!user) return;
@@ -184,20 +175,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             requestTableBody.innerHTML = '';
             requests.forEach((request, index) => {
-                const row = document.createElement('tr');
+                const row = document.createElement('div');
+                row.classList.add('table-row');
                 row.innerHTML = `
-                    <td>Form ${index + 1}</td>
-                    <td>${request.RequestTitle}</td>
-                    <td>${request.RequestCategory}</td>
-                    <td>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" style="max-width: 100px;">` : 'No Image'}</td>
-                    <td>${request.RequestDescription}</td>
-                    <td>${request.RequestLocation}</td>
-
-                    <td>${request.RequestStatus}</td>
-                    <td>
+                    <div>${request.RequestTitle}</div>
+                    <div>${request.RequestCategory}</div>
+                    <div>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image">` : 'No Image'}</div>
+                    <div>${request.RequestDescription}</div>
+                    <div>${request.RequestLocation}</div>
+                    <div>${request.RequestStatus}</div>
+                    <div>
                         <button onclick="editRequest('${request.RequestID}')">Edit</button>
                         <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
-                    </td>
+                    </div>
                 `;
                 requestTableBody.appendChild(row);
             });
@@ -207,7 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Load feed
     async function loadFeed() {
         const user = await getUser();
         if (!user) return;
@@ -249,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 completedRequestsSection.innerHTML += '<p>No completed requests.</p>';
             }
             if (!updatedRequestsSection.querySelector('.feed-item')) {
-                updatedRequestsSection.innerHTML += '<p>No updated requests.</p>';
+               ariousRequestsSection.innerHTML += '<p>No updated requests.</p>';
             }
             if (!pendingRequestsSection.querySelector('.feed-item')) {
                 pendingRequestsSection.innerHTML += '<p>No pending requests.</p>';
@@ -260,7 +249,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Load notifications
     async function loadNotifications() {
         const user = await getUser();
         if (!user) return;
@@ -281,7 +269,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Notification dropdown
     notificationIcon.addEventListener('click', async () => {
         const user = await getUser();
         if (!user) return;
@@ -324,7 +311,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             dashboardContainer.appendChild(dropdown);
 
-            // Mark notifications as read
             const unreadMessageIds = messages.filter(m => !m.IsRead).map(m => m.MessageID);
             if (unreadMessageIds.length > 0) {
                 const { error: updateError } = await supabase
@@ -348,7 +334,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Edit request
     async function editRequest(requestId) {
         const { data: request, error } = await supabase
             .from('RequestTable')
@@ -403,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const requestFormSubmitHandler = requestForm.onsubmit;
 
-    // Delete request
     async function deleteRequest(requestId) {
         if (confirm('Are you sure you want to delete this request?')) {
             const { error } = await supabase
@@ -420,8 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
-    // Profile dropdown
+
     profileIcon.addEventListener('click', async () => {
         const user = await getUser();
         if (!user) return;
@@ -482,8 +465,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => document.addEventListener('click', closeDropdown), 10);
     });
 
-    // Expose functions globally
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
 });
-
