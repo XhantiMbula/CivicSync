@@ -33,6 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let autocomplete;
     const locationInput = document.getElementById('location');
     const locationOptions = document.querySelectorAll('input[name="location-type"]');
+    const imageInput = document.getElementById('image');
+    let currentRequestId = null; // Track the request being edited
 
     function initializeAutocomplete() {
         if (window.google && window.google.maps) {
@@ -157,6 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
         if (user) {
+            currentRequestId = null; // Reset for new request
+            imageInput.required = true; // Image required for new requests
+            document.getElementById('image-preview')?.remove(); // Remove any existing image preview
+            requestForm.reset();
             modal.style.display = "block";
             locationOptions[0].checked = true; // Reset to manual
             locationInput.disabled = false;
@@ -166,14 +172,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
+        currentRequestId = null; // Reset on close
+        imageInput.required = true;
+        document.getElementById('image-preview')?.remove();
     });
 
     modalCancelButton.addEventListener("click", () => {
         modal.style.display = "none";
+        currentRequestId = null; // Reset on cancel
+        imageInput.required = true;
+        document.getElementById('image-preview')?.remove();
     });
 
     window.addEventListener("click", (event) => {
-        if (event.target === modal) modal.style.display = "none";
+        if (event.target === modal) {
+            modal.style.display = "none";
+            currentRequestId = null;
+            imageInput.required = true;
+            document.getElementById('image-preview')?.remove();
+        }
         if (event.target === complaintModal) complaintModal.style.display = "none";
         if (event.target === viewComplaintModal) viewComplaintModal.style.display = "none";
     });
@@ -185,13 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const title = document.getElementById("title").value;
         const category = document.getElementById("category").value;
-        const imageInput = document.getElementById("image");
         const description = document.getElementById("description").value;
         const location = document.getElementById("location").value;
-        const status = "Pending";
+        const status = currentRequestId ? "Pending" : "Pending";
         const userId = user.id;
 
-        let imageURL = "";
+        let imageURL = currentRequestId ? (document.getElementById('image-preview')?.src || "") : "";
         if (imageInput.files && imageInput.files[0]) {
             const file = imageInput.files[0];
             if (!file.type.startsWith('image/')) {
@@ -223,27 +239,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const requestData = {
-                RequestID: crypto.randomUUID(),
-                RequestTitle: title,
-                RequestCategory: category,
-                RequestImageURL: imageURL,
-                RequestDescription: description,
-                RequestLocation: location,
-                RequestStatus: status,
-                UserID: userId,
-                created_at: new Date().toISOString()
-            };
-            const { error: requestError } = await supabase
-                .from('RequestTable')
-                .insert([requestData]);
-            if (requestError) throw new Error(`Request insertion failed: ${requestError.message}`);
+            if (currentRequestId) {
+                // Update existing request
+                const requestData = {
+                    RequestTitle: title,
+                    RequestCategory: category,
+                    RequestImageURL: imageURL,
+                    RequestDescription: description,
+                    RequestLocation: location,
+                    RequestStatus: status,
+                    updated_at: new Date().toISOString()
+                };
+                const { error: updateError } = await supabase
+                    .from('RequestTable')
+                    .update(requestData)
+                    .eq('RequestID', currentRequestId);
+                if (updateError) throw new Error(`Request update failed: ${updateError.message}`);
 
-            showToast('Request submitted successfully!', 'success');
+                showToast('Request updated successfully!', 'success');
+            } else {
+                // Create new request
+                if (!imageURL) {
+                    showToast('Image is required for new requests.', 'error');
+                    return;
+                }
+                const requestData = {
+                    RequestID: crypto.randomUUID(),
+                    RequestTitle: title,
+                    RequestCategory: category,
+                    RequestImageURL: imageURL,
+                    RequestDescription: description,
+                    RequestLocation: location,
+                    RequestStatus: status,
+                    UserID: userId,
+                    created_at: new Date().toISOString()
+                };
+                const { error: requestError } = await supabase
+                    .from('RequestTable')
+                    .insert([requestData]);
+                if (requestError) throw new Error(`Request insertion failed: ${requestError.message}`);
+
+                showToast('Request submitted successfully!', 'success');
+            }
+
             loadUserRequests();
             loadFeed();
             modal.style.display = "none";
             requestForm.reset();
+            currentRequestId = null;
+            imageInput.required = true;
+            document.getElementById('image-preview')?.remove();
         } catch (error) {
             console.error('Error during request submission:', error);
             showToast('An error occurred while submitting the request.', 'error');
@@ -439,6 +484,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        currentRequestId = requestId;
+        imageInput.required = false; // Image not required for updates
         document.getElementById('title').value = request.RequestTitle;
         document.getElementById('category').value = request.RequestCategory;
         document.getElementById('description').value = request.RequestDescription;
@@ -446,42 +493,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('input[name="location-type"][value="manual"]').checked = true;
         locationInput.disabled = false;
 
+        // Display existing image
+        document.getElementById('image-preview')?.remove();
+        if (request.RequestImageURL) {
+            const imgPreview = document.createElement('img');
+            imgPreview.id = 'image-preview';
+            imgPreview.src = request.RequestImageURL;
+            imgPreview.style.maxWidth = '100%';
+            imgPreview.style.maxHeight = '150px';
+            imgPreview.style.marginBottom = '10px';
+            imageInput.parentNode.insertBefore(imgPreview, imageInput);
+        }
+
         modal.style.display = 'block';
-
-        requestForm.onsubmit = async (event) => {
-            event.preventDefault();
-            const updatedTitle = document.getElementById('title').value;
-            const updatedCategory = document.getElementById('category').value;
-            const updatedDescription = document.getElementById('description').value;
-            const updatedLocation = document.getElementById('location').value;
-
-            const { error: updateError } = await supabase
-                .from('RequestTable')
-                .update({
-                    RequestTitle: updatedTitle,
-                    RequestCategory: updatedCategory,
-                    RequestDescription: updatedDescription,
-                    RequestLocation: updatedLocation,
-                    RequestStatus: 'Pending',
-                    updated_at: new Date().toISOString()
-                })
-                .eq('RequestID', requestId);
-
-            if (updateError) {
-                console.error('Error updating request:', updateError.message);
-                showToast(`Error updating request: ${updateError.message}`, 'error');
-            } else {
-                showToast('Request updated successfully!', 'success');
-                loadUserRequests();
-                loadFeed();
-                modal.style.display = 'none';
-                requestForm.reset();
-                requestForm.onsubmit = requestFormSubmitHandler;
-            }
-        };
     }
-
-    const requestFormSubmitHandler = requestForm.onsubmit;
 
     async function deleteRequest(requestId) {
         if (confirm('Are you sure you want to delete this request?')) {
