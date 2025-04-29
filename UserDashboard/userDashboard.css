@@ -380,7 +380,7 @@ body {
     font-size: 0.9em;
 }
 
-.modal {
+.modal, .modal1, .modal2 {
     display: none;
     position: fixed;
     z-index: 1000;
@@ -392,7 +392,7 @@ body {
     backdrop-filter: blur(5px);
 }
 
-.modal-content {
+.modal-content, .modal-content1 {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
     margin: 5% auto;
@@ -411,7 +411,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.modal .close {
+.modal .close, .modal-content1 .closeBtn, .modal-content1 .closeBtn1, .modal-content1 .closeBtn2 {
     position: absolute;
     top: 15px;
     right: 20px;
@@ -421,7 +421,7 @@ body {
     transition: color 0.3s ease;
 }
 
-.modal .close:hover {
+.modal .close:hover, .modal-content1 .closeBtn:hover, .modal-content1 .closeBtn1:hover, .modal-content1 .closeBtn2:hover {
     color: #00A31E;
 }
 
@@ -458,6 +458,24 @@ body {
 
 .modal-body textarea {
     resize: vertical;
+}
+
+.location-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+}
+
+.location-options label {
+    display: flex;
+    align-items: center;
+    font-size: 0.95em;
+    cursor: pointer;
+}
+
+.location-options input[type="radio"] {
+    margin-right: 8px;
+    accent-color: #00A31E;
 }
 
 .modal-footer {
@@ -590,6 +608,102 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+.modal-content1 h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8em;
+    color: #002906;
+    margin-bottom: 20px;
+}
+
+.modal-content1 form label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    color: #1a2a44;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.modal-content1 form input, .modal-content1 form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.modal-content1 form textarea {
+    resize: vertical;
+}
+
+.modal-content1 form button {
+    background: linear-gradient(90deg, #00A31E, #007a15);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal-content1 form button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+#complaint-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#complaint-table th, #complaint-table td {
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    text-align: left;
+    font-size: 0.95em;
+}
+
+#complaint-table th {
+    background: linear-gradient(90deg, #00A31E, #007a15);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+}
+
+#complaint-table td {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.complaint-cards-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+}
+
+.complaint-card {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 15px;
+    margin: 10px;
+    flex: 0 0 300px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+.complaint-card:hover {
+    transform: translateY(-5px);
+}
+
+.complaint-card p {
+    margin: 8px 0;
+    font-size: 0.95em;
+    color: #1a2a44;
+}
+
 @media (max-width: 1024px) {
     .navbar {
         padding: 15px 20px;
@@ -642,7 +756,7 @@ body {
         display: none;
     }
 
-    .modal-content {
+    .modal-content, .modal-content1 {
         margin: 10% auto;
         padding: 20px;
     }
@@ -666,92 +780,13 @@ body {
         display: none;
     }
 
-    .modal-body input, .modal-body select, .modal-body textarea {
-    .modal-body label[for="image"]:hover {
-        background-color: #002906;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
-    }
-    }
-
-    .modal-body .file-selected {
-        display: block;
-        margin-top: 10px;
+    .modal-body input, .modal-body select, .modal-body textarea,
+    .modal-content1 input, .modal-content1 textarea {
         font-size: 0.9em;
     }
-    
-.modal1 
-{
-     display: none;
-     position: fixed;
-     z-index: 1;
-     left: 0;
-     top: 0;
-     width: 100%;
-     height: 100%;
-     overflow: auto;
-     background-color: rgba(0, 0, 0, 0.4);
-    }
-    
-    .modal-content1 {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    }
-    
-    .closeBtn1 {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-    
 
-    .modal2 {
-        display: none;
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
+    .location-options {
+        flex-direction: column;
+        gap: 10px;
     }
-
-    .closeBtn2 {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-    }
-
-    .closeBtn2:hover,
-    .closeBtn2:focus {
-        color: black;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-    .complaint-cards-container {
-        display: flex;
-        overflow-x: auto;
-    }
-
-    .complaint-card {
-        background-color: #f9f9f9;
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin: 10px;
-        flex: 0 0 auto;
-        width: 300px;
-    }
-        
-
-.closeBtn1:hover,
-.closeBtn1:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}}
+}

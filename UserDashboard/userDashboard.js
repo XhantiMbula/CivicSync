@@ -11,6 +11,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const welcomeHead = document.querySelector('.welcome-head');
     const notificationIcon = document.querySelector('.notification-icon');
     const notificationBadge = document.getElementById('notification-badge');
+    const complaintModal = document.getElementById('complaintModal');
+    const viewComplaintModal = document.getElementById('viewComplaintModal');
+    const addComplaintBtn = document.getElementById('addComplaintBtn');
+    const viewComplaintBtn = document.getElementById('viewComplaintBtn');
+    const closeComplaintBtn = complaintModal.querySelector('.closeBtn');
+    const closeViewComplaintBtn = viewComplaintModal.querySelector('.closeBtn2');
+    const complaintForm = document.getElementById('complaintForm');
 
     const completedRequestsSection = document.querySelector('.completed-requests');
     const updatedRequestsSection = document.querySelector('.updated-requests');
@@ -20,6 +27,81 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Supabase client not initialized.');
         alert('Application error: Supabase client not found.');
         return;
+    }
+
+    // Google Maps Autocomplete
+    let autocomplete;
+    const locationInput = document.getElementById('location');
+    const locationOptions = document.querySelectorAll('input[name="location-type"]');
+
+    function initializeAutocomplete() {
+        if (window.google && window.google.maps) {
+            autocomplete = new google.maps.places.Autocomplete(locationInput, {
+                types: ['address'],
+                fields: ['formatted_address']
+            });
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (place.formatted_address) {
+                    locationInput.value = place.formatted_address;
+                }
+            });
+        } else {
+            console.error('Google Maps API not loaded.');
+            showToast('Location services unavailable. Please enter address manually.', 'error');
+        }
+    }
+
+    // Geolocation
+    function getCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=YOUR_API_KEY`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.results && data.results[0]) {
+                                locationInput.value = data.results[0].formatted_address;
+                            } else {
+                                showToast('Unable to find address for current location.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Geocoding error:', error);
+                            showToast('Error fetching address. Please try again.', 'error');
+                        });
+                },
+                (error) => {
+                    console.error('Geolocation error:', error);
+                    showToast('Unable to access location. Please allow location permissions or enter address manually.', 'error');
+                }
+            );
+        } else {
+            showToast('Geolocation not supported by your browser.', 'error');
+        }
+    }
+
+    // Handle radio button changes
+    locationOptions.forEach(option => {
+        option.addEventListener('change', () => {
+            if (option.value === 'current') {
+                locationInput.disabled = true;
+                locationInput.value = 'Fetching location...';
+                getCurrentLocation();
+            } else {
+                locationInput.disabled = false;
+                locationInput.value = '';
+                locationInput.focus();
+            }
+        });
+    });
+
+    // Initialize autocomplete when Google Maps API loads
+    if (document.readyState === 'complete') {
+        initializeAutocomplete();
+    } else {
+        window.addEventListener('load', initializeAutocomplete);
     }
 
     async function getUser() {
@@ -74,7 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
-        if (user) modal.style.display = "block";
+        if (user) {
+            modal.style.display = "block";
+            locationOptions[0].checked = true; // Reset to manual
+            locationInput.disabled = false;
+            locationInput.value = '';
+        }
     });
 
     closeBtn.addEventListener("click", () => {
@@ -87,6 +174,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener("click", (event) => {
         if (event.target === modal) modal.style.display = "none";
+        if (event.target === complaintModal) complaintModal.style.display = "none";
+        if (event.target === viewComplaintModal) viewComplaintModal.style.display = "none";
     });
 
     requestForm.addEventListener("submit", async (event) => {
@@ -207,7 +296,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 .select('*')
                 .eq('UserID', user.id)
                 .order('created_at', { ascending: false });
-            if (error) throw new Error(`Error fetching feed requests: ${error.message}`);
+            if (error) {
+                console.error('Error fetching feed requests:', error.message);
+                showToast('Error loading feed.', 'error');
+                return;
+            }
 
             completedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
             updatedRequestsSection.querySelectorAll('.feed-item').forEach(item => item.remove());
@@ -238,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 completedRequestsSection.innerHTML += '<p>No completed requests.</p>';
             }
             if (!updatedRequestsSection.querySelector('.feed-item')) {
-               ariousRequestsSection.innerHTML += '<p>No updated requests.</p>';
+                updatedRequestsSection.innerHTML += '<p>No updated requests.</p>';
             }
             if (!pendingRequestsSection.querySelector('.feed-item')) {
                 pendingRequestsSection.innerHTML += '<p>No pending requests.</p>';
@@ -350,6 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('category').value = request.RequestCategory;
         document.getElementById('description').value = request.RequestDescription;
         document.getElementById('location').value = request.RequestLocation;
+        document.querySelector('input[name="location-type"][value="manual"]').checked = true;
+        locationInput.disabled = false;
 
         modal.style.display = 'block';
 
@@ -465,38 +560,59 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => document.addEventListener('click', closeDropdown), 10);
     });
 
+    // Complaint Modal Handlers
+    addComplaintBtn.addEventListener('click', () => {
+        complaintModal.style.display = 'block';
+    });
+
+    closeComplaintBtn.addEventListener('click', () => {
+        complaintModal.style.display = 'none';
+    });
+
+    viewComplaintBtn.addEventListener('click', async () => {
+        viewComplaintModal.style.display = 'block';
+        // Placeholder for loading complaints (implement as needed)
+        const container = viewComplaintModal.querySelector('.complaint-cards-container');
+        container.innerHTML = '<p>Loading complaints...</p>';
+        // Add logic to fetch and display complaints from Supabase
+    });
+
+    closeViewComplaintBtn.addEventListener('click', () => {
+        viewComplaintModal.style.display = 'none';
+    });
+
+    complaintForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const user = await getUser();
+        if (!user) return;
+
+        const subject = document.getElementById('complaintSubject').value;
+        const description = document.getElementById('complaintDescription').value;
+        const response = document.getElementById('complaintResponse').value;
+
+        try {
+            const complaintData = {
+                ComplaintID: crypto.randomUUID(),
+                ComplaintSubject: subject,
+                ComplaintDescription: description,
+                ComplaintResponse: response,
+                UserID: user.id,
+                created_at: new Date().toISOString()
+            };
+            const { error } = await supabase
+                .from('ComplaintTable')
+                .insert([complaintData]);
+            if (error) throw new Error(`Complaint insertion failed: ${error.message}`);
+
+            showToast('Complaint submitted successfully!', 'success');
+            complaintModal.style.display = 'none';
+            complaintForm.reset();
+        } catch (error) {
+            console.error('Error submitting complaint:', error);
+            showToast('Error submitting complaint.', 'error');
+        }
+    });
+
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
-
-    //
-document.getElementById('addComplaintBtn').onclick = function() {
-      document.getElementById('complaintModal').style.display = 'block';
-    }
-    
-    document.getElementsByClassName('closeBtn')[0].onclick = function() {
-      document.getElementById('complaintModal').style.display = 'none';
-    }
-    
-    window.onclick = function(event) {
-      if (event.target == document.getElementById('complaintModal')) {
-        document.getElementById('complaintModal').style.display = 'none';
-      }
-    }
-    
 });
-
-
-document.getElementById('viewComplaintBtn').onclick = function() {
-      document.getElementById('viewComplaintModal').style.display = 'block'
-    }
-    
-    document.getElementsByClassName('closeBtn')[1].onclick = function() {
-     style.display = 'none'
-    }
-    
-    window.onclick = function(event) {
-      if (event.target == document.getElementById('viewComplaintModal')) {
-        document.getElementById('viewComplaintModal').style.display = 'none'
-      }
-    }
-    

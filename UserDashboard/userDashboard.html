@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places" defer></script>
     <script>
         window.supabase = supabase.createClient(
             'https://lywylvbgsnmqwcwgiyhc.supabase.co',
@@ -165,8 +166,12 @@
                     <input type="file" id="image" name="image" accept="image/*" required>
                     <label for="description">Description:</label>
                     <textarea id="description" name="description" rows="4" required></textarea>
-                    <label for="location">Location:</label>
-                    <input type="text" id="location" name="location" required>
+                    <label>Location:</label>
+                    <div class="location-options">
+                        <label><input type="radio" name="location-type" value="manual" checked> Enter Address</label>
+                        <label><input type="radio" name="location-type" value="current"> Use Current Location</label>
+                    </div>
+                    <input type="text" id="location" name="location" placeholder="Enter address" required>
                     <div class="modal-footer">
                         <button type="button" class="modal-cancel-button">Cancel</button>
                         <button type="submit" class="modal-submit-button">Submit Request</button>
@@ -176,56 +181,49 @@
         </div>
     </div>
 
-   <!--Modal for viewing Complaint-->
     <div id="viewComplaintModal" class="modal1">
-      <div class="modal-content1">
-        <span class="closeBtn1">&times;</span>
-        <h2>View Complaints</h2>
-        <table id="complaint-table">
-          <thead>
-            <tr>
-              <th>Complaint Subject</th>
-              <th>Complaint Description</th>
-              <th>Complaint Response</th>
-            </tr>
-          </thead>
-          <tbody id="complaint-list">
-            <!-- Complaint items will be dynamically added here -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Modal for adding Complaint -->
-<div id="complaintModal" class="modal1">
-      <div class="modal-content1">
-        <span class="closeBtn">&times;</span>
-        <h2>Add Complaint</h2>
-        <form id="complaintForm">
-          <label for="complaintSubject">Complaint Subject:</label>
-          <input type="text" id="complaintSubject" name="complaintSubject" required>
-          
-          <label for="complaintDescription">Complaint Description:</label>
-          <textarea id="complaintDescription" name="complaintDescription" required></textarea>
-          
-          <label for="complaintResponse">Complaint Response:</label>
-          <input type="text" id="complaintResponse" name="complaintResponse" value="Pending" readonly>
-          
-          <button type="submit">Submit</button>
-        </form>
-      </div>
-    </div>
-    
-<!-- Modal for viewing Complaint -->
-    <div id="viewComplaintModal" class="modal2">
-          <div class="modal-content1">
-            <span class="closeBtn2">&times;</span>
-            <h2>View Complaints</h2>
-            <div class="complaint-cards-container">
-              <!-- Cards will be dynamically generated here -->
-            </div>
-          </div>
+        <div class="modal-content1">
+            <span class="closeBtn1">×</span>
+            <h2>View Complaints</h2>
+            <table id="complaint-table">
+                <thead>
+                    <tr>
+                        <th>Complaint Subject</th>
+                        <th>Complaint Description</th>
+                        <th>Complaint Response</th>
+                    </tr>
+                </thead>
+                <tbody id="complaint-list">
+                    <!-- Complaint items will be dynamically added here -->
+                </tbody>
+            </table>
         </div>
-        
+    </div>
 
+    <div id="complaintModal" class="modal1">
+        <div class="modal-content1">
+            <span class="closeBtn">×</span>
+            <h2>Add Complaint</h2>
+            <form id="complaintForm">
+                <label for="complaintSubject">Complaint Subject:</label>
+                <input type="text" id="complaintSubject" name="complaintSubject" required>
+                <label for="complaintDescription">Complaint Description:</label>
+                <textarea id="complaintDescription" name="complaintDescription" required></textarea>
+                <label for="complaintResponse">Complaint Response:</label>
+                <input type="text" id="complaintResponse" name="complaintResponse" value="Pending" readonly>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="viewComplaintModal" class="modal2">
+        <div class="modal-content1">
+            <span class="closeBtn2">×</span>
+            <h2>View Complaints</h2>
+            <div class="complaint-cards-container">
+                <!-- Cards will be dynamically generated here -->
+            </div>
+        </div>
+    </div>
+</body>
 </html>
