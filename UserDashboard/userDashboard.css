@@ -308,10 +308,11 @@ button {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(10px);
     padding: 15px;
-    margin-top: 10px;
+    margin: 10px 0;
+    border-left: 4px solid #28a745;
     width: 100%;
     min-width: 800px;
-    border-left: 4px solid #28a745;
+    box-sizing: border-box;
 }
 
 .tracker-visualization.hidden {
@@ -646,6 +647,81 @@ button {
     padding: 5px;
 }
 
+/* Complaint Modal Styling */
+.modal1 .modal-content1 {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+}
+
+.modal1 h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modal1 form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal1 label {
+    font-weight: 600;
+    color: #333;
+    font-size: 1em;
+}
+
+.modal1 input, .modal1 textarea {
+    padding: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.3);
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.modal1 input:focus, .modal1 textarea:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
+.modal1 textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal1 input[readonly] {
+    background: rgba(255, 255, 255, 0.1);
+    color: #777;
+    cursor: not-allowed;
+}
+
+.modal1 button[type="submit"] {
+    background: linear-gradient(90deg, #20c997, #28a745);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    transition: opacity 0.3s ease;
+    align-self: flex-end;
+}
+
+.modal1 button[type="submit"]:hover {
+    opacity: 0.9;
+}
+
 /* Notification Dropdown */
 .notification-dropdown {
     position: absolute;
@@ -751,6 +827,8 @@ button {
     gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    justify-content: center;
+    text-align: center;
 }
 
 .footer-section {
@@ -779,6 +857,7 @@ button {
 .social-links {
     display: flex;
     gap: 15px;
+    justify-content: center;
 }
 
 .social-links a {
@@ -836,6 +915,15 @@ button {
         background: rgba(255, 255, 255, 0.9);
         padding: 20px;
         box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .nav-links a, .header-icons {
+        margin: 10px 0;
+    }
+
+    .header-icons {
+        justify-content: center;
     }
 }
 
@@ -876,5 +964,10 @@ button {
 
     .tracker-visualization {
         min-width: auto;
+    }
+
+    .modal1 .modal-content1 {
+        width: 95%;
+        margin: 10% auto;
     }
 }
