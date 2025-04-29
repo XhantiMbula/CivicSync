@@ -1,3 +1,6 @@
+// Store the original form handler at the beginning
+let originalFormHandler = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById("request-modal");
     const addRequestButton = document.getElementById("add-request-button");
@@ -74,22 +77,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addRequestButton.addEventListener("click", async () => {
         const user = await getUser();
-        if (user) modal.style.display = "block";
+        if (user) {
+            // Reset form to default behavior when adding a new request
+            resetFormToDefaultBehavior();
+            modal.style.display = "block";
+        }
     });
 
     closeBtn.addEventListener("click", () => {
         modal.style.display = "none";
+        resetFormToDefaultBehavior();
     });
 
     modalCancelButton.addEventListener("click", () => {
         modal.style.display = "none";
+        resetFormToDefaultBehavior();
     });
 
     window.addEventListener("click", (event) => {
-        if (event.target === modal) modal.style.display = "none";
+        if (event.target === modal) {
+            modal.style.display = "none";
+            resetFormToDefaultBehavior();
+        }
     });
 
-    requestForm.addEventListener("submit", async (event) => {
+    // Store the original submit handler
+    originalFormHandler = async (event) => {
         event.preventDefault();
         const user = await getUser();
         if (!user) return;
@@ -159,7 +172,24 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error during request submission:', error);
             showToast('An error occurred while submitting the request.', 'error');
         }
-    });
+    };
+
+    // Assign the original handler
+    requestForm.addEventListener("submit", originalFormHandler);
+
+    function resetFormToDefaultBehavior() {
+        // Remove any custom onsubmit handlers
+        requestForm.onsubmit = null;
+        
+        // Reset form fields
+        requestForm.reset();
+        
+        // Re-attach the original event listener if it was removed
+        const newHandler = requestForm.onsubmit;
+        if (!newHandler) {
+            requestForm.addEventListener("submit", originalFormHandler);
+        }
+    }
 
     async function loadUserRequests() {
         const user = await getUser();
@@ -238,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 completedRequestsSection.innerHTML += '<p>No completed requests.</p>';
             }
             if (!updatedRequestsSection.querySelector('.feed-item')) {
-               ariousRequestsSection.innerHTML += '<p>No updated requests.</p>';
+                updatedRequestsSection.innerHTML += '<p>No updated requests.</p>';
             }
             if (!pendingRequestsSection.querySelector('.feed-item')) {
                 pendingRequestsSection.innerHTML += '<p>No pending requests.</p>';
@@ -334,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // FIXED EDIT REQUEST FUNCTION
     async function editRequest(requestId) {
         const { data: request, error } = await supabase
             .from('RequestTable')
@@ -346,20 +377,31 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Fill the form with existing data
         document.getElementById('title').value = request.RequestTitle;
         document.getElementById('category').value = request.RequestCategory;
         document.getElementById('description').value = request.RequestDescription;
         document.getElementById('location').value = request.RequestLocation;
 
+        // Show the modal
         modal.style.display = 'block';
 
-        requestForm.onsubmit = async (event) => {
+        // IMPORTANT: Remove the default form submission handler
+        // Clear any existing event listeners by cloning the form
+        const oldForm = requestForm;
+        const newForm = oldForm.cloneNode(true);
+        oldForm.parentNode.replaceChild(newForm, oldForm);
+        
+        // Add the edit-specific submit handler
+        newForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+            
             const updatedTitle = document.getElementById('title').value;
             const updatedCategory = document.getElementById('category').value;
             const updatedDescription = document.getElementById('description').value;
             const updatedLocation = document.getElementById('location').value;
 
+            // Perform the update operation
             const { error: updateError } = await supabase
                 .from('RequestTable')
                 .update({
@@ -380,13 +422,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadUserRequests();
                 loadFeed();
                 modal.style.display = 'none';
-                requestForm.reset();
-                requestForm.onsubmit = requestFormSubmitHandler;
+                
+                // Reset the form to default behavior
+                resetFormToDefaultBehavior();
             }
-        };
+        });
+        
+        // Store reference to the new form
+        requestForm = newForm;
     }
-
-    const requestFormSubmitHandler = requestForm.onsubmit;
 
     async function deleteRequest(requestId) {
         if (confirm('Are you sure you want to delete this request?')) {
@@ -468,35 +512,33 @@ document.addEventListener('DOMContentLoaded', () => {
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
 
-    //
-document.getElementById('addComplaintBtn').onclick = function() {
-      document.getElementById('complaintModal').style.display = 'block';
+    // Complaint modal handlers
+    document.getElementById('addComplaintBtn').onclick = function() {
+      document.getElementById('complaintModal').style.display = 'block';
     }
     
     document.getElementsByClassName('closeBtn')[0].onclick = function() {
-      document.getElementById('complaintModal').style.display = 'none';
+      document.getElementById('complaintModal').style.display = 'none';
     }
     
     window.onclick = function(event) {
-      if (event.target == document.getElementById('complaintModal')) {
-        document.getElementById('complaintModal').style.display = 'none';
-      }
+      if (event.target == document.getElementById('complaintModal')) {
+        document.getElementById('complaintModal').style.display = 'none';
+      }
     }
-    
 });
 
-
 document.getElementById('viewComplaintBtn').onclick = function() {
-      document.getElementById('viewComplaintModal').style.display = 'block'
+    document.getElementById('viewComplaintModal').style.display = 'block';
+}
+
+document.getElementsByClassName('closeBtn')[1].onclick = function() {
+    document.getElementById('viewComplaintModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+    if (event.target == document.getElementById('viewComplaintModal')) {
+        document.getElementById('viewComplaintModal').style.display = 'none';
     }
-    
-    document.getElementsByClassName('closeBtn')[1].onclick = function() {
-     style.display = 'none'
-    }
-    
-    window.onclick = function(event) {
-      if (event.target == document.getElementById('viewComplaintModal')) {
-        document.getElementById('viewComplaintModal').style.display = 'none'
-      }
-    }
+}
     
