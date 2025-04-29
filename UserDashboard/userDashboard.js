@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const complaintForm = document.getElementById('complaintForm');
     const modalHeader = modal.querySelector('.modal-header h2');
     const loadMoreFeedButton = document.getElementById('load-more-feed');
+    const hamburger = document.querySelector('.hamburger');
+    const navbar = document.querySelector('.navbar');
 
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
@@ -39,6 +41,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedLimit = 8; // Number of requests per page
     let allFeedRequests = [];
     let hasMoreFeed = true;
+
+    // Default tracker data
+    const defaultTrackerEvents = [
+        {
+            Status: 'Submitted',
+            Details: 'Request submitted by user.',
+            Timestamp: '2025-04-25 10:00 AM'
+        },
+        {
+            Status: 'In Progress',
+            Details: 'Request is being reviewed by the admin.',
+            Timestamp: '2025-04-26 02:30 PM'
+        },
+        {
+            Status: 'Approved',
+            Details: 'Request has been approved.',
+            Timestamp: '2025-04-27 09:15 AM'
+        }
+    ];
 
     function initializeAutocomplete() {
         if (window.google && window.google.maps) {
@@ -340,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     : request.RequestDescription;
                 const row = document.createElement('div');
                 row.classList.add('table-row');
+                row.dataset.requestId = request.RequestID; // Add request ID to row for reference
                 row.innerHTML = `
                     <div>${request.RequestTitle}</div>
                     <div>${request.RequestCategory}</div>
@@ -354,13 +376,19 @@ document.addEventListener('DOMContentLoaded', () => {
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
-                    <div class="tracker-visualization hidden" id="tracker-${request.RequestID}">
-                        <div class="tracker-content">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
                 `;
                 requestTableBody.appendChild(row);
+
+                // Create tracker visualization as a sibling
+                const trackerDiv = document.createElement('div');
+                trackerDiv.classList.add('tracker-visualization', 'hidden');
+                trackerDiv.id = `tracker-${request.RequestID}`;
+                trackerDiv.innerHTML = `
+                    <div class="tracker-content">
+                        <!-- Populated dynamically -->
+                    </div>
+                `;
+                requestTableBody.appendChild(trackerDiv);
 
                 // Animation on load
                 row.style.opacity = '0';
@@ -404,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function toggleTracker(requestId, button) {
+    function toggleTracker(requestId, button) {
         const trackerVisualization = document.getElementById(`tracker-${requestId}`);
         const isHidden = trackerVisualization.classList.contains('hidden');
         const icon = button.querySelector('i');
@@ -412,50 +440,43 @@ document.addEventListener('DOMContentLoaded', () => {
         // Close all other trackers
         document.querySelectorAll('.tracker-visualization').forEach(vis => {
             vis.classList.add('hidden');
-            const btn = vis.parentElement.querySelector('.tracker-toggle i');
-            btn.classList.remove('fa-chevron-up');
-            btn.classList.add('fa-chevron-down');
+            const relatedRow = vis.previousElementSibling;
+            if (relatedRow) {
+                const btn = relatedRow.querySelector('.tracker-toggle i');
+                if (btn) {
+                    btn.classList.remove('fa-chevron-up');
+                    btn.classList.add('fa-chevron-down');
+                }
+            }
         });
 
         if (isHidden) {
-            // Fetch tracker data
-            try {
-                const { data: trackerEvents, error } = await supabase
-                    .from('RequestTracker')
-                    .select('*')
-                    .eq('RequestID', requestId)
-                    .order('Timestamp', { ascending: true });
-                if (error) throw new Error(`Error fetching tracker: ${error.message}`);
-
-                const trackerContent = trackerVisualization.querySelector('.tracker-content');
-                if (trackerEvents.length === 0) {
-                    trackerContent.innerHTML = '<p>No tracking updates available.</p>';
-                } else {
-                    let html = '<div class="tracker-timeline">';
-                    trackerEvents.forEach((event, idx) => {
-                        const timestamp = new Date(event.Timestamp).toLocaleString();
-                        html += `
-                            <div class="tracker-event">
-                                <div class="tracker-details">
-                                    <p><strong>${event.Status}</strong></p>
-                                    <p>${event.Details}</p>
-                                    <p class="timestamp">${timestamp}</p>
-                                </div>
-                                ${idx < trackerEvents.length - 1 ? '<div class="tracker-arrow"><i class="fas fa-arrow-right"></i></div>' : ''}
+            // Use default tracker data
+            const trackerEvents = defaultTrackerEvents;
+            const trackerContent = trackerVisualization.querySelector('.tracker-content');
+            if (trackerEvents.length === 0) {
+                trackerContent.innerHTML = '<p>No tracking updates available.</p>';
+            } else {
+                let html = '<div class="tracker-timeline">';
+                trackerEvents.forEach((event, idx) => {
+                    html += `
+                        <div class="tracker-event">
+                            <div class="tracker-details">
+                                <p><strong>${event.Status}</strong></p>
+                                <p>${event.Details}</p>
+                                <p class="timestamp">${event.Timestamp}</p>
                             </div>
-                        `;
-                    });
-                    html += '</div>';
-                    trackerContent.innerHTML = html;
-                }
-
-                trackerVisualization.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } catch (error) {
-                console.error('Error loading tracker:', error);
-                showToast('Error loading request tracker.', 'error');
+                            ${idx < trackerEvents.length - 1 ? '<div class="tracker-arrow"><i class="fas fa-arrow-right"></i></div>' : ''}
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                trackerContent.innerHTML = html;
             }
+
+            trackerVisualization.classList.remove('hidden');
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
         } else {
             trackerVisualization.classList.add('hidden');
             icon.classList.remove('fa-chevron-up');
@@ -851,6 +872,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error submitting complaint:', error);
             showToast('Error submitting complaint.', 'error');
         }
+    });
+
+    // Hamburger Menu Toggle
+    hamburger.addEventListener('click', () => {
+        navbar.classList.toggle('active');
     });
 
     window.editRequest = editRequest;
