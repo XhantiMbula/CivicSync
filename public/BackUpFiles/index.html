@@ -6,17 +6,31 @@
   <title>CivicSync</title>
   <link rel="stylesheet" href="/public/Welcome page/styles.css">
   <link rel="stylesheet" href="indexPage.css">
-  <link rel="stylesheet" href="Services/services.css">
 </head>
 
 <body>
+  <!-- Top Header 
+  <div class="top-header">
+    <div class="container">
+      <div class="contact-info">
+        <span><i class="fa fa-phone"></i> +27 123 456 789</span>
+        <span><i class="fa fa-envelope"></i> support@civicsync.co.za</span>
+      </div>
+      <div class="social-links">
+        <a href="#"><i class="fa fa-facebook"></i></a>
+        <a href="#"><i class="fa fa-twitter"></i></a>
+        <a href="#"><i class="fa fa-instagram"></i></a>
+      </div>
+    </div>
+  </div> -->
+
   <!-- Navigation Bar -->
   <nav>
     <div class="container">
       <div class="logo"><a href="/">CivicSync</a></div>
       <div class="nav-links">
         <a href="/about">About</a>
-        <a href="#" onclick="scrollToSection('services-section')">Services</a>
+        <a href="/services">Services</a>
         <a href="/training">Training</a>
         <a href="/contact">Contact Us</a>
         <a href="/loginPage/loginPage.html">SignIn</a>
@@ -41,6 +55,19 @@
       </div>
     </div>
   </nav>
+
+  <!-- Hero Section -->
+ <!-- <section class="hero">
+    <div class="hero-overlay"></div>
+    <div class="hero-text wow animate__fadeIn" data-wow-duration="1.5s">
+      <p>APRIL 15, 2025 • CivicSync TEAM</p>
+      <h1>Welcome to CivicSync</h1>
+      <p>Empowering Cape Town townships with efficient communication for better municipal services.</p>
+      <div style="text-align: center; margin-top: 30px;">
+        <a href="/get-started" class="btn-get-started">Get Started</a>
+      </div>
+    </div>
+  </section>  -->
 
   <!-- Hero Slide Show -->
   <div class="heroSlideShow">
@@ -81,44 +108,19 @@
       <img src="assets/HeroSlideShow/shutterstock_197135594-600x338-800x0-c-default.jpg" alt="Cleaned public park">
     </div>
   </div>
-
-
   <!-- Services Section -->
-  <section class="services" id="services-section">
-    <div class="container">
-      <h2>Our Services</h2>
-      <div class="service-filter">
-        <button onclick="filterService('all')">All</button>
-        <button onclick="filterService('water')">Water</button>
-        <button onclick="filterService('maintenance')">Maintenance</button>
-      </div>
-      <div class="service-list">
-        <div class="service-item" data-category="water">
-          <h3>Water Services</h3>
-          <p>We provide support for water-related issues, including pipe repairs and leak reporting.</p>
-        </div>
-        <div class="service-item" data-category="maintenance">
-          <h3>Maintenance Services</h3>
-          <p>Our maintenance services cover road repairs, streetlight fixes, and more.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- Services Section -->
-  <section class="services" id="services-section">
+  <section class="services">
     <div class="container centered">
       <h2>Our Offerings</h2>
   
       <div class="infobox-grid">
-        <div class="infobox wow animate__fadeInUp" data-wow-delay="0.2s">
-          <div class="infobox-icon"><i class="fa fa-handshake-o"></i></div>
-          <h3>Services</h3>
-          <p>Connecting communities with essential municipal services.</p>
-          <div class="services-dropdown">
-            <button onclick="window.location.href='/services?category=water'">Water</button>
-            <button onclick="window.location.href='/services?category=maintenance'">Maintenance</button>
+        <a href="/services" class="infobox-link">
+          <div class="infobox wow animate__fadeInUp" data-wow-delay="0.2s">
+            <div class="infobox-icon"><i class="fa fa-handshake-o"></i></div>
+            <h3>Services</h3>
+            <p>Connecting communities with essential municipal services.</p>
           </div>
-        </div>
+        </a>
   
         <a href="/training" class="infobox-link">
           <div class="infobox wow animate__fadeInUp" data-wow-delay="0.4s">
@@ -138,7 +140,6 @@
       </div>
     </div>
   </section>
-
 
 
   <!-- News Feed Section -->
@@ -175,7 +176,7 @@
     </div>
   </section>
 
-  <!-- <section class="testimonials">
+  <section class="testimonials">
     <h2>WHAT OUR CLIENTS SAY</h2>
     <div class="carousel">
       <div class="testimonial-card">
@@ -202,8 +203,6 @@
       <button onclick="alert('Redirect to review form or modal!')">Write a Review</button>
     </div>
   </section>
-
-  <!-- Google Maps -->
   <script>
     // Initialize testimonial slider
     $('.testimonial-slider').slick({
@@ -224,17 +223,9 @@
       `;
     }
     window.onload = loadUpdates;
-  </script> -->
+  </script>
 
-  <!-- Elfsight Testimonials Slider | Untitled Testimonials Slider -->
-<script src="https://static.elfsight.com/platform/platform.js" async></script>
-<div class="elfsight-app-243375ef-a25b-40fa-bb1c-6e44e1abe0ee" data-elfsight-app-lazy></div>
-
-  <!-- Elfsight All-in-One Reviews | Untitled All-in-One Reviews -->
-<script src="https://static.elfsight.com/platform/platform.js" async></script>
-<div class="elfsight-app-2aa6bcb3-3345-48d9-adc7-53139137d8d7" data-elfsight-app-lazy></div>
-
-  <!-- <!-- Google Maps 
+  <!-- Google Maps -->
   <div class="mapDiv" style="text-align: center; margin: 0;">
     <h2>Government Offices in South Africa</h2>
     <iframe 
@@ -247,152 +238,8 @@
   referrerpolicy="no-referrer-when-downgrade">
 </iframe>
 
-  </div> -->
-
-  <script async
-  src="https://maps.googleapis.com/maps/api/js?AIzaSyC0nesej5j8AkSvePNqGTilk3-LilW8qA8&callback=initMap">
-</script>
-<script>
-  function initMap() {
-    // Create a map centered in South Africa
-    const map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 6,
-      center: { lat: -30.5595, lng: 22.9375 }, // Center of South Africa
-    });
-
-    // Define the locations
-    const locations = [
-    {
-            position: { lat: -33.876944, lng: 18.626389 },
-            title: "City of Cape Town Electricity Services Head Office",
-            category: "electricity",
-          },
-    
-  {
-            position: { lat: -34.062801, lng: 18.764387 },
-            title: "Khayelitsha Fire and Rescue Station",
-            category: "fire",
-          },
-          
-  {
-    position: { lat: -34.062801, lng: 18.764387 },
-    title: "Macassar Fire Station",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.043446, lng: 18.593046 },
-    title: "Mitchell's Plain Fire Station",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.087601, lng: 18.842699 },
-    title: "Helderberg Fire Watch",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.002579, lng: 18.687668 },
-    title: "Mfuleni Youth Development Forum",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.072319, lng: 18.832619 },
-    title: "Sir Lowry's Pass Fire Station",
-    category: "fire",
-  },
-  {
-    position: { lat: -33.951935, lng: 18.635471 },
-    title: "Belhar Fire Station",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.070461, lng: 18.827198 },
-    title: "Fire Space",
-    category: "fire",
-  },
-  {
-    position: { lat: -33.933453, lng: 18.679382 },
-    title: "Kuils River Fire Station",
-    category: "electricity",
-  },
-  {
-    position: { lat: -33.878277, lng: 18.707438 },
-    title: "Brackenfell Fire Station",
-    category: "fire",
-  },
-  {
-    position: { lat: -34.102238, lng: 18.855230 },
-    title: "Re-Active Fire Equipment Specialist",
-    category: "electricity",
-  },
-  {
-    position: { lat: -34.136723, lng: 18.425726 },
-    title: "Fish Hoek Fire Station",
-    category: "electricity",
-  },
-  {
-    position: { lat: -34.021095, lng: 18.442411 },
-    title: "Constantia Fire Station",
-    category: "electricity",
-  },
-  {
-    position: { lat: -33.904930, lng: 18.632246 },
-    title: "Bellville Fire Station",
-    category: "electricity",
-  },
-  {
-    position: { lat: -33.918884, lng: 18.591177 },
-    title: "Boland Fire Services-Since 1978",
-    category: "electricity",
-  },
-  {
-    position: { lat: -34.085987, lng: 18.843439 },
-    title: "Somerset West Fire Station",
-    category: "electricity",
-  },
-  {
-    position: { lat: -33.927502, lng: 18.542801 },
-    title: "Epping Fire Department",
-    category: "electricity",
-  },
-  {
-    position: { lat: -34.001137, lng: 18.566042 },
-    title: "Gugulethu Fire Station",
-    category: "electricity",
-  }
-      // Add more locations as needed
-    ];
-
-    const icons = {
-          fire: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-          police: "http://maps.google.com/mapfiles/ms/icons/green-dot.png",
-          electricity: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-        };
-
-    // Add markers to the map
-    locations.forEach((loc) => {
-          new google.maps.Marker({
-            position: loc.position,
-            map,
-            title: loc.title,
-            icon: icons[loc.category],
-          });
-        });
-      }
-    </script>
-    <style>
-      #map {
-        height: 500px;
-        width: 100%;
-      }
-    </style>
-  </head>
-  <body onload="initMap()">
-    <h2 style="text-align:center;">Government Offices in South Africa</h2>
-    <div id="map"></div>
-  </body>
-</html>
-
-
+  </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
@@ -474,17 +321,7 @@
 
   // Change slides every 6 seconds
   setInterval(nextSlide, 4000);
-
-  // Smooth scrolling function
-  function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-    }
-  }
 </script>
-
-<script src="Services/services.js"></script>
 
 </body>
 </html>

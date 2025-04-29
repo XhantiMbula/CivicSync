@@ -8,8 +8,16 @@
     <!--Link CSS-->
     <link rel="stylesheet" href="profile.css">
     <!--Link JavaScript-->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@1.35.6/dist/umd/supabase.min.js"></script>
+    <!-- Load Supabase UMD library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+
+    <!-- Load your script -->
     <script src="profile.js" defer></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
 </head>
 
 <body>
@@ -31,6 +39,7 @@
             <div class="profile-personal-info">
                 <p>Username: <input type="text" id="username" disabled></p>
                 <p>Name: <input type="text" id="name" disabled></p>
+                <p>Surname: <input type="text" id="surname" disabled></p>
                 <p>Email: <input type="text" id="email" disabled></p>
                 <p>Number: <input type="text" id="number" disabled></p>
                 <p>Password: <input type="password" id="password" disabled></p>
@@ -49,22 +58,19 @@
     </div>
 
     <!--Footer-->
-    <footer class="site-footer">
+    <footer class="site-footer animate-section">
         <div class="footer-content">
             <div class="footer-section">
                 <h3>Contact Us</h3>
-                <p>Report incidents like sunken roads, fires, or other community issues:</p>
                 <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
                 <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
             </div>
             <div class="footer-section">
-                <h3>Report an Incident</h3>
-                <p>Use our platform to report:</p>
+                <h3>Our Services</h3>
                 <ul>
-                    <li>Sunken roads</li>
-                    <li>Fire hazards</li>
-                    <li>Power outages</li>
-                    <li>Other community issues</li>
+                    <li>Incident Reporting</li>
+                    <li>Community Engagement</li>
+                    <li>Real-Time Updates</li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -77,7 +83,7 @@
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+            <p>© 2025 CivicSync. All rights reserved.</p>
         </div>
     </footer>
 </body>

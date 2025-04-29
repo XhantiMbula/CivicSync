@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #e6f4ea 0%, #a3d9b1 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     color: #333;
     line-height: 1.6;
     min-height: 100vh;
@@ -42,7 +42,7 @@ button {
     font-family: 'Poppins', sans-serif;
     font-size: 1.8em;
     font-weight: 700;
-    color: #28a745;
+    color: #2575fc;
 }
 
 .nav-links {
@@ -58,7 +58,7 @@ button {
 }
 
 .nav-links a:hover {
-    color: #20c997;
+    color: #6a11cb;
 }
 
 .header-icons {
@@ -76,7 +76,7 @@ button {
 }
 
 .notification-icon:hover, .profile-icon:hover {
-    color: #28a745;
+    color: #2575fc;
 }
 
 .notification-badge {
@@ -125,7 +125,7 @@ button {
     font-family: 'Poppins', sans-serif;
     font-size: 2.5em;
     color: #333;
-    background: linear-gradient(90deg, #28a745, #20c997);
+    background: linear-gradient(90deg, #2575fc, #6a11cb);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -164,11 +164,11 @@ button {
 
 .glass-card i {
     margin-right: 8px;
-    color: #28a745;
+    color: #2575fc;
 }
 
 .request-button, .complaint-button {
-    background: linear-gradient(90deg, #20c997, #28a745);
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -187,22 +187,21 @@ button {
 }
 
 .interactive-table {
-    background: white;
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 16px;
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
     padding: 20px;
-    overflow-x: auto;
 }
 
 .table-header {
     display: flex;
-    background: linear-gradient(90deg, #28a745, #20c997);
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
     color: white;
     font-weight: 600;
     padding: 15px;
     border-radius: 12px;
-    margin-bottom: 10px;
-    min-width: 800px;
+    margin-bottom: 20px;
 }
 
 .table-header div {
@@ -228,24 +227,81 @@ button {
     color: #ff4d4d;
 }
 
-.table-row {
-    display: flex;
-    background: white;
+.request-card {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    margin-bottom: 15px;
     padding: 15px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.request-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    min-width: 800px;
+    cursor: pointer;
+    padding: 10px;
+    background: linear-gradient(90deg, #2575fc, #6a11cb);
+    color: white;
+    border-radius: 8px;
 }
 
-.table-row div {
-    flex: 1;
-    text-align: left;
+.card-header h3 {
+    margin: 0;
+    font-size: 1.2em;
 }
 
-.table-image {
-    max-width: 50px;
-    max-height: 50px;
-    border-radius: 4px;
+.expand-icon {
+    transition: transform 0.3s ease;
+}
+
+.card-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0 10px;
+}
+
+.card-content.expanded {
+    max-height: 500px;
+    padding: 15px 10px;
+}
+
+.card-field {
+    display: flex;
+    margin: 10px 0;
+    align-items: center;
+}
+
+.field-label {
+    font-weight: 600;
+    width: 100px;
+    color: #2575fc;
+}
+
+.card-image {
+    max-width: 100px;
+    max-height: 100px;
+    border-radius: 8px;
+}
+
+.description-field {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.description-text {
+    margin-top: 5px;
+}
+
+.full-description.hidden {
+    display: none;
 }
 
 .status-badge {
@@ -261,103 +317,36 @@ button {
 }
 
 .status-updated {
-    background: #17a2b8;
+    background: #2575fc;
     color: white;
 }
 
-.status-completed, .status-approved {
-    background: #28a745;
+.status-completed {
+    background: #00cc00;
     color: white;
 }
 
-.actions {
-    display: flex;
-    gap: 5px;
-}
-
-.actions button {
-    padding: 5px 10px;
+.card-actions button {
+    padding: 8px 15px;
+    margin-right: 10px;
     border: none;
-    border-radius: 4px;
-    font-size: 0.9em;
-    transition: opacity 0.3s ease;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
 }
 
-.actions button:first-child {
-    background: #28a745;
+.card-actions button:first-child {
+    background: #2575fc;
     color: white;
 }
 
-.actions button:nth-child(2) {
+.card-actions button:last-child {
     background: #ff4d4d;
     color: white;
 }
 
-.tracker-toggle {
-    background: #20c997;
-    color: white;
-}
-
-.actions button:hover {
+.card-actions button:hover {
     opacity: 0.9;
-}
-
-.tracker-visualization {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(10px);
-    padding: 15px;
-    margin-top: 10px;
-    width: 100%;
-    min-width: 800px;
-    border-left: 4px solid #28a745;
-}
-
-.tracker-visualization.hidden {
-    display: none;
-}
-
-.tracker-content {
-    overflow-x: auto;
-}
-
-.tracker-timeline {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-}
-
-.tracker-event {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.tracker-details {
-    background: rgba(255, 255, 255, 0.5);
-    padding: 10px;
-    border-radius: 8px;
-    min-width: 200px;
-}
-
-.tracker-details p {
-    margin: 0 0 5px;
-}
-
-.tracker-details p:last-child {
-    margin: 0;
-}
-
-.timestamp {
-    font-size: 0.8em;
-    color: #777;
-}
-
-.tracker-arrow {
-    color: #28a745;
-    font-size: 1.2em;
 }
 
 /* Community Feed */
@@ -365,16 +354,17 @@ button {
     margin: 40px 0;
 }
 
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+.masonry-grid {
+    column-count: 3;
+    column-gap: 20px;
     padding: 20px;
 }
 
-.grid-card {
+.masonry-card {
+    break-inside: avoid;
     background: rgba(255, 255, 255, 0.2);
     border-radius: 16px;
+    margin-bottom: 20px;
     padding: 15px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
@@ -382,15 +372,7 @@ button {
     overflow: hidden;
 }
 
-.grid-card.span-column {
-    grid-column: span 2;
-}
-
-.grid-card.span-row {
-    grid-row: span 2;
-}
-
-.grid-card::before {
+.masonry-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -405,13 +387,11 @@ button {
     position: relative;
     overflow: hidden;
     border-radius: 12px;
-    height: 150px;
 }
 
-.grid-card img {
+.masonry-card img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
     display: block;
     border-radius: 12px;
 }
@@ -439,12 +419,6 @@ button {
     color: #333;
 }
 
-.card-category {
-    margin: 0 0 10px;
-    color: #555;
-    font-weight: 600;
-}
-
 .card-description {
     margin: 0 0 10px;
     color: #555;
@@ -461,7 +435,7 @@ button {
 }
 
 .view-details {
-    background: #20c997;
+    background: #6a11cb;
     color: white;
     border: none;
     padding: 8px 15px;
@@ -483,7 +457,7 @@ button {
 }
 
 .category-infrastructure {
-    border-left: 4px solid #28a745;
+    border-left: 4px solid #00cc00;
 }
 
 .category-electricity {
@@ -491,34 +465,15 @@ button {
 }
 
 .category-plumbing {
-    border-left: 4px solid #17a2b8;
+    border-left: 4px solid #2575fc;
 }
 
 .category-public-spaces {
-    border-left: 4px solid #20c997;
+    border-left: 4px solid #6a11cb;
 }
 
 .category-government-housing {
     border-left: 4px solid #ff69b4;
-}
-
-.pagination {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.load-more-button {
-    background: linear-gradient(90deg, #20c997, #28a745);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 1em;
-    transition: opacity 0.3s ease;
-}
-
-.load-more-button:hover {
-    opacity: 0.9;
 }
 
 /* Modals */
@@ -598,8 +553,8 @@ button {
 
 .modal-body input:focus, .modal-body select:focus, .modal-body textarea:focus {
     outline: none;
-    border-color: #28a745;
-    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+    border-color: #2575fc;
+    box-shadow: 0 0 5px rgba(37, 117, 252, 0.3);
 }
 
 .location-options {
@@ -628,7 +583,7 @@ button {
 }
 
 .modal-submit-button {
-    background: linear-gradient(90deg, #20c997, #28a745);
+    background: linear-gradient(90deg, #6a11cb, #2575fc);
     color: white;
 }
 
@@ -672,7 +627,7 @@ button {
 }
 
 .notification-approval {
-    background: rgba(40, 167, 69, 0.1);
+    background: rgba(0, 204, 0, 0.1);
 }
 
 .notification-rejection {
@@ -788,7 +743,7 @@ button {
 }
 
 .social-links a:hover {
-    color: #28a745;
+    color: #2575fc;
 }
 
 .copyright {
@@ -814,8 +769,8 @@ button {
 
 /* Responsive Design */
 @media (max-width: 900px) {
-    .grid-container {
-        grid-template-columns: repeat(2, 1fr);
+    .masonry-grid {
+        column-count: 2;
     }
 
     .nav-links {
@@ -840,8 +795,8 @@ button {
 }
 
 @media (max-width: 600px) {
-    .grid-container {
-        grid-template-columns: 1fr;
+    .masonry-grid {
+        column-count: 1;
     }
 
     .request-complaint-section {
@@ -857,24 +812,17 @@ button {
         display: none;
     }
 
-    .table-row {
+    .request-card {
+        padding: 10px;
+    }
+
+    .card-field {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
-        min-width: auto;
     }
 
-    .table-row div {
-        flex: none;
-        width: 100%;
-    }
-
-    .actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-
-    .tracker-visualization {
-        min-width: auto;
+    .field-label {
+        width: auto;
+        margin-bottom: 5px;
     }
 }

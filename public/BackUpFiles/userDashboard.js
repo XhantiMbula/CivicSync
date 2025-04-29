@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeViewComplaintBtn = viewComplaintModal.querySelector('.closeBtn2');
     const complaintForm = document.getElementById('complaintForm');
     const modalHeader = modal.querySelector('.modal-header h2');
-    const loadMoreFeedButton = document.getElementById('load-more-feed');
 
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
@@ -33,12 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const locationOptions = document.querySelectorAll('input[name="location-type"]');
     const imageInput = document.getElementById('image');
     let currentRequestId = null; // Track the request being edited
-
-    // Pagination for feed
-    let feedPage = 0;
-    const feedLimit = 8; // Number of requests per page
-    let allFeedRequests = [];
-    let hasMoreFeed = true;
 
     function initializeAutocomplete() {
         if (window.google && window.google.maps) {
@@ -263,24 +256,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     .eq('RequestID', currentRequestId);
                 if (updateError) throw new Error(`Request update failed: ${updateError.message}`);
 
-                // Add tracker entry for update
-                await supabase.from('RequestTracker').insert({
-                    TrackerID: crypto.randomUUID(),
-                    RequestID: currentRequestId,
-                    Status: 'Updated',
-                    Timestamp: new Date().toISOString(),
-                    Details: 'Request updated by user.'
-                });
-
                 showToast('Request updated successfully!', 'success');
             } else {
                 if (!imageURL) {
                     showToast('Image is required for new requests.', 'error');
                     return;
                 }
-                const newRequestId = crypto.randomUUID();
                 const requestData = {
-                    RequestID: newRequestId,
+                    RequestID: crypto.randomUUID(),
                     RequestTitle: title,
                     RequestCategory: category,
                     RequestImageURL: imageURL,
@@ -295,20 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     .insert([requestData]);
                 if (requestError) throw new Error(`Request insertion failed: ${requestError.message}`);
 
-                // Add tracker entry for new request
-                await supabase.from('RequestTracker').insert({
-                    TrackerID: crypto.randomUUID(),
-                    RequestID: newRequestId,
-                    Status: 'Submitted',
-                    Timestamp: new Date().toISOString(),
-                    Details: 'Request submitted by user.'
-                });
-
                 showToast('Request submitted successfully!', 'success');
             }
 
             loadUserRequests();
-            loadCommunityFeed(true); // Reset feed on new request
+            loadCommunityFeed();
             modal.style.display = "none";
             requestForm.reset();
             currentRequestId = null;
@@ -338,38 +312,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 const truncatedDesc = request.RequestDescription.length > 100
                     ? request.RequestDescription.substring(0, 100) + '...'
                     : request.RequestDescription;
-                const row = document.createElement('div');
-                row.classList.add('table-row');
-                row.innerHTML = `
-                    <div>${request.RequestTitle}</div>
-                    <div>${request.RequestCategory}</div>
-                    <div>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" class="table-image">` : 'No Image'}</div>
-                    <div>${truncatedDesc}</div>
-                    <div>${request.RequestLocation}</div>
-                    <div><span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></div>
-                    <div class="actions">
-                        <button onclick="editRequest('${request.RequestID}')">Edit</button>
-                        <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
-                        <button class="tracker-toggle" onclick="toggleTracker('${request.RequestID}', this)">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
+                const card = document.createElement('div');
+                card.classList.add('request-card');
+                card.innerHTML = `
+                    <div class="card-header">
+                        <h3>${request.RequestTitle}</h3>
+                        <i class="fas fa-chevron-down expand-icon"></i>
                     </div>
-                    <div class="tracker-visualization hidden" id="tracker-${request.RequestID}">
-                        <div class="tracker-content">
-                            <!-- Populated dynamically -->
+                    <div class="card-content">
+                        <div class="card-field">
+                            <span class="field-label">Category:</span>
+                            <span>${request.RequestCategory}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Image:</span>
+                            ${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="Request Image" class="card-image">` : 'No Image'}
+                        </div>
+                        <div class="card-field description-field">
+                            <span class="field-label">Description:</span>
+                            <span class="description-text">${truncatedDesc}</span>
+                            ${request.RequestDescription.length > 100 ? `<span class="full-description hidden">${request.RequestDescription}</span>` : ''}
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Location:</span>
+                            <span>${request.RequestLocation}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">Status:</span>
+                            <span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button onclick="editRequest('${request.RequestID}')">Edit</button>
+                            <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
                         </div>
                     </div>
                 `;
-                requestTableBody.appendChild(row);
+                requestTableBody.appendChild(card);
 
                 // Animation on load
-                row.style.opacity = '0';
-                row.style.transform = 'translateY(20px)';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
                 setTimeout(() => {
-                    row.style.transition = 'all 0.5s ease';
-                    row.style.opacity = '1';
-                    row.style.transform = 'translateY(0)';
+                    card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
                 }, index * 100);
+
+                // Expand/collapse
+                const header = card.querySelector('.card-header');
+                header.addEventListener('click', () => {
+                    const content = card.querySelector('.card-content');
+                    const icon = card.querySelector('.expand-icon');
+                    const descriptionText = card.querySelector('.description-text');
+                    const fullDescription = card.querySelector('.full-description');
+                    if (content.classList.contains('expanded')) {
+                        content.classList.remove('expanded');
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                        if (fullDescription) {
+                            descriptionText.textContent = truncatedDesc;
+                            fullDescription.classList.add('hidden');
+                        }
+                    } else {
+                        content.classList.add('expanded');
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                        if (fullDescription) {
+                            descriptionText.textContent = request.RequestDescription;
+                            fullDescription.classList.remove('hidden');
+                        }
+                    }
+                });
             });
 
             // Sorting
@@ -404,122 +417,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function toggleTracker(requestId, button) {
-        const trackerVisualization = document.getElementById(`tracker-${requestId}`);
-        const isHidden = trackerVisualization.classList.contains('hidden');
-        const icon = button.querySelector('i');
-
-        // Close all other trackers
-        document.querySelectorAll('.tracker-visualization').forEach(vis => {
-            vis.classList.add('hidden');
-            const btn = vis.parentElement.querySelector('.tracker-toggle i');
-            btn.classList.remove('fa-chevron-up');
-            btn.classList.add('fa-chevron-down');
-        });
-
-        if (isHidden) {
-            // Fetch tracker data
-            try {
-                const { data: trackerEvents, error } = await supabase
-                    .from('RequestTracker')
-                    .select('*')
-                    .eq('RequestID', requestId)
-                    .order('Timestamp', { ascending: true });
-                if (error) throw new Error(`Error fetching tracker: ${error.message}`);
-
-                const trackerContent = trackerVisualization.querySelector('.tracker-content');
-                if (trackerEvents.length === 0) {
-                    trackerContent.innerHTML = '<p>No tracking updates available.</p>';
-                } else {
-                    let html = '<div class="tracker-timeline">';
-                    trackerEvents.forEach((event, idx) => {
-                        const timestamp = new Date(event.Timestamp).toLocaleString();
-                        html += `
-                            <div class="tracker-event">
-                                <div class="tracker-details">
-                                    <p><strong>${event.Status}</strong></p>
-                                    <p>${event.Details}</p>
-                                    <p class="timestamp">${timestamp}</p>
-                                </div>
-                                ${idx < trackerEvents.length - 1 ? '<div class="tracker-arrow"><i class="fas fa-arrow-right"></i></div>' : ''}
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                    trackerContent.innerHTML = html;
-                }
-
-                trackerVisualization.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
-            } catch (error) {
-                console.error('Error loading tracker:', error);
-                showToast('Error loading request tracker.', 'error');
-            }
-        } else {
-            trackerVisualization.classList.add('hidden');
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
-    }
-
-    async function loadCommunityFeed(reset = false) {
-        if (reset) {
-            feedPage = 0;
-            allFeedRequests = [];
-            hasMoreFeed = true;
-            document.getElementById('community-feed').innerHTML = '';
-            loadMoreFeedButton.style.display = 'block';
-        }
-
-        if (!hasMoreFeed) {
-            loadMoreFeedButton.style.display = 'none';
-            return;
-        }
-
+    async function loadCommunityFeed() {
         try {
             const { data: requests, error } = await supabase
                 .from('RequestTable')
                 .select('*')
-                .eq('RequestStatus', 'Approved')
-                .order('created_at', { ascending: false })
-                .range(feedPage * feedLimit, (feedPage + 1) * feedLimit - 1);
+                .order('created_at', { ascending: false });
             if (error) {
                 console.error('Error fetching community feed:', error.message);
                 showToast('Error loading community feed.', 'error');
                 return;
             }
 
-            allFeedRequests = [...allFeedRequests, ...requests];
-            feedPage++;
-
-            if (requests.length < feedLimit) {
-                hasMoreFeed = false;
-                loadMoreFeedButton.style.display = 'none';
-            }
-
             const feedContainer = document.getElementById('community-feed');
-            if (allFeedRequests.length === 0) {
-                feedContainer.innerHTML = '<p>No approved requests to display.</p>';
-                return;
-            }
+            feedContainer.innerHTML = '';
 
-            // Shuffle array to randomize spans
-            const shuffledRequests = [...allFeedRequests].sort(() => Math.random() - 0.5);
-            feedContainer.innerHTML = ''; // Clear and re-render
-
-            shuffledRequests.forEach((request, index) => {
+            requests.forEach((request, index) => {
                 const card = document.createElement('div');
-                card.classList.add('grid-card', `category-${request.RequestCategory.toLowerCase().replace(/\s+/g, '-')}`);
+                card.classList.add('masonry-card', `category-${request.RequestCategory.toLowerCase().replace(/\s+/g, '-')}`);
                 card.dataset.tilt = '';
-
-                // Randomly assign spans to some cards
-                const shouldSpan = index % 5 === 0 || index % 3 === 0; // Span every 3rd or 5th card
-                const spanType = Math.random() > 0.5 ? 'span-column' : 'span-row';
-                if (shouldSpan) {
-                    card.classList.add(spanType);
-                }
-
                 card.innerHTML = `
                     <div class="card-image-wrapper">
                         <img src="${request.RequestImageURL || 'https://dummyimage.com/300x200/cccccc/ffffff&text=Image+Not+Found'}" 
@@ -531,9 +447,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="card-content">
                         <h3>${request.RequestTitle}</h3>
-                        <p class="card-category"><strong>Category:</strong> ${request.RequestCategory}</p>
                         <p class="card-description">${request.RequestDescription.length > 150 ? request.RequestDescription.substring(0, 150) + '...' : request.RequestDescription}</p>
                         <p class="card-location"><i class="fas fa-map-marker-alt"></i> ${request.RequestLocation}</p>
+                        <span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
                         <button class="view-details hidden">View Details</button>
                     </div>
                 `;
@@ -574,7 +490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Initialize VanillaTilt
             if (window.VanillaTilt) {
-                VanillaTilt.init(document.querySelectorAll('.grid-card'), {
+                VanillaTilt.init(document.querySelectorAll('.masonry-card'), {
                     max: 15,
                     speed: 400,
                     glare: true,
@@ -586,10 +502,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Error loading community feed.', 'error');
         }
     }
-
-    loadMoreFeedButton.addEventListener('click', () => {
-        loadCommunityFeed();
-    });
 
     function getCategoryIcon(category) {
         const icons = {
@@ -736,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showToast('Request deleted successfully!', 'success');
                 loadUserRequests();
-                loadCommunityFeed(true);
+                loadCommunityFeed();
             }
         }
     }
@@ -855,5 +767,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.editRequest = editRequest;
     window.deleteRequest = deleteRequest;
-    window.toggleTracker = toggleTracker;
 });
