@@ -1,0 +1,574 @@
+
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Raleway', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Variables */
+:root {
+  --primary-color: #48887b;
+  --text-color: #373435;
+  --background-color: #ffffff;
+  --footer-bg: #1d1c1a;
+  --light-bg: #f8f9fa;
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Top Header */
+.top-header {
+  background-color: var(--light-bg);
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.top-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contact-info span {
+  margin-right: 15px;
+}
+
+.social-links a {
+  margin-left: 10px;
+  color: #002906;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  color: #00a31e;
+}
+
+/* Navigation */
+nav {
+  background-color: #fff;
+  padding: 15px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+nav .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  font-size: 24px;
+  font-weight: 700;
+  color: #002906;
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-links a {
+  color: #002906;
+  font-weight: 500;
+  margin-right: 20px;
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: #00a31e;
+}
+
+.search-bar input {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.language-switcher select {
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  margin-left: 10px;
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  height: 600px;
+  background: url('https://www.coachtours.co.za/images/620x258/bo-kaap.jpg') no-repeat center;
+  background-size: cover;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: #fff;
+  z-index: 1;
+}
+
+.hero-text h1 {
+  font-size: 60px;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.hero-text p {
+  font-size: 20px;
+}
+
+.btn-get-started{
+  padding: 20px;
+  border-radius: 8px;
+  outline: #002906 2px solid;
+  background-color: rgba(24, 24, 24, 0.4);
+}
+
+
+
+/* Services Section */
+.services {
+  padding: 60px 0;
+  background-color: var(--light-bg);
+  text-align: center;
+}
+
+.services h2 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: var(--text-color);
+}
+
+.infobox-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 30px;
+}
+
+.infobox-link {
+  text-decoration: none;
+  color: inherit;
+  flex: 1 1 300px;
+  max-width: 320px;
+  display: flex;
+}
+
+.infobox {
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 30px 20px;
+  background-color: #fff;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s, transform 0.3s;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.infobox:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+}
+
+.infobox-icon {
+  font-size: 40px;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.infobox h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.infobox p {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* News Feed Section */
+.news-feed {
+  padding: 50px 0;
+  background-color: #002906;
+}
+
+.news-feed h2 {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: white;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.news-card {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+}
+
+.category {
+  display: inline-block;
+  background-color: #002906;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 3px;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.news-card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.news-card p {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* Testimonials Section */
+.testimonials {
+  padding: 50px 0;
+  background-color: #fff;
+}
+
+.testimonials h2 {
+  text-align: center;
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: var(--text-color);
+}
+
+.testimonial-slider {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.testimonial {
+  width: 45%;
+  padding: 20px;
+  background-color: var(--light-bg);
+  border-radius: 5px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.testimonial p {
+  font-size: 16px;
+  color: var(--text-color);
+}
+
+/* Map Section */
+.map {
+  padding: 50px 0;
+  text-align: center;
+}
+
+.map h2 {
+  font-size: 32px;
+  margin-bottom: 30px;
+  color: var(--text-color);
+}
+
+#map {
+  height: 450px;
+  width: 100%;
+}
+
+.mapDiv{
+  background-color: #002906;
+  color: white;
+  padding-top: 20px;
+  padding-bottom: 40px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+  background-color: #3b6e63; /* Slightly darker shade of primary color */
+}
+
+/* Footer */
+footer {
+  background-color: var(--footer-bg);
+  color: #fff;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-around;
+  padding: 30px 0;
+}
+
+.footer-column {
+  width: 25%;
+}
+
+.footer-column h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.footer-column ul li a:hover {
+  color: var(--primary-color);
+}
+
+.social-icons a {
+  margin-right: 10px;
+  color: #fff;
+  font-size: 20px;
+}
+
+.social-icons a:hover {
+  color: var(--primary-color);
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 14px;
+  background-color: #171615; /* Slightly darker footer bottom */
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .top-header .container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .contact-info, .social-links {
+    margin-bottom: 10px;
+  }
+  .nav-links {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-links a, .search-bar, .language-switcher {
+    margin: 5px 0;
+  }
+  .hero-text h1 {
+    font-size: 40px;
+  }
+  .hero-text p {
+    font-size: 16px;
+  }
+  .infobox-link, .testimonial {
+    width: 100%;
+  }
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .footer-column {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  /* General Typography */
+h2 {
+  font-size: 2rem;
+  text-align: center;
+  color: #2a3d45;
+  margin-bottom: 30px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Testimonial Slider Wrapper */
+.testimonial-slider {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  padding: 20px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+}
+
+/* Individual Testimonial Card */
+.testimonial {
+  flex: 0 0 300px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  text-align: left;
+  scroll-snap-align: start;
+  transition: transform 0.3s ease;
+}
+
+.testimonial:hover {
+  transform: translateY(-5px);
+}
+
+.testimonial p:first-child {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.testimonial p:last-child {
+  font-weight: 500;
+  font-style: italic;
+  color: #2a3d45;
+}
+
+/* Write a Review Button */
+.btn-write-review {
+  display: inline-block;
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-write-review:hover {
+  background-color: #0056b3;
+}
+
+/* Google Maps Section */
+iframe {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.testimonials {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+}
+
+.testimonials h2 {
+  font-size: 36px;
+  color: #2a4d5e;
+  margin-bottom: 40px;
+  font-weight: bold;
+}
+
+.carousel {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 300px;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+}
+
+.testimonial-card .user {
+  font-weight: bold;
+  color: #2a4d5e;
+  margin-bottom: 5px;
+}
+
+.testimonial-card .date {
+  font-size: 12px;
+  color: gray;
+  margin-bottom: 10px;
+}
+
+.testimonial-card .rating {
+  margin-bottom: 10px;
+  color: gold;
+}
+
+.testimonial-card p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.review-button {
+  margin-top: 40px;
+}
+
+.review-button button {
+  background-color: #2a4d5e;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.review-button button:hover {
+  background-color: #1f3a4a;
+}
+    }
+  

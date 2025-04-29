@@ -244,12 +244,12 @@ a:hover {
     top: 30%;
     left: 50%;
     transform: translate(-50%, -30%);
-    background-color: rgba(0, 41, 6, 0.3);
     text-align: center;
-    padding: 15px;
+    padding: 95px 9vh;
     border-radius: 10px;
     color: white;
     z-index: 10;
+    background-color: rgba(24, 24, 24, 0.2);
   }
   
   .slideshow-text h1 {

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services - CivicSync</title>
+  <link rel="stylesheet" href="services.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav>
+    <div class="container">
+      <div class="logo"><a href="/">CivicSync</a></div>
+      <div class="nav-links">
+        <a href="/about">About</a>
+        <a href="#" onclick="scrollToSection('services-section')">Services</a>
+        <a href="/training">Training</a>
+        <a href="/contact">Contact Us</a>
+        <a href="/loginPage/loginPage.html">SignIn</a>
+        <div class="search-bar">
+          <input type="text" placeholder="Search..." aria-label="Search">
+        </div>
+        <div class="language-switcher">
+          <select aria-label="Select Language">
+            <option value="en">English</option>
+            <option value="af">Afrikaans</option>
+            <option value="xh">isiXhosa</option>
+            <option value="zu">isiZulu</option>
+            <option value="st">Sesotho</option>
+            <option value="tn">Setswana</option>
+            <option value="nso">Sepedi</option>
+            <option value="ts">Xitsonga</option>
+            <option value="ss">siSwati</option>
+            <option value="ve">Tshivenda</option>
+            <option value="nr">isiNdebele</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Services Section -->
+  <section class="services" id="services-section">
+    <div class="container">
+      <h2>Our Services</h2>
+      <div class="service-filter">
+        <button onclick="filterService('all')">All</button>
+        <button onclick="filterService('water')">Water</button>
+        <button onclick="filterService('maintenance')">Maintenance</button>
+      </div>
+      <div class="service-list">
+        <div class="service-item" data-category="water">
+          <h3>Water Services</h3>
+          <p>We provide support for water-related issues, including pipe repairs and leak reporting.</p>
+        </div>
+        <div class="service-item" data-category="maintenance">
+          <h3>Maintenance Services</h3>
+          <p>Our maintenance services cover road repairs, streetlight fixes, and more.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="services.js"></script>
+</body>
+</html>
