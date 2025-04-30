@@ -1,0 +1,51 @@
+Handle New users
+BEGIN
+  -- Log the role executing the trigger
+  INSERT INTO public.trigger_errors (error_message, error_details)
+  VALUES (
+    'Debug: Role executing trigger',
+    jsonb_build_object('role', current_user, 'user_id', NEW.id, 'email', NEW.email, 'metadata', NEW.raw_user_meta_data)
+  );
+
+  -- Log the attempt to insert into UserTable
+  INSERT INTO public.trigger_errors (error_message, error_details)
+  VALUES (
+    'Debug: Attempting to insert user',
+    jsonb_build_object('user_id', NEW.id, 'email', NEW.email, 'metadata', NEW.raw_user_meta_data)
+  );
+
+  -- Insert into UserTable
+  INSERT INTO public."UserTable" (
+    "UserID",
+    "UserFirstname",
+    "UserLastname",
+    "UserEmail",
+    "UserPhonenumber",
+    "UserUsername",
+    "UserLocation",
+    "Role",
+    "CreatedAt"
+  )
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'FirstName', 'Unknown'),
+    COALESCE(NEW.raw_user_meta_data->>'LastName', 'User'),
+    NEW.email,
+    (NEW.raw_user_meta_data->>'phone')::varchar,
+    COALESCE(NEW.raw_user_meta_data->>'Username', 'user_' || NEW.id::text),
+    COALESCE(NEW.raw_user_meta_data->>'location', 'Not specified'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'user'),
+    CURRENT_TIMESTAMP
+  )
+  ON CONFLICT ("UserID") DO NOTHING;
+
+  RETURN NEW;
+
+EXCEPTION WHEN OTHERS THEN
+  INSERT INTO public.trigger_errors (error_message, error_details)
+  VALUES (
+    'Error in handle_new_user: ' || SQLERRM,
+    jsonb_build_object('user_id', NEW.id, 'email', NEW.email, 'metadata', NEW.raw_user_meta_data, 'state', SQLSTATE)
+  );
+  RAISE EXCEPTION 'Failed to handle new user: %', SQLERRM;
+END;
