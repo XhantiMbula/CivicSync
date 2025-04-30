@@ -5,33 +5,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <!--Link CSS-->
+    <!-- Link CSS -->
     <link rel="stylesheet" href="profile.css">
-    <!--Link JavaScript-->
+    
     <!-- Load Supabase UMD library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 
     <!-- Load your script -->
     <script src="profile.js" defer></script>
 
+    <!-- External CSS Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    
+    <!-- Google Maps JS API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
 </head>
 
 <body>
 
     <div class="profile-container">
+        <!-- Back Button and Logout -->
         <div class="back-container">
             <a href="../UserDashboard/userDashboard.html" class="back-link">
                 <i class="fas fa-arrow-left"></i> Go Back
             </a>
+            <button id="logout-btn">Logout</button>
         </div>
+
         <header class="profile-header">
             <h1>Profile</h1>
         </header>
 
+        <!-- Profile Details -->
         <div class="profile-details">
             <div class="profile-h3">
                 <h3>Personal Details</h3>
@@ -46,10 +52,7 @@
             <button id="edit-profile-btn">Edit Profile</button>
         </div>
 
-        <div class="profile-actions">
-            <button id="logout-btn">Logout</button>
-        </div>
-
+        <!-- Notifications Section -->
         <div class="notifications-section">
             <h3>Recent Notifications</h3>
             <div id="notifications-container"></div>
@@ -57,7 +60,7 @@
 
     </div>
 
-    <!--Footer-->
+    <!-- Footer -->
     <footer class="site-footer animate-section">
         <div class="footer-content">
             <div class="footer-section">
