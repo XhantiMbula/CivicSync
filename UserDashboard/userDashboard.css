@@ -181,15 +181,49 @@ button {
     opacity: 0.9;
 }
 
+/* Filter Container */
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-container label {
+    font-weight: 600;
+    color: #333;
+}
+
+#status-filter {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1em;
+    background: rgba(255, 255, 255, 0.3);
+    color: #333;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#status-filter:focus {
+    outline: none;
+    border-color: #28a745;
+    box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
 /* Interactive Table */
 .table-container {
     margin: 40px 0;
 }
 
+.table-container h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2em;
+    color: #333;
+}
+
 .interactive-table {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px vacun30px rgba(0, 0, 0, 0.1);
     padding: 20px;
     overflow-x: auto;
 }
@@ -366,9 +400,15 @@ button {
     margin: 40px 0;
 }
 
+.feed-section h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2em;
+    color: #333;
+}
+
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr); /* Updated to 3 columns */
     gap: 20px;
     padding: 20px;
 }
@@ -383,12 +423,8 @@ button {
     overflow: hidden;
 }
 
-.grid-card.span-column {
-    grid-column: span 2;
-}
-
-.grid-card.span-row {
-    grid-row: span 2;
+.grid-card.featured {
+    grid-column: span 2; /* First card spans 2 columns */
 }
 
 .grid-card::before {
@@ -541,7 +577,7 @@ button {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     margin: 5% auto;
     padding: 20px;
-    width: 90%;
+    width: 100%;
     max-width: 600px;
     position: relative;
     animation: slideIn 0.3s ease;
@@ -577,7 +613,8 @@ button {
     margin-bottom: 20px;
     color: #333;
 }
-
+.modal-body{
+}
 .modal-body form {
     display: flex;
     flex-direction: column;
@@ -645,6 +682,51 @@ button {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 5px;
+}
+
+/* Feed Modal Section Styles */
+.modal-section {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.modal-section h3 {
+    font-family: 'Poppins', sans-serif;
+    margin: 0 0 10px;
+    font-size: 1.3em;
+    color: #333;
+    border-left: 4px solid #28a745;
+    padding-left: 10px;
+}
+
+.info-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #333;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.info-value {
+    color: #555;
+    flex-grow: 1;
+    word-break: break-word;
+}
+
+.feed-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
 }
 
 /* Complaint Modal Styling */
@@ -930,6 +1012,10 @@ button {
 @media (max-width: 600px) {
     .grid-container {
         grid-template-columns: 1fr;
+    }
+
+    .grid-card.featured {
+        grid-column: span 1;
     }
 
     .request-complaint-section {

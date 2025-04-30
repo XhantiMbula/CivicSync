@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <link rel="stylesheet" href="adminDashboard.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Navigation Bar -->
@@ -36,33 +37,33 @@
   <!-- Main Content -->
   <div class="main-container">
     <!-- Header -->
-    <header class="dashboard-header">
+    <header class="dashboard-header animate-section">
       <h1>Admin Dashboard</h1>
       <p>Welcome, Xhanti Mbula! Manage municipal service requests efficiently.</p>
     </header>
 
     <!-- Stats Overview -->
-    <div class="stats-overview">
-      <div class="stat-card">
+    <div class="stats-overview animate-section">
+      <div class="stat-card glass-card">
         <h3>Total Requests</h3>
         <p id="total-requests">0</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-card">
         <h3>Pending</h3>
         <p id="pending-requests">0</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-card">
         <h3>Approved</h3>
         <p id="approved-requests">0</p>
       </div>
-      <div class="stat-card">
+      <div class="stat-card glass-card">
         <h3>Rejected</h3>
         <p id="rejected-requests">0</p>
       </div>
     </div>
 
     <!-- Dashboard Content -->
-    <div class="dashboard-container">
+    <div class="dashboard-container animate-section">
       <!-- Left side: Scrollable request cards -->
       <div class="request-list">
         <h2>Service Requests</h2>
@@ -83,7 +84,7 @@
 
     <!-- Dashboard Footer: Table and Analytics -->
     <div class="dashboard-footer">
-      <div class="requests-table-section">
+      <div class="requests-table-section animate-section">
         <h2>Approved and Rejected Requests</h2>
         <div class="table-container">
           <table id="requests-table">
@@ -102,18 +103,18 @@
           </table>
         </div>
       </div>
-      <div class="analytics-section" id="analytics-section">
+      <div class="analytics-section animate-section" id="analytics-section">
         <h2>Request Analytics</h2>
         <div class="analytics-kpis">
-          <div class="kpi-card">
+          <div class="kpi-card glass-card">
             <h3>Water Requests</h3>
             <p id="kpi-water">0</p>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card glass-card">
             <h3>Electricity Requests</h3>
             <p id="kpi-electricity">0</p>
           </div>
-          <div class="kpi-card">
+          <div class="kpi-card glass-card">
             <h3>Avg. Processing Time</h3>
             <p id="kpi-processing-time">0 days</p>
           </div>
@@ -167,9 +168,33 @@
   </div>
 
   <!-- Footer -->
-  <footer class="footer">
-    <p>© 2025 CivicSync by Syntax Syndicate. All rights reserved.</p>
-    <p>Contact: <a href="mailto:xhantimbula@syntaxsyndicate.co.za">xhantimbula@syntaxsyndicate.co.za</a> | +27 64 071 6111</p>
+  <footer class="site-footer animate-section">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:xhantimbula@syntaxsyndicate.co.za">xhantimbula@syntaxsyndicate.co.za</a></p>
+        <p>Phone: <a href="tel:+27640716111">+27 64 071 6111</a></p>
+      </div>
+      <div class="footer-section">
+        <h3>Our Services</h3>
+        <ul>
+          <li>Incident Reporting</li>
+          <li>Community Engagement</li>
+          <li>Real-Time Updates</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Follow Us</h3>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>© 2025 CivicSync by Syntax Syndicate. All rights reserved.</p>
+    </div>
   </footer>
 
   <!-- Supabase Client -->
