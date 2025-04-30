@@ -1,131 +1,137 @@
-// Initialize Supabase
-const supabaseUrl = 'https://lywylvbgsnmqwcwgiyhc.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg';
+const supabaseUrl = "https://bvmohzddhmqvbwtxzgbb.supabase.co";
+const supabaseKey = "YOUR_SUPABASE_KEY"; // Replace with your actual key
+const client = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Fetch user data on page load
-document.addEventListener('DOMContentLoaded', async () => {
-    // Initialize Supabase client using UMD global
-    const { createClient } = window.supabase;
+// DOM Elements
+const usernameInput = document.getElementById("username");
+const nameInput = document.getElementById("name");
+const surnameInput = document.getElementById("surname");
+const emailInput = document.getElementById("email");
+const numberInput = document.getElementById("number");
+const editButton = document.getElementById("edit-profile-btn");
+const logoutButton = document.getElementById("logout-btn");
+const notificationsContainer = document.getElementById("notifications-container");
 
-    const supabase = createClient(
-        'https://lywylvbgsnmqwcwgiyhc.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
-    );
+let isEditing = false;
 
-    window.supabaseClient = supabase; // Make globally accessible
+// Load user data on page load
+window.addEventListener("DOMContentLoaded", async () => {
+    const {
+        data: { user },
+        error: userError
+    } = await client.auth.getUser();
 
-    // Fetch user data
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user) {
-        console.error('Error fetching user data:', error);
+    if (userError || !user) {
+        console.error("User not logged in:", userError);
+        window.location.href = "../loginPage/loginPage.html";
         return;
     }
 
-    const user = data.user.user_metadata;
+    const { data, error } = await client
+        .from("Users")
+        .select("*")
+        .eq("UserEmail", user.email)
+        .single();
 
-    document.getElementById('username').value = user.username || '';
-    document.getElementById('name').value = user.UserFirstname || '';
-    document.getElementById('surname').value = user.surname || '';
-    document.getElementById('email').value = data.user.email || '';
-    document.getElementById('number').value = user.phone || '';
-    
-    // Handle Edit/Save button
-    document.getElementById('edit-profile-btn').addEventListener('click', async function () {
-        const inputs = document.querySelectorAll('.profile-personal-info input');
-        const button = document.getElementById('edit-profile-btn');
+    if (error) {
+        console.error("Error fetching user data:", error.message);
+    } else {
+        usernameInput.value = data.UserUsername || "";
+        nameInput.value = data.UserFirstname || "";
+        surnameInput.value = data.UserLastname || "";
+        emailInput.value = data.UserEmail || "";
+        numberInput.value = data.UserNumber || "";
+    }
 
-        if (button.textContent === 'Edit Profile') {
-            inputs.forEach(input => {
-                input.disabled = false;
-                input.classList.add('editable');
-            });
-            button.textContent = 'Save';
-        } else {
-            const { error } = await supabase.auth.updateUser({
-                data: {
-                    username: document.getElementById('username').value,
-                    name: document.getElementById('name').value,
-                    surname: document.getElementById('surname').value,
-                    phone: document.getElementById('number').value
-                }
-            });
-            
-            if (error) {
-                console.error('Error updating user data:', error);
-                return;
-            }
+    loadRecentNotifications(user.email);
+});
 
-            inputs.forEach(input => {
-                input.disabled = true;
-                input.classList.remove('editable');
-            });
-            button.textContent = 'Edit Profile';
-        }
-    });
-    // Handle Logout button
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-        const { error } = await supabase.auth.signOut();
+// Toggle Edit Mode
+editButton.addEventListener("click", async () => {
+    if (!isEditing) {
+        isEditing = true;
+        [usernameInput, nameInput, surnameInput, numberInput].forEach(input => {
+            input.disabled = false;
+            input.classList.add("editable");
+        });
+        editButton.textContent = "Save Profile";
+    } else {
+        const updatedData = {
+            UserUsername: usernameInput.value,
+            UserFirstname: nameInput.value,
+            UserLastname: surnameInput.value,
+            UserNumber: numberInput.value
+        };
+
+        const { data: { user } } = await client.auth.getUser();
+
+        const { error } = await client
+            .from("Users")
+            .update(updatedData)
+            .eq("UserEmail", user.email);
+
         if (error) {
-            console.error('Error during logout:', error);
+            console.error("Failed to update profile:", error.message);
+        } else {
+            console.log("Profile updated");
+        }
+
+        [usernameInput, nameInput, surnameInput, numberInput].forEach(input => {
+            input.disabled = true;
+            input.classList.remove("editable");
+        });
+        editButton.textContent = "Edit Profile";
+        isEditing = false;
+    }
+});
+
+// Logout Functionality
+logoutButton.addEventListener("click", async () => {
+    const { error } = await client.auth.signOut();
+    if (error) {
+        console.error("Logout failed:", error.message);
+    } else {
+        window.location.href = "../loginPage/loginPage.html";
+    }
+});
+
+// Load Notifications
+async function loadRecentNotifications(email) {
+    try {
+        const { data, error } = await client
+            .from("Notifications")
+            .select("*")
+            .eq("UserEmail", email)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            notificationsContainer.innerHTML = `<p class="no-notifications">No recent notifications.</p>`;
             return;
         }
-        // Redirect to login or home page after successful logout
-        window.location.href = '../loginPage/loginPage.html'; // Change this path as needed
-    });
-    async function loadRecentNotifications() {
-        const { data: userData, error: userError } = await supabase.auth.getUser();
-        if (userError || !userData?.user) return;
-    
-        const userId = userData.user.id;
-    
-        try {
-            const { data: messages, error } = await supabase
-                .from('RequestMessages')
-                .select('*, RequestTable(RequestTitle)')
-                .eq('UserID', userId)
-                .order('created_at', { ascending: false })
-                .limit(5); // Show only the 5 most recent notifications
-    
-            if (error) throw new Error(error.message);
-    
-            const section = document.querySelector('.notifications-section');
-            if (!section) {
-                console.error("Notifications section not found in the DOM.");
-                return;
+
+        const ul = document.createElement("ul");
+        ul.classList.add("notification-list");
+
+        data.forEach(notification => {
+            const li = document.createElement("li");
+            li.textContent = notification.Message;
+
+            if (notification.Type === "Approval") {
+                li.classList.add("notification-approval");
+            } else if (notification.Type === "Rejection") {
+                li.classList.add("notification-rejection");
             }
-    
-            // Clear any previous content in the notifications section
-            section.innerHTML = '<h3>Recent Notifications</h3>'; 
-    
-            if (!messages || messages.length === 0) {
-                const noMsg = document.createElement('p');
-                noMsg.className = 'no-notifications';
-                noMsg.textContent = 'You have no recent notifications.';
-                section.appendChild(noMsg);
-            } else {
-                const container = document.createElement('div');
-                container.classList.add('recent-notifications');
-    
-                let html = '<ul class="notification-list">';
-                messages.forEach(message => {
-                    const statusClass = message.MessageType === 'Approval' ? 'notification-approval' : 'notification-rejection';
-                    html += `
-                        <li class="${statusClass}">
-                            <strong>${message.RequestTable?.RequestTitle || 'Untitled Request'}</strong><br>
-                            ${message.MessageContent}<br>
-                            <small>${new Date(message.created_at).toLocaleString()}</small>
-                        </li>
-                    `;
-                });
-                html += '</ul>';
-                container.innerHTML = html;
-                section.appendChild(container);
-            }
-    
-        } catch (error) {
-            console.error('Error loading recent notifications:', error);
-        }
+
+            ul.appendChild(li);
+        });
+
+        notificationsContainer.innerHTML = "";
+        notificationsContainer.appendChild(ul);
+    } catch (err) {
+        console.error("Error loading recent notifications:", err.message);
+        notificationsContainer.innerHTML = `<p class="no-notifications">Failed to load notifications.</p>`;
     }
-    // Call it at the end of DOMContentLoaded
-    loadRecentNotifications();    
-});
+}
