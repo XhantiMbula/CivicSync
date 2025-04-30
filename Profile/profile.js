@@ -64,4 +64,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             button.textContent = 'Edit Profile';
         }
     });
+    // Handle Logout button
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error('Error during logout:', error);
+            return;
+        }
+        // Redirect to login or home page after successful logout
+        window.location.href = '../Login/login.html'; // Change this path as needed
+    });
 });
