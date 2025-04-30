@@ -74,4 +74,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Redirect to login or home page after successful logout
         window.location.href = '../Login/login.html'; // Change this path as needed
     });
+    async function loadRecentNotifications() {
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData?.user) return;
+    
+        const userId = userData.user.id;
+    
+        try {
+            const { data: messages, error } = await supabase
+                .from('RequestMessages')
+                .select('*, RequestTable(RequestTitle)')
+                .eq('UserID', userId)
+                .order('created_at', { ascending: false })
+                .limit(5); // Show only the 5 most recent notifications
+    
+            if (error) throw new Error(error.message);
+    
+            const container = document.getElementById('notifications-container');
+            container.innerHTML = ''; // Clear any previous notifications
+
+            if (!section) return;
+
+            if (!messages || messages.length === 0) {
+                const noMsg = document.createElement('p');
+                noMsg.className = 'no-notifications';
+                noMsg.textContent = 'You have no recent notifications.';
+                section.appendChild(noMsg);
+            } else {
+                const container = document.createElement('div');
+                container.classList.add('recent-notifications');
+
+                let html = '<ul class="notification-list">';
+                messages.forEach(message => {
+                    const statusClass = message.MessageType === 'Approval' ? 'notification-approval' : 'notification-rejection';
+                    html += `
+                        <li class="${statusClass}">
+                            <strong>${message.RequestTable?.RequestTitle || 'Untitled Request'}</strong><br>
+                            ${message.MessageContent}<br>
+                            <small>${new Date(message.created_at).toLocaleString()}</small>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            }
+            } catch (error) {
+            console.error('Error loading recent notifications:', error);
+        }
+    }
+    
+    // Call it at the end of DOMContentLoaded
+    loadRecentNotifications();    
 });
