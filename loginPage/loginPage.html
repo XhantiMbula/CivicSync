@@ -4,19 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - CivicSync</title>
-    <!-- ✅ Load Supabase Client FIRST -->
+    <!-- Load Google Fonts for Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Load Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
- 
-    <!-- ✅ Link CSS -->
+    <!-- Link CSS -->
     <link rel="stylesheet" href="loginPage.css">
- 
-    <!-- ✅ Load JavaScript AFTER Supabase is Available -->
-    <script type="module" src="loginPage.js"></script>
-
+    <!-- Load Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="loginPage.css">
+    <!-- Load JavaScript -->
+    <script type="module" src="loginPage.js"></script>
 </head>
 <body>
+    <!-- Header with Navigation -->
+    <header>
+        <nav class="navbar">
+            <a href="/index.html" class="logo">CivicSync</a>
+            <div class="nav-right">
+                <!-- Placeholder icons (non-functional on login page) -->
+                
+                <div class="hamburger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+            <!-- Navigation links (visible on mobile when hamburger is clicked) -->
+            
+        </nav>
+    </header>
+
     <div class="main-container">
         <div class="left-section">
             <div class="back-container">
@@ -90,8 +105,19 @@
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 CivicSync. All rights reserved.</p>
+            <p>© 2025 CivicSync. All rights reserved.</p>
         </div>
-      </footer>
+    </footer>
+
+    <!-- JavaScript for Hamburger Menu Toggle -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.querySelector('.hamburger');
+            const navbar = document.querySelector('.navbar');
+            hamburger.addEventListener('click', () => {
+                navbar.classList.toggle('active');
+            });
+        });
+    </script>
 </body>
 </html>
