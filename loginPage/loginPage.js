@@ -45,10 +45,16 @@ async function loginUser() {
             return;
         }
 
-        if (userData.Role === 'Admin') {
+        if (userData.Role === 'Admin' || userData.Role === 'admin') {
+            // Check if the user is an admin
             console.log("Admin detected, redirecting...");
             window.location.href = "/AdminDashboard/adminDashboard.html";
-        } else {
+        } else if(userData.Role === 'Contractor'|| userData.Role === 'contractor') {
+            // Check if the user is a contractor
+            console.log("Contractor detected, redirecting...");
+            window.location.href = "/ContractorDashboard/contractorDashboard.html";
+        }
+        else {
             console.log("Regular user detected, redirecting...");
             window.location.href = "/UserDashboard/userDashboard.html";
         }

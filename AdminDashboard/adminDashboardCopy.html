@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSync Admin Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="adminDashboard.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="logo">CivicSync</div>
+    <div class="nav-items">
+      <div class="nav-item notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge" id="notification-badge">0</span>
+      </div>
+      <div class="nav-item profile">
+        <i class="fas fa-user"></i>
+        <div class="dropdown">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#" id="logout">Logout</a>
+        </div>
+      </div>
+      <select id="language-selector">
+        <option value="en">English</option>
+        <option value="zu">Zulu</option>
+        <option value="af">Afrikaans</option>
+      </select>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <h1>Admin Dashboard</h1>
+      <p>Welcome, Xhanti Mbula! Manage municipal service requests efficiently.</p>
+    </header>
+
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <div class="stat-card">
+        <h3>Total Requests</h3>
+        <p id="total-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Pending</h3>
+        <p id="pending-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Approved</h3>
+        <p id="approved-requests">0</p>
+      </div>
+      <div class="stat-card">
+        <h3>Rejected</h3>
+        <p id="rejected-requests">0</p>
+      </div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+      <!-- Left side: Scrollable request cards -->
+      <div class="request-list">
+        <h2>Service Requests</h2>
+        <div class="filter-container">
+          <label for="status-filter">Filter by Status:</label>
+          <select id="status-filter">
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div id="requests" class="requests-scrollable"></div>
+      </div>
+      <!-- Right side: Google Map -->
+      <div id="map" class="map-container"></div>
+    </div>
+
+    <!-- Dashboard Footer: Table and Analytics -->
+    <div class="dashboard-footer">
+      <div class="requests-table-section">
+        <h2>Approved and Rejected Requests</h2>
+        <div class="table-container">
+          <table id="requests-table">
+            <thead>
+              <tr>
+                <th data-sort="title">Title <i class="fas fa-sort"></i></th>
+                <th data-sort="description">Description</th>
+                <th data-sort="location">Location</th>
+                <th data-sort="status">Status <i class="fas fa-sort"></i></th>
+                <th data-sort="submitted">Submitted <i class="fas fa-sort"></i></th>
+                <th data-sort="username">Username</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="analytics-section" id="analytics-section">
+        <h2>Request Analytics</h2>
+        <div class="analytics-kpis">
+          <div class="kpi-card">
+            <h3>Water Requests</h3>
+            <p id="kpi-water">0</p>
+          </div>
+          <div class="kpi-card">
+            <h3>Electricity Requests</h3>
+            <p id="kpi-electricity">0</p>
+          </div>
+          <div class="kpi-card">
+            <h3>Avg. Processing Time</h3>
+            <p id="kpi-processing-time">0 days</p>
+          </div>
+        </div>
+        <div class="analytics-charts">
+          <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+          </div>
+          <div class="chart-container">
+            <canvas id="trendChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Modal -->
+  <div id="action-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-header">
+        <h2 id="modal-title">Action</h2>
+      </div>
+      <div class="modal-body">
+        <form id="action-form">
+          <label for="message">Message (optional):</label>
+          <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+          <div class="modal-footer">
+            <button type="button" class="modal-cancel-button">Cancel</button>
+            <button type="submit" class="modal-submit-button" id="modal-submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Details Modal -->
+  <div id="details-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-header">
+        <h2>Request Details</h2>
+      </div>
+      <div class="modal-body" id="details-content">
+        <!-- Populated by JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-cancel-button" id="details-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Allocate Modal -->
+  <div id="allocate-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-header">
+        <h2>Select Contractor</h2>
+      </div>
+      <div class="modal-body">
+        <div id="contractor-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 CivicSync by Syntax Syndicate. All rights reserved.</p>
+    <p>Contact: <a href="mailto:xhantimbula@syntaxsyndicate.co.za">xhantimbula@syntaxsyndicate.co.za</a> | +27 64 071 6111</p>
+  </footer>
+
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
+  <!-- Google Maps API -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap"></script>
+  <!-- Custom JavaScript -->
+  <script type="module" src="adminDashboardCopy.js"></script>
+</body>
+</html>

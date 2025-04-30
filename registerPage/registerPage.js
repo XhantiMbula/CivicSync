@@ -63,16 +63,36 @@ async function registerUser() {
         }
 
         // Check if phone number already exists
-        const { data: phoneExists, error: phoneError } = await supabase
-            .from("UserTable")
-            .select("UserPhonenumber")
-            .eq("UserPhonenumber", Phone)
-            .single();
+        // Validate phone number format
+if (Phone.length !== 10 || !/^\d+$/.test(Phone)) {
+    showMessage("Phone number must be exactly 10 digits and contain numbers only.", "error");
+    return;
+}
 
-        if (phoneExists) {
-            showMessage("Phone number already exists. Please use a different phone number.", "error");
-            return;
-        }
+//Phone number exception handling
+const { data: phoneExists, error: phoneError } = await supabase
+    .from("UserTable")
+    .select("UserPhonenumber")
+    .eq("UserPhonenumber", Phone)
+    .single();
+
+// Handle database errors
+if (phoneError) {
+    showMessage(
+        `Error checking phone number: ${phoneError.message || "Unknown error"}`,
+        "error"
+    );
+    return;
+}
+
+// Check for duplicate phone number
+if (phoneExists) {
+    showMessage("Phone number already exists. Please use a different phone number.", "error");
+    return;
+}
+
+
+
 
         // Register the user with metadata
         const { data, error } = await supabase.auth.signUp({
