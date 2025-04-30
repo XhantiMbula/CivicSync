@@ -1,841 +1,861 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 // Initialize Supabase client
-const supabaseClient = createClient('https://lywylvbgsnmqwcwgiyhc.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg');
+const supabaseClient = createClient(
+  'https://lywylvbgsnmqwcwgiyhc.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
+);
 
-// Define initMap globally for Google Maps callback
+// Initialize Google Maps
 window.initMap = function() {
   if (!window.google || !window.google.maps) {
     console.error('Google Maps API not loaded');
     return;
   }
-  window.map = new window.google.maps.Map(document.getElementById('map'), {
-    center: { lat: -33.9249, lng: 18.4241 }, // Center on Cape Town
+  window.map = new google.maps.Map(document.getElementById('map'), {
+    center: { lat: -33.9249, lng: 18.4241 },
     zoom: 10,
+    styles: [
+      {
+        featureType: 'all',
+        stylers: [{ saturation: -10 }, { lightness: 20 }]
+      }
+    ]
   });
 };
 
-// Initialize map-related variables (avoid top-level google references)
 let map;
 let selectedCard = null;
 let selectedMarker = null;
+let markers = [];
 const markerIcons = {
-  default: {
-    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-    scaledSize: null // Set dynamically after API loads
-  },
-  selected: {
-    url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-    scaledSize: null // Set dynamically after API loads
-  }
+  default: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', scaledSize: null },
+  selected: { url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png', scaledSize: null }
 };
 
-// Modal controls (Action Modal)
-const actionModal = document.getElementById('action-modal');
-const modalTitle = document.getElementById('modal-title');
-const modalSubmit = document.querySelector('.modal-submit-button');
-const actionForm = document.getElementById('action-form');
-const actionCloseBtn = actionModal.querySelector('.close');
-const actionCancelBtn = actionModal.querySelector('.modal-cancel-button');
+document.addEventListener('DOMContentLoaded', () => {
+  const actionModal = document.getElementById('action-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalSubmit = document.querySelector('#action-modal .modal-submit-button');
+  const actionForm = document.getElementById('action-form');
+  const actionCloseBtn = actionModal.querySelector('.close');
+  const actionCancelBtn = document.querySelector('#action-modal .modal-cancel-button');
+  const allocateModal = document.getElementById('allocate-modal');
+  const allocateCancelBtn = document.getElementById('allocate-cancel');
+  const allocateCloseBtn = allocateModal.querySelector('.close');
+  const detailsModal = document.getElementById('details-modal');
+  const detailsCloseBtn = document.getElementById('details-close');
+  const detailsCloseSpan = detailsModal.querySelector('.close');
+  const notificationIcon = document.querySelector('.nav-item.notifications');
+  const statusFilter = document.getElementById('status-filter');
+  const logoutBtn = document.getElementById('logout');
+  let allRequests = [];
+  let statusChartInstance = null;
+  let trendChartInstance = null;
 
-function openActionModal(action, requestId, userId) {
-  modalTitle.textContent = `${action} Request`;
-  modalSubmit.textContent = `Submit ${action}`;
-  actionModal.dataset.action = action.toLowerCase();
-  actionModal.dataset.requestId = requestId;
-  actionModal.dataset.userId = userId;
-  actionModal.style.display = 'block';
-}
-
-function closeActionModal() {
-  actionModal.style.display = 'none';
-  actionForm.reset();
-  actionModal.dataset.action = '';
-  actionModal.dataset.requestId = '';
-  actionModal.dataset.userId = '';
-}
-
-actionCloseBtn.addEventListener('click', closeActionModal);
-actionCancelBtn.addEventListener('click', closeActionModal);
-window.addEventListener('click', (e) => {
-  if (e.target === actionModal) closeActionModal();
-});
-
-// Modal controls (Details Modal)
-const detailsModal = document.getElementById('details-modal');
-const detailsCloseBtn = document.getElementById('details-close');
-const detailsCloseSpan = detailsModal.querySelector('.close');
-
-function openDetailsModal(request, userData, messages) {
-  const content = document.getElementById('details-content');
-  content.innerHTML = `
-    <div class="modal-section request-info">
-      <h3>Request Information</h3>
-      <div class="info-item">
-        <span class="info-label">Title:</span>
-        <span class="info-value">${request.RequestTitle}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Description:</span>
-        <span class="info-value">${request.RequestDescription}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Category:</span>
-        <span class="info-value">${request.RequestCategory || 'Other'}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Location:</span>
-        <span class="info-value">${request.RequestLocation}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Status:</span>
-        <span class="info-value status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">Submitted:</span>
-        <span class="info-value">${new Date(request.created_at).toLocaleString()}</span>
-      </div>
-    </div>
-    <div class="modal-section user-info">
-      <h3>User Information</h3>
-      <div class="info-item">
-        <span class="info-label">Username:</span>
-        <span class="info-value">${userData?.UserUsername || 'Unknown'}</span>
-      </div>
-    </div>
-    ${request.RequestImageURL ? `
-      <div class="modal-section image-section">
-        <h3>Request Image</h3>
-        <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="request-image">
-      </div>
-    ` : ''}
-    <div class="modal-section message-history">
-      <h3>Message History</h3>
-      ${messages.length > 0 ? `
-        <div class="messages-container">
-          ${messages.map(msg => `
-            <div class="message-item">
-              <div class="message-header">
-                <span class="message-type">${msg.MessageType}</span>
-                <span class="message-date">${new Date(msg.created_at).toLocaleString()}</span>
-              </div>
-              <p class="message-content">${msg.MessageContent}</p>
-            </div>
-          `).join('')}
-        </div>
-      ` : '<p class="no-messages">No messages available.</p>'}
-    </div>
-  `;
-  detailsModal.style.display = 'block';
-}
-
-function closeDetailsModal() {
-  detailsModal.style.display = 'none';
-  document.getElementById('details-content').innerHTML = '';
-}
-
-detailsCloseBtn.addEventListener('click', closeDetailsModal);
-detailsCloseSpan.addEventListener('click', closeDetailsModal);
-window.addEventListener('click', (e) => {
-  if (e.target === detailsModal) closeDetailsModal();
-});
-
-// Load admin notifications
-async function loadAdminNotifications(adminId) {
-  try {
-    const { data: notifications, error } = await supabaseClient
-      .from('AdminNotifications')
-      .select('*, RequestTable(RequestTitle)')
-      .eq('AdminID', adminId)
-      .eq('IsRead', false)
-      .order('created_at', { ascending: false });
-    if (error) throw new Error(`Error fetching notifications: ${error.message}`);
-
-    const badge = document.getElementById('notification-badge');
-    badge.textContent = notifications.length;
-  } catch (error) {
-    console.error('Error loading admins notifications:', error);
-    alert('Failed to load notifications. Please try again.');
-  }
-}
-
-// Display admin notifications
-const notificationIcon = document.querySelector('.nav-item.notifications');
-notificationIcon.addEventListener('click', async () => {
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert('You must be logged in to view notifications.');
-    return;
+  // Get authenticated user
+  async function getUser() {
+    try {
+      const { data: { user }, error } = await supabaseClient.auth.getUser();
+      if (error || !user) {
+        console.error('Authentication error:', error?.message || 'No user found');
+        alert('You must be logged in to access the dashboard.');
+        window.location.href = '/loginPage/loginPage.html';
+        return null;
+      }
+      return user;
+    } catch (err) {
+      console.error('Error checking authentication:', err);
+      alert('An error occurred while verifying your session.');
+      return null;
+    }
   }
 
-  const existingDropdown = document.getElementById('notification-dropdown');
-  if (existingDropdown) {
-    existingDropdown.remove();
-    return;
+  // Show toast notification
+  function showToast(message, type = 'error') {
+    alert(message); // Replace with toast library in production
   }
 
-  try {
-    const { data: notifications, error } = await supabaseClient
-      .from('AdminNotifications')
-      .select('*, RequestTable(RequestTitle)')
-      .eq('AdminID', user.id)
-      .order('created_at', { ascending: false });
-    if (error) throw new Error(`Error fetching notifications: ${error.message}`);
+  // Load initial data
+  async function initialize() {
+    const user = await getUser();
+    if (!user) return;
 
-    const dropdown = document.createElement('div');
-    dropdown.id = 'notification-dropdown';
-    dropdown.className = 'notification-dropdown';
+    loadRequests();
+    loadAdminNotifications(user.id);
 
-    if (notifications.length === 0) {
-      dropdown.innerHTML = '<p class="no-notifications">No new notifications.</p>';
+    // Subscribe to real-time request updates
+    supabaseClient
+      .channel('request_table_admin')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'RequestTable'
+      }, () => {
+        loadRequests();
+      })
+      .subscribe();
+  }
+  initialize();
+
+  // Logout
+  logoutBtn.addEventListener('click', async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) {
+      console.error('Error logging out:', error);
+      showToast('Error logging out.', 'error');
     } else {
-      let html = '<ul class="notification-list">';
-      notifications.forEach(notification => {
-        const statusClass = notification.Message.includes('approved') ? 'notification-approval' : 'notification-rejection';
-        html += `
-          <li class="${statusClass}">
-            <strong>${notification.RequestTable.RequestTitle}</strong><br>
-            ${notification.Message}<br>
-            <small>${new Date(notification.created_at).toLocaleString()}</small>
-          </li>
-        `;
-      });
-      html += '</ul>';
-      dropdown.innerHTML = html;
+      window.location.href = '/loginPage/loginPage.html';
     }
-
-    document.querySelector('.main-container').appendChild(dropdown);
-
-    // Mark notifications as read
-    const unreadNotificationIds = notifications.filter(n => !n.IsRead).map(n => n.NotificationID);
-    if (unreadNotificationIds.length > 0) {
-      const { error: updateError } = await supabaseClient
-        .from('AdminNotifications')
-        .update({ IsRead: true })
-        .in('NotificationID', unreadNotificationIds);
-      if (updateError) console.error('Error marking notifications as read:', updateError);
-      loadAdminNotifications(user.id);
-    }
-
-    function closeDropdown(event) {
-      if (!notificationIcon.contains(event.target) && !dropdown.contains(event.target)) {
-        dropdown.remove();
-        document.removeEventListener('click', closeDropdown);
-      }
-    }
-    setTimeout(() => document.addEventListener('click', closeDropdown), 10);
-  } catch (error) {
-    console.error('Error displaying notifications:', error);
-    alert('Failed to display notifications. Please try again.');
-  }
-});
-
-// Render analytics charts
-let statusChartInstance = null;
-let trendChartInstance = null;
-
-// Utility function to generate colors dynamically
-function generateColors(count) {
-  const colors = [
-    '#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd',
-    '#81c784', '#ff8a65', '#ba68c8', '#4dd0e1', '#a1887f'
-  ];
-  const borderColors = [
-    '#2b6cb0', '#f57c00', '#00695c', '#c2185b', '#757575',
-    '#4caf50', '#f4511e', '#8e24aa', '#00acc1', '#6d4c41'
-  ];
-  const resultColors = [];
-  const resultBorderColors = [];
-  for (let i = 0; i < count; i++) {
-    resultColors.push(colors[i % colors.length]);
-    resultBorderColors.push(borderColors[i % borderColors.length]);
-  }
-  return { backgroundColors: resultColors, borderColors: resultBorderColors };
-}
-
-async function renderAnalytics(data) {
-  if (typeof Chart === 'undefined') {
-    console.error('Chart.js not loaded. Analytics charts cannot be rendered.');
-    return;
-  }
-
-  try {
-    // Fetch all unique categories from the RequestTable
-    const { data: categoryData, error: categoryError } = await supabaseClient
-      .from('RequestTable')
-      .select('RequestCategory')
-      .not('RequestCategory', 'is', null);
-    if (categoryError) throw new Error(`Error fetching categories: ${categoryError.message}`);
-
-    // Extract unique categories, default to 'Other' if null
-    const categories = [...new Set(categoryData.map(item => item.RequestCategory || 'Other'))];
-    if (categories.length === 0) {
-      categories.push('Other'); // Ensure at least one category for charts
-    }
-
-    // Calculate KPIs dynamically for Water, Electricity, and Avg. Processing Time
-    const waterCount = data.filter(r => (r.RequestCategory || 'Other') === 'Water').length;
-    const electricityCount = data.filter(r => (r.RequestCategory || 'Other') === 'Electricity').length;
-    const processingTimes = data
-      .filter(r => r.RequestStatus.toLowerCase() !== 'pending' && r.updated_at)
-      .map(r => (new Date(r.updated_at) - new Date(r.created_at)) / (1000 * 60 * 60 * 24));
-    const avgProcessingTime = processingTimes.length > 0
-      ? (processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length).toFixed(1)
-      : 0;
-
-    // Update KPIs
-    document.getElementById('kpi-water').textContent = waterCount;
-    document.getElementById('kpi-electricity').textContent = electricityCount;
-    document.getElementById('kpi-processing-time').textContent = `${avgProcessingTime} days`;
-
-    // Generate colors for charts based on the number of categories
-    const { backgroundColors, borderColors } = generateColors(categories.length);
-
-    // Category Distribution Pie Chart
-    const categoryCounts = categories.map(category =>
-      data.filter(r => (r.RequestCategory || 'Other') === category).length
-    );
-
-    if (statusChartInstance) statusChartInstance.destroy();
-    statusChartInstance = new Chart(document.getElementById('statusChart'), {
-      type: 'pie',
-      data: {
-        labels: categories,
-        datasets: [{
-          data: categoryCounts,
-          backgroundColor: backgroundColors,
-          borderColor: borderColors,
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
-          title: { display: true, text: 'Request Category Distribution' }
-        }
-      }
-    });
-
-    // Submission Trend Line Chart (by category)
-    const last30Days = new Date();
-    last30Days.setDate(last30Days.getDate() - 30);
-    const dailyCountsByCategory = categories.reduce((acc, category) => {
-      acc[category] = {};
-      for (let d = new Date(last30Days); d <= new Date(); d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().split('T')[0];
-        acc[category][dateStr] = 0;
-      }
-      return acc;
-    }, {});
-
-    data.forEach(r => {
-      const category = r.RequestCategory || 'Other';
-      if (!categories.includes(category)) return; // Skip if category not in the list
-      const dateStr = new Date(r.created_at).toISOString().split('T')[0];
-      if (dateStr in dailyCountsByCategory[category]) {
-        dailyCountsByCategory[category][dateStr]++;
-      }
-    });
-
-    const labels = Object.keys(dailyCountsByCategory[categories[0]]);
-    const datasets = categories.map((category, index) => ({
-      label: category,
-      data: Object.values(dailyCountsByCategory[category]),
-      borderColor: borderColors[index],
-      backgroundColor: backgroundColors[index] + '33', // Add transparency
-      fill: true,
-      tension: 0.4
-    }));
-
-    if (trendChartInstance) trendChartInstance.destroy();
-    trendChartInstance = new Chart(document.getElementById('trendChart'), {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: datasets
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: { display: true, title: { display: true, text: 'Date' } },
-          y: { display: true, title: { display: true, text: 'Number of Requests' }, beginAtZero: true }
-        },
-        plugins: {
-          legend: { display: true },
-          title: { display: true, text: 'Requests by Category Over Last 30 Days' }
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Error rendering analytics:', error);
-    alert('Failed to render analytics. Please try again.');
-  }
-}
-
-// Table sorting and collapsible rows
-function sortTable(data, sortKey, ascending) {
-  return data.sort((a, b) => {
-    let valA, valB;
-    switch (sortKey) {
-      case 'title':
-        valA = a.RequestTitle.toLowerCase();
-        valB = b.RequestTitle.toLowerCase();
-        break;
-      case 'status':
-        valA = a.RequestStatus.toLowerCase();
-        valB = b.RequestStatus.toLowerCase();
-        break;
-      case 'submitted':
-        valA = new Date(a.created_at);
-        valB = new Date(b.created_at);
-        break;
-      case 'username':
-        valA = (a.UserTable?.UserUsername || '').toLowerCase();
-        valB = (a.UserTable?.UserUsername || '').toLowerCase();
-        break;
-      default:
-        return 0;
-    }
-    if (valA < valB) return ascending ? -1 : 1;
-    if (valA > valB) return ascending ? 1 : -1;
-    return 0;
   });
-}
 
-function toggleRowDetails(row, request) {
-  const existingDetails = row.nextElementSibling;
-  if (existingDetails && existingDetails.classList.contains('table-details-row')) {
-    existingDetails.remove();
-    return;
+  // Action modal controls
+  function openActionModal(action, requestId, userId, contractorId = null) {
+    modalTitle.textContent = action === 'Message' ? 'Send Message' : `${action} Request`;
+    modalSubmit.textContent = action === 'Message' ? 'Send Message' : `Submit ${action}`;
+    actionModal.dataset.action = action.toLowerCase();
+    actionModal.dataset.requestId = requestId;
+    actionModal.dataset.userId = userId;
+    actionModal.dataset.contractorId = contractorId || '';
+    actionModal.style.display = 'block';
   }
 
-  const detailsRow = document.createElement('tr');
-  detailsRow.className = 'table-details-row';
-  detailsRow.innerHTML = `
-    <td colspan="7">
-      <div class="table-details-content">
-        <p><strong>Full Description:</strong> ${request.RequestDescription}</p>
-        ${request.RequestImageURL ? `
-          <p><strong>Image:</strong></p>
-          <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="table-detail-image">
-        ` : ''}
-      </div>
-    </td>
-  `;
-  row.insertAdjacentElement('afterend', detailsRow);
-}
+  function closeActionModal() {
+    actionModal.style.display = 'none';
+    actionForm.reset();
+    actionModal.dataset.action = '';
+    actionModal.dataset.requestId = '';
+    actionModal.dataset.userId = '';
+    actionModal.dataset.contractorId = '';
+  }
 
-// Fetch requests and display them
-async function fetchRequests(filterStatus = 'all') {
-  try {
-    let query = supabaseClient.from('RequestTable').select('*, UserTable(UserID, UserUsername, UserLocation)').order('created_at', { ascending: false });
-    if (filterStatus !== 'all') {
-      query = query.eq('RequestStatus', filterStatus.charAt(0).toUpperCase() + filterStatus.slice(1));
+  actionCloseBtn.addEventListener('click', closeActionModal);
+  actionCancelBtn.addEventListener('click', closeActionModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === actionModal) closeActionModal();
+  });
+
+  // Allocate modal controls
+  async function openAllocateModal(requestId, userId, category) {
+    try {
+      const { data: contractors, error } = await supabaseClient
+        .from('ContractorTable')
+        .select('ContractorID, Contractor')
+        .eq('ContractorCategory', category);
+      if (error) throw new Error(`Error fetching contractors: ${error.message}`);
+
+      const contractorList = document.getElementById('contractor-list');
+      contractorList.innerHTML = contractors.length > 0
+        ? contractors.map(contractor => `
+            <div class="contractor-item">
+              <p>${contractor.ContractorCompany}</p>
+              <button class="select-contractor-btn request-button" data-contractor-id="${contractor.ContractorID}" data-request-id="${requestId}" data-user-id="${userId}">Allocate</button>
+            </div>
+          `).join('')
+        : '<p>No contractors available for this category.</p>';
+
+      allocateModal.style.display = 'block';
+
+      // Add event listeners for contractor selection
+      document.querySelectorAll('.select-contractor-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const contractorId = btn.dataset.contractorId;
+          const requestId = btn.dataset.requestId;
+          const userId = btn.dataset.userId;
+          const message = document.getElementById('allocate-message').value;
+
+          try {
+            const { error: updateError } = await supabaseClient
+              .from('RequestTable')
+              .update({
+                RequestStatus: 'Allocated',
+                ContractorID: contractorId,
+                updated_at: new Date().toISOString()
+              })
+              .eq('RequestID', requestId);
+            if (updateError) throw new Error(`Error allocating request: ${updateError.message}`);
+
+            // Notify contractor
+            await supabaseClient
+              .from('ContractorNotifications')
+              .insert({
+                NotificationID: crypto.randomUUID(),
+                ContractorID: contractorId,
+                RequestID: requestId,
+                Message: `New request allocated: ${requestId}${message ? ` - ${message}` : ''}`,
+                IsRead: false,
+                created_at: new Date().toISOString()
+              });
+
+            // Notify user
+            await supabaseClient
+              .from('RequestMessages')
+              .insert({
+                MessageID: crypto.randomUUID(),
+                RequestID: requestId,
+                UserID: userId,
+                MessageContent: `Your request "${requestId}" has been allocated to a contractor.${message ? ` Message: ${message}` : ''}`,
+                MessageType: 'AdminMessage',
+                IsRead: false,
+                created_at: new Date().toISOString()
+              });
+
+            showToast('Request allocated successfully!', 'success');
+            loadRequests();
+            closeAllocateModal();
+          } catch (error) {
+            console.error('Error allocating request:', error);
+            showToast('Error allocating request.', 'error');
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Error opening allocate modal:', error);
+      showToast('Error loading contractors.', 'error');
     }
-    const { data, error } = await query;
-    if (error) throw new Error(`Error fetching requests: ${error.message}`);
+  }
 
-    // Update stats
-    const totalRequests = data.length;
-    const pendingRequests = data.filter(r => r.RequestStatus.toLowerCase() === 'pending').length;
-    const approvedRequests = data.filter(r => r.RequestStatus.toLowerCase() === 'approved').length;
-    const rejectedRequests = data.filter(r => r.RequestStatus.toLowerCase() === 'rejected').length;
+  function closeAllocateModal() {
+    allocateModal.style.display = 'none';
+    document.getElementById('allocate-message').value = '';
+    document.getElementById('contractor-list').innerHTML = '';
+  }
 
-    document.getElementById('total-requests').textContent = totalRequests;
-    document.getElementById('pending-requests').textContent = pendingRequests;
-    document.getElementById('approved-requests').textContent = approvedRequests;
-    document.getElementById('rejected-requests').textContent = rejectedRequests;
+  allocateCancelBtn.addEventListener('click', closeAllocateModal);
+  allocateCloseBtn.addEventListener('click', closeAllocateModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === allocateModal) closeAllocateModal();
+  });
 
-    const requestsDiv = document.getElementById('requests');
-    requestsDiv.innerHTML = ''; // Clear existing cards
-
-    const tableBody = document.querySelector('#requests-table tbody');
-    tableBody.innerHTML = ''; // Clear existing table rows
-
-    // Wait for Google Maps API to load
-    if (!window.google || !window.google.maps || !window.map) {
-      console.warn('Google Maps API not loaded yet. Map functionality will be limited.');
-      // Populate table and cards without map
-      const tableData = data.filter(r => r.RequestStatus.toLowerCase() === 'approved' || r.RequestStatus.toLowerCase() === 'rejected');
-      tableData.forEach(request => {
-        const row = document.createElement('tr');
-        row.dataset.requestId = request.RequestID;
-        const description = request.RequestDescription.length > 100
-          ? request.RequestDescription.substring(0, 100) + '...'
-          : request.RequestDescription;
-        row.innerHTML = `
-          <td>${request.RequestTitle}</td>
-          <td>${description}</td>
-          <td>${request.RequestLocation}</td>
-          <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
-          <td>${new Date(request.created_at).toLocaleString()}</td>
-          <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
-          <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
-        `;
-        tableBody.appendChild(row);
-      });
-
-      data.forEach(request => {
-        const createdAt = new Date(request.created_at);
-        const isOverdue = (new Date() - createdAt) > 7 * 24 * 60 * 60 * 1000;
-        const card = document.createElement('div');
-        card.className = `request-card ${isOverdue ? 'overdue' : ''}`;
-        card.dataset.requestId = request.RequestID;
-        const statusClass = request.RequestStatus.toLowerCase() === 'pending'
-          ? 'status-pending'
-          : request.RequestStatus.toLowerCase() === 'approved'
-          ? 'status-approved'
-          : 'status-rejected';
-        card.innerHTML = `
-          <h3>${request.RequestTitle}</h3>
-          <img src="${request.RequestImageURL}" alt="${request.RequestTitle}">
-          <p><strong>Description:</strong> ${request.RequestDescription}</p>
-          <p><strong>Category:</strong> ${request.RequestCategory || 'Other'}</p>
-          <p><strong>Location:</strong> ${request.RequestLocation}</p>
-          <p><strong>Status:</strong> <span class="status ${statusClass}">${request.RequestStatus}</span></p>
-          <p><strong>Submitted:</strong> ${createdAt.toLocaleString()}</p>
-          <div class="button-group">
-            <button class="approve-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Approved' ? 'disabled' : ''}>Approve</button>
-            <button class="reject-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Rejected' ? 'disabled' : ''}>Reject</button>
-            <button class="details-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}">View Details</button>
+  // Details modal controls
+  async function openDetailsModal(request, userData, messages) {
+    const content = document.getElementById('details-content');
+    content.innerHTML = `
+      <div class="modal-section request-info">
+        <h3>Request Information</h3>
+        <div class="info-item">
+          <span class="info-label">Title:</span>
+          <span class="info-value">${request.RequestTitle}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Description:</span>
+          <span class="info-value">${request.RequestDescription}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Category:</span>
+          <span class="info-value">${request.RequestCategory || 'Other'}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Location:</span>
+          <span class="info-value">${request.RequestLocation}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Status:</span>
+          <span class="info-value status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Submitted:</span>
+          <span class="info-value">${new Date(request.created_at).toLocaleString()}</span>
+        </div>
+      </div>
+      <div class="modal-section user-info">
+        <h3>User Information</h3>
+        <div class="info-item">
+          <span class="info-label">Username:</span>
+          <span class="info-value">${userData?.UserUsername || 'Unknown'}</span>
+        </div>
+      </div>
+      ${request.RequestImageURL ? `
+        <div class="modal-section image-section">
+          <h3>Request Image</h3>
+          <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="request-image">
+        </div>
+      ` : ''}
+      <div class="modal-section message-history">
+        <h3>Message History</h3>
+        ${messages.length > 0 ? `
+          <div class="messages-container">
+            ${messages.map(msg => `
+              <div class="message-item">
+                <div class="message-header">
+                  <span class="message-type">${msg.MessageType}</span>
+                  <span class="message-date">${new Date(msg.created_at).toLocaleString()}</span>
+                </div>
+                <p class="message-content">${msg.MessageContent}</p>
+              </div>
+            `).join('')}
           </div>
-        `;
-        requestsDiv.appendChild(card);
-      });
+        ` : '<p class="no-messages">No messages available.</p>'}
+      </div>
+    `;
+    detailsModal.style.display = 'block';
+  }
 
-      renderAnalytics(data);
+  function closeDetailsModal() {
+    detailsModal.style.display = 'none';
+    document.getElementById('details-content').innerHTML = '';
+  }
+
+  detailsCloseBtn.addEventListener('click', closeDetailsModal);
+  detailsCloseSpan.addEventListener('click', closeDetailsModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === detailsModal) closeDetailsModal();
+  });
+
+  // Handle action form submission
+  actionForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const action = actionModal.dataset.action;
+    const requestId = actionModal.dataset.requestId;
+    const userId = actionModal.dataset.userId;
+    const contractorId = actionModal.dataset.contractorId;
+    const message = document.getElementById('message').value;
+
+    try {
+      if (action === 'approve') {
+        const { data: request } = await supabaseClient
+          .from('RequestTable')
+          .select('RequestCategory')
+          .eq('RequestID', requestId)
+          .single();
+        await supabaseClient
+          .from('RequestTable')
+          .update({
+            RequestStatus: 'Approved',
+            updated_at: new Date().toISOString()
+          })
+          .eq('RequestID', requestId);
+        await supabaseClient
+          .from('RequestMessages')
+          .insert({
+            MessageID: crypto.randomUUID(),
+            RequestID: requestId,
+            UserID: userId,
+            MessageContent: `Your request "${requestId}" has been approved.${message ? ` Message: ${message}` : ''}`,
+            MessageType: 'Approval',
+            IsRead: false,
+            created_at: new Date().toISOString()
+          });
+        openAllocateModal(requestId, userId, request.RequestCategory);
+      } else if (action === 'reject') {
+        await supabaseClient
+          .from('RequestTable')
+          .update({
+            RequestStatus: 'Rejected',
+            updated_at: new Date().toISOString()
+          })
+          .eq('RequestID', requestId);
+        await supabaseClient
+          .from('RequestMessages')
+          .insert({
+            MessageID: crypto.randomUUID(),
+            RequestID: requestId,
+            UserID: userId,
+            MessageContent: `Your request "${requestId}" has been rejected.${message ? ` Message: ${message}` : ''}`,
+            MessageType: 'Rejection',
+            IsRead: false,
+            created_at: new Date().toISOString()
+          });
+      } else if (action === 'message') {
+        await supabaseClient
+          .from('RequestMessages')
+          .insert({
+            MessageID: crypto.randomUUID(),
+            RequestID: requestId,
+            UserID: userId,
+            ContractorID: contractorId || null,
+            MessageContent: message,
+            MessageType: 'AdminMessage',
+            IsRead: false,
+            created_at: new Date().toISOString()
+          });
+        if (contractorId) {
+          await supabaseClient
+            .from('ContractorNotifications')
+            .insert({
+              NotificationID: crypto.randomUUID(),
+              ContractorID: contractorId,
+              RequestID: requestId,
+              Message: `New message for request "${requestId}": ${message}`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+        }
+      }
+      showToast(`${action.charAt(0).toUpperCase() + action.slice(1)} action completed successfully!`, 'success');
+      loadRequests();
+      closeActionModal();
+    } catch (error) {
+      console.error(`Error performing ${action} action:`, error);
+      showToast(`Error performing ${action} action.`, 'error');
+    }
+  });
+
+  // Load admin notifications
+  async function loadAdminNotifications(adminId) {
+    try {
+      const { data: notifications, error } = await supabaseClient
+        .from('AdminNotifications')
+        .select('*, RequestTable(RequestTitle)')
+        .eq('AdminID', adminId)
+        .eq('IsRead', false)
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(`Error fetching notifications: ${error.message}`);
+
+      const badge = document.getElementById('notification-badge');
+      badge.textContent = notifications.length;
+    } catch (error) {
+      console.error('Error loading admin notifications:', error);
+      showToast('Failed to load notifications.', 'error');
+    }
+  }
+
+  // Display notifications
+  notificationIcon.addEventListener('click', async () => {
+    const user = await getUser();
+    if (!user) return;
+
+    const existingDropdown = document.getElementById('notification-dropdown');
+    if (existingDropdown) {
+      existingDropdown.remove();
       return;
     }
 
-    // Set marker sizes now that Google Maps is loaded
-    markerIcons.default.scaledSize = new window.google.maps.Size(40, 40);
-    markerIcons.selected.scaledSize = new window.google.maps.Size(40, 40);
-    map = window.map; // Use the globally initialized map
+    try {
+      const { data: notifications, error } = await supabaseClient
+        .from('AdminNotifications')
+        .select('*, RequestTable(RequestTitle)')
+        .eq('AdminID', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(`Error fetching notifications: ${error.message}`);
 
-    const geocoder = new window.google.maps.Geocoder();
-    const markers = [];
+      const dropdown = document.createElement('div');
+      dropdown.id = 'notification-dropdown';
+      dropdown.className = 'notification-dropdown';
 
-    // Populate table with Approved/Rejected requests
-    const tableData = data.filter(r => r.RequestStatus.toLowerCase() === 'approved' || r.RequestStatus.toLowerCase() === 'rejected');
-    tableData.forEach(request => {
-      const row = document.createElement('tr');
-      row.dataset.requestId = request.RequestID;
-      const description = request.RequestDescription.length > 100
-        ? request.RequestDescription.substring(0, 100) + '...'
-        : request.RequestDescription;
-      row.innerHTML = `
-        <td>${request.RequestTitle}</td>
-        <td>${description}</td>
-        <td>${request.RequestLocation}</td>
-        <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
-        <td>${new Date(request.created_at).toLocaleString()}</td>
-        <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
-        <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
-      `;
-      tableBody.appendChild(row);
-    });
+      if (notifications.length === 0) {
+        dropdown.innerHTML = '<p class="no-notifications">No new notifications.</p>';
+      } else {
+        let html = '<ul class="notification-list">';
+        notifications.forEach(notification => {
+          const statusClass = notification.Message.includes('accepted') ? 'notification-approval' :
+                             notification.Message.includes('completed') ? 'notification-success' :
+                             notification.Message.includes('rejected') ? 'notification-rejection' : 'notification-info';
+          html += `
+            <li class="${statusClass}">
+              <strong>${notification.RequestTable.RequestTitle}</strong><br>
+              ${notification.Message}<br>
+              <small>${new Date(notification.created_at).toLocaleString()}</small>
+            </li>
+          `;
+        });
+        html += '</ul>';
+        dropdown.innerHTML = html;
+      }
 
-    // Render analytics
-    renderAnalytics(data);
+      document.querySelector('.main-container').appendChild(dropdown);
 
-    // Process cards and map
-    data.forEach(request => {
-      const createdAt = new Date(request.created_at);
-      const isOverdue = (new Date() - createdAt) > 7 * 24 * 60 * 60 * 1000; // Older than 7 days
+      const unreadNotificationIds = notifications.filter(n => !n.IsRead).map(n => n.NotificationID);
+      if (unreadNotificationIds.length > 0) {
+        const { error: updateError } = await supabaseClient
+          .from('AdminNotifications')
+          .update({ IsRead: true })
+          .in('NotificationID', unreadNotificationIds);
+        if (updateError) console.error('Error marking notifications as read:', updateError);
+        loadAdminNotifications(user.id);
+      }
 
-      // Create request card
-      const card = document.createElement('div');
-      card.className = `request-card ${isOverdue ? 'overdue' : ''}`;
-      card.dataset.requestId = request.RequestID;
+      function closeDropdown(event) {
+        if (!notificationIcon.contains(event.target) && !dropdown.contains(event.target)) {
+          dropdown.remove();
+          document.removeEventListener('click', closeDropdown);
+        }
+      }
+      setTimeout(() => document.addEventListener('click', closeDropdown), 10);
+    } catch (error) {
+      console.error('Error displaying notifications:', error);
+      showToast('Failed to display notifications.', 'error');
+    }
+  });
 
-      const statusClass = request.RequestStatus.toLowerCase() === 'pending'
-        ? 'status-pending'
-        : request.RequestStatus.toLowerCase() === 'approved'
-        ? 'status-approved'
-        : 'status-rejected';
+  // Generate chart colors
+  function generateColors(count) {
+    const colors = [
+      '#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd',
+      '#81c784', '#ff8a65', '#ba68c8', '#4dd0e1', '#a1887f'
+    ];
+    const borderColors = [
+      '#2b6cb0', '#f57c00', '#00695c', '#c2185b', '#757575',
+      '#4caf50', '#f4511e', '#8e24aa', '#00acc1', '#6d4c41'
+    ];
+    const resultColors = [];
+    const resultBorderColors = [];
+    for (let i = 0; i < count; i++) {
+      resultColors.push(colors[i % colors.length]);
+      resultBorderColors.push(borderColors[i % borderColors.length]);
+    }
+    return { backgroundColors: resultColors, borderColors: resultBorderColors };
+  }
 
-      card.innerHTML = `
-        <h3>${request.RequestTitle}</h3>
-        <img src="${request.RequestImageURL}" alt="${request.RequestTitle}">
-        <p><strong>Description:</strong> ${request.RequestDescription}</p>
-        <p><strong>Category:</strong> ${request.RequestCategory || 'Other'}</p>
-        <p><strong>Location:</strong> ${request.RequestLocation}</p>
-        <p><strong>Status:</strong> <span class="status ${statusClass}">${request.RequestStatus}</span></p>
-        <p><strong>Submitted:</strong> ${createdAt.toLocaleString()}</p>
-        <div class="button-group">
-          <button class="approve-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Approved' ? 'disabled' : ''}>Approve</button>
-          <button class="reject-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}" ${request.RequestStatus === 'Rejected' ? 'disabled' : ''}>Reject</button>
-          <button class="details-btn" data-id="${request.RequestID}" data-user-id="${request.UserTable.UserID}">View Details</button>
-        </div>
-      `;
+  // Render analytics
+  async function renderAnalytics(data) {
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js not loaded. Analytics charts cannot be rendered.');
+      return;
+    }
 
-      // Add click event to highlight card
-      card.addEventListener('click', (e) => {
-        if (e.target.classList.contains('approve-btn') || e.target.classList.contains('reject-btn') || e.target.classList.contains('details-btn')) return;
+    try {
+      const { data: categoryData, error: categoryError } = await supabaseClient
+        .from('RequestTable')
+        .select('RequestCategory')
+        .not('RequestCategory', 'is', null);
+      if (categoryError) throw new Error(`Error fetching categories: ${categoryError.message}`);
 
-        if (selectedCard === card) {
-          card.classList.remove('selected');
-          if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
-          selectedCard = null;
-          selectedMarker = null;
-        } else {
-          if (selectedCard) selectedCard.classList.remove('selected');
-          if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
-          card.classList.add('selected');
-          selectedCard = card;
-          selectedMarker = markers.find(m => m.requestId === request.RequestID);
-          if (selectedMarker) {
-            selectedMarker.setIcon(markerIcons.selected);
-            map.panTo(selectedMarker.getPosition());
+      const categories = [...new Set(categoryData.map(item => item.RequestCategory || 'Other'))];
+      if (categories.length === 0) {
+        categories.push('Other');
+      }
+
+      // Update KPIs
+      const waterCount = data.filter(r => (r.RequestCategory || 'Other') === 'Water').length;
+      const electricityCount = data.filter(r => (r.RequestCategory || 'Other') === 'Electricity').length;
+      const processingTimes = data
+        .filter(r => ['approved', 'rejected', 'allocated', 'accepted', 'completed'].includes(r.RequestStatus.toLowerCase()) && r.updated_at)
+        .map(r => (new Date(r.updated_at) - new Date(r.created_at)) / (1000 * 60 * 60 * 24));
+      const avgProcessingTime = processingTimes.length > 0
+        ? (processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length).toFixed(1)
+        : 0;
+
+      document.getElementById('kpi-water').textContent = waterCount;
+      document.getElementById('kpi-electricity').textContent = electricityCount;
+      document.getElementById('kpi-processing-time').textContent = `${avgProcessingTime} days`;
+
+      const { backgroundColors, borderColors } = generateColors(categories.length);
+
+      // Status chart
+      const categoryCounts = categories.map(category =>
+        data.filter(r => (r.RequestCategory || 'Other') === category).length
+      );
+
+      if (statusChartInstance) statusChartInstance.destroy();
+      statusChartInstance = new Chart(document.getElementById('statusChart'), {
+        type: 'pie',
+        data: {
+          labels: categories,
+          datasets: [{
+            data: categoryCounts,
+            backgroundColor: backgroundColors,
+            borderColor: borderColors,
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Request Categories' }
           }
         }
       });
 
-      requestsDiv.appendChild(card);
+      // Trend chart
+      const requestsByMonth = {};
+      data.forEach(request => {
+        const date = new Date(request.created_at);
+        const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        requestsByMonth[monthYear] = (requestsByMonth[monthYear] || 0) + 1;
+      });
 
-      // Geocode the location and add a marker
-      geocoder.geocode({ address: request.RequestLocation }, (results, status) => {
-        if (status === 'OK') {
-          const marker = new window.google.maps.Marker({
-            map: map,
-            position: results[0].geometry.location,
-            title: request.RequestTitle,
-            icon: markerIcons.default
-          });
-          marker.requestId = request.RequestID;
-          markers.push(marker);
+      const labels = Object.keys(requestsByMonth).sort();
+      const trendData = labels.map(label => requestsByMonth[label]);
 
-          const infoWindow = new window.google.maps.InfoWindow({
-            content: `<h3>${request.RequestTitle}</h3><p>${request.RequestLocation}</p>`,
-          });
-          marker.addListener('click', () => {
-            infoWindow.open(map, marker);
-            const correspondingCard = document.querySelector(`.request-card[data-request-id="${request.RequestID}"]`);
-            if (correspondingCard) {
-              if (selectedCard) selectedCard.classList.remove('selected');
-              if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
-              correspondingCard.classList.add('selected');
-              selectedCard = correspondingCard;
-              selectedMarker = marker;
-              marker.setIcon(markerIcons.selected);
-            }
-          });
-        } else {
-          console.error(`Geocode failed for ${request.RequestLocation}: ${status}`);
+      if (trendChartInstance) trendChartInstance.destroy();
+      trendChartInstance = new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Requests Over Time',
+            data: trendData,
+            borderColor: '#34C759',
+            backgroundColor: 'rgba(52, 199, 89, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: 'Request Trends' }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
         }
       });
-    });
-
-    // Adjust map bounds
-    if (markers.length > 0) {
-      const bounds = new window.google.maps.LatLngBounds();
-      markers.forEach(marker => bounds.extend(marker.getPosition()));
-      map.fitBounds(bounds);
+    } catch (error) {
+      console.error('Error rendering analytics:', error);
+      showToast('Error rendering analytics.', 'error');
     }
-  } catch (error) {
-    console.error('fetchRequests error:', error);
-    alert('Failed to load requests. Please try again.');
   }
-}
 
-// Handle Approve/Reject actions and table interactions
-let isProcessing = false;
-document.addEventListener('click', async (e) => {
-  if (isProcessing) return; // Prevent multiple clicks
-  isProcessing = true;
+  // Load and render requests
+  async function loadRequests() {
+    try {
+      const { data: requests, error } = await supabaseClient
+        .from('RequestTable')
+        .select('*, UserTable(UserUsername)')
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(`Error fetching requests: ${error.message}`);
 
-  try {
-    if (e.target.classList.contains('approve-btn') && !e.target.disabled) {
-      const requestId = e.target.dataset.id;
-      const userId = e.target.dataset.userId;
-      openActionModal('Approve', requestId, userId);
-    } else if (e.target.classList.contains('reject-btn') && !e.target.disabled) {
-      const requestId = e.target.dataset.id;
-      const userId = e.target.dataset.userId;
-      openActionModal('Reject', requestId, userId);
-    } else if (e.target.classList.contains('details-btn')) {
-      const requestId = e.target.dataset.id;
-      const userId = e.target.dataset.userId;
+      allRequests = requests;
+      updateStats(requests);
+      renderRequestCards(requests);
+      renderRequestTable(requests);
+      updateMapMarkers(requests);
+      renderAnalytics(requests);
+    } catch (error) {
+      console.error('Error loading requests:', error);
+      showToast('Error loading requests.', 'error');
+    }
+  }
 
-      try {
-        // Fetch request details
-        const { data: requestData, error: requestError } = await supabaseClient
+  // Update stats
+  function updateStats(requests) {
+    document.getElementById('total-requests').textContent = requests.length;
+    document.getElementById('pending-requests').textContent = requests.filter(r => r.RequestStatus === 'Pending').length;
+    document.getElementById('approved-requests').textContent = requests.filter(r => r.RequestStatus === 'Approved').length;
+    document.getElementById('rejected-requests').textContent = requests.filter(r => r.RequestStatus === 'Rejected').length;
+  }
+
+  // Render request cards
+  function renderRequestCards(requests) {
+    const filterValue = statusFilter.value.toLowerCase();
+    const filteredRequests = filterValue === 'all'
+      ? requests
+      : requests.filter(r => r.RequestStatus.toLowerCase() === filterValue);
+
+    const requestsContainer = document.getElementById('requests');
+    requestsContainer.innerHTML = filteredRequests.length > 0
+      ? filteredRequests.map(request => `
+          <div class="request-card glass-card" data-request-id="${request.RequestID}">
+            <h3>${request.RequestTitle}</h3>
+            <p><strong>Description:</strong> ${request.RequestDescription}</p>
+            <p><strong>Location:</strong> ${request.RequestLocation}</p>
+            <p><strong>Status:</strong> <span class="status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></p>
+            <p><strong>Submitted by:</strong> ${request.UserTable.UserUsername}</p>
+            ${request.RequestImageURL ? `<img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="request-image">` : ''}
+            <div class="request-actions">
+              ${request.RequestStatus === 'Pending' ? `
+                <button class="approve-btn request-button" data-request-id="${request.RequestID}" data-user-id="${request.UserID}">Approve</button>
+                <button class="reject-btn request-button" data-request-id="${request.RequestID}" data-user-id="${request.UserID}">Reject</button>
+              ` : ''}
+              ${request.RequestStatus === 'Approved' ? `
+                <button class="allocate-btn request-button" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" data-category="${request.RequestCategory}">Allocate</button>
+              ` : ''}
+              ${['Allocated', 'Accepted', 'Completed'].includes(request.RequestStatus) ? `
+                <button class="message-btn request-button" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" data-contractor-id="${request.ContractorID || ''}">Message</button>
+              ` : ''}
+              <button class="details-btn request-button" data-request-id="${request.RequestID}">Details</button>
+            </div>
+          </div>
+        `).join('')
+      : '<p>No requests found.</p>';
+
+    // Add event listeners
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.addEventListener('click', () => openActionModal('Approve', btn.dataset.requestId, btn.dataset.userId));
+    });
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+      btn.addEventListener('click', () => openActionModal('Reject', btn.dataset.requestId, btn.dataset.userId));
+    });
+    document.querySelectorAll('.allocate-btn').forEach(btn => {
+      btn.addEventListener('click', () => openAllocateModal(btn.dataset.requestId, btn.dataset.userId, btn.dataset.category));
+    });
+    document.querySelectorAll('.message-btn').forEach(btn => {
+      btn.addEventListener('click', () => openActionModal('Message', btn.dataset.requestId, btn.dataset.userId, btn.dataset.contractorId));
+    });
+    document.querySelectorAll('.details-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const requestId = btn.dataset.requestId;
+        const { data: request } = await supabaseClient
           .from('RequestTable')
-          .select('*, UserTable(UserID, UserUsername, UserLocation)')
+          .select('*')
           .eq('RequestID', requestId)
           .single();
-        if (requestError) throw new Error(`Error fetching request: ${requestError.message}`);
-
-        // Fetch message history
-        const { data: messages, error: messageError } = await supabaseClient
+        const { data: userData } = await supabaseClient
+          .from('UserTable')
+          .select('UserUsername')
+          .eq('UserID', request.UserID)
+          .single();
+        const { data: messages } = await supabaseClient
           .from('RequestMessages')
           .select('*')
           .eq('RequestID', requestId)
           .order('created_at', { ascending: true });
-        if (messageError) throw new Error(`Error fetching messages: ${messageError.message}`);
-
-        openDetailsModal(requestData, requestData.UserTable, messages);
-      } catch (error) {
-        console.error('Error loading request details:', error);
-        alert('Failed to load request details. Please try again.');
-      }
-    } else if (e.target.closest('.table-details-btn')) {
-      const button = e.target.closest('.table-details-btn');
-      const requestId = button.dataset.id;
-      const row = button.closest('tr');
-      const request = (await supabaseClient
-        .from('RequestTable')
-        .select('*')
-        .eq('RequestID', requestId)
-        .single()).data;
-      toggleRowDetails(row, request);
-    } else if (e.target.closest('th[data-sort]')) {
-      const th = e.target.closest('th');
-      const sortKey = th.dataset.sort;
-      const ascending = th.dataset.ascending !== 'true';
-      th.dataset.ascending = ascending;
-      
-      const tableData = (await supabaseClient
-        .from('RequestTable')
-        .select('*, UserTable(UserID, UserUsername, UserLocation)')
-        .in('RequestStatus', ['Approved', 'Rejected'])).data;
-      const sortedData = sortTable(tableData, sortKey, ascending);
-      
-      const tableBody = document.querySelector('#requests-table tbody');
-      tableBody.innerHTML = '';
-      sortedData.forEach(request => {
-        const row = document.createElement('tr');
-        row.dataset.requestId = request.RequestID;
-        const description = request.RequestDescription.length > 100
-          ? request.RequestDescription.substring(0, 100) + '...'
-          : request.RequestDescription;
-        row.innerHTML = `
-          <td>${request.RequestTitle}</td>
-          <td>${description}</td>
-          <td>${request.RequestLocation}</td>
-          <td><span class="status status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></td>
-          <td>${new Date(request.created_at).toLocaleString()}</td>
-          <td>${request.UserTable?.UserUsername || 'Unknown'}</td>
-          <td><button class="table-details-btn" data-id="${request.RequestID}"><i class="fas fa-chevron-down"></i></button></td>
-        `;
-        tableBody.appendChild(row);
+        openDetailsModal(request, userData, messages || []);
       });
-    }
-  } finally {
-    isProcessing = false;
+    });
+
+    // Card selection
+    document.querySelectorAll('.request-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        if (selectedCard) selectedCard.classList.remove('selected');
+        card.classList.add('selected');
+        selectedCard = card;
+        const requestId = card.dataset.requestId;
+        const marker = markers.find(m => m.requestId === requestId);
+        if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
+        if (marker) {
+          marker.setIcon(markerIcons.selected);
+          selectedMarker = marker;
+          map.panTo(marker.getPosition());
+        }
+      });
+    });
   }
-});
 
-// Handle form submission
-actionForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (isProcessing) return;
-  isProcessing = true;
+  // Render request table
+  function renderRequestTable(requests) {
+    const filterValue = statusFilter.value.toLowerCase();
+    const filteredRequests = filterValue === 'all'
+      ? requests
+      : requests.filter(r => r.RequestStatus.toLowerCase() === filterValue);
 
-  try {
-    const action = actionModal.dataset.action;
-    const requestId = actionModal.dataset.requestId;
-    const userId = actionModal.dataset.userId;
-    const message = document.getElementById('message').value.trim();
-    const status = action === 'approve' ? 'Approved' : 'Rejected';
-    const messageType = action === 'approve' ? 'Approval' : 'Rejection';
+    const tbody = document.querySelector('#requests-table tbody');
+    tbody.innerHTML = filteredRequests.map(request => `
+      <tr data-request-id="${request.RequestID}">
+        <td>${request.RequestTitle}</td>
+        <td>${request.RequestDescription}</td>
+        <td>${request.RequestLocation}</td>
+        <td class="status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</td>
+        <td>${new Date(request.created_at).toLocaleString()}</td>
+        <td>${request.UserTable.UserUsername}</td>
+        <td><button class="details-btn request-button" data-request-id="${request.RequestID}">Details</button></td>
+      </tr>
+    `).join('');
 
-    // Get request title for notification
-    const { data: requestData, error: requestError } = await supabaseClient
-      .from('RequestTable')
-      .select('RequestTitle')
-      .eq('RequestID', requestId)
-      .single();
-    if (requestError) throw new Error(`Error fetching request: ${requestError.message}`);
+    // Add table event listeners
+    document.querySelectorAll('#requests-table .details-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const requestId = btn.dataset.requestId;
+        const { data: request } = await supabaseClient
+          .from('RequestTable')
+          .select('*')
+          .eq('RequestID', requestId)
+          .single();
+        const { data: userData } = await supabaseClient
+          .from('UserTable')
+          .select('UserUsername')
+          .eq('UserID', request.UserID)
+          .single();
+        const { data: messages } = await supabaseClient
+          .from('RequestMessages')
+          .select('*')
+          .eq('RequestID', requestId)
+          .order('created_at', { ascending: true });
+        openDetailsModal(request, userData, messages || []);
+      });
+    });
 
-    // Get admin ID
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) throw new Error('Admin not authenticated');
-
-    // Check if admin exists in UserTable
-    const { data: adminData, error: adminError } = await supabaseClient
-      .from('UserTable')
-      .select('UserID')
-      .eq('UserID', user.id)
-      .single();
-    if (adminError || !adminData) {
-      console.warn('Admin not found in UserTable. Skipping notification.');
-      alert('Action completed, but admin notification could not be saved. Please contact support.');
-    }
-
-    // Update request status
-    const { error: updateError } = await supabaseClient
-      .from('RequestTable')
-      .update({ RequestStatus: status, updated_at: new Date().toISOString() })
-      .eq('RequestID', requestId);
-    if (updateError) throw new Error(`Error updating request status: ${updateError.message}`);
-
-    // Save user message if provided
-    if (message) {
-      const { error: messageError } = await supabaseClient
-        .from('RequestMessages')
-        .insert({
-          MessageID: crypto.randomUUID(),
-          RequestID: requestId,
-          UserID: userId,
-          MessageContent: message,
-          MessageType: messageType,
-          IsRead: false,
-          created_at: new Date().toISOString()
+    // Table sorting
+    const headers = document.querySelectorAll('#requests-table th[data-sort]');
+    headers.forEach(header => {
+      header.addEventListener('click', () => {
+        const sortKey = header.dataset.sort;
+        const isAscending = !header.classList.contains('asc');
+        headers.forEach(h => {
+          h.classList.remove('asc', 'desc');
+          h.querySelector('.fa-sort')?.classList.remove('fa-sort-up', 'fa-sort-down');
+          h.querySelector('.fa-sort')?.classList.add('fa-sort');
         });
-      if (messageError) throw new Error(`Error saving user message: ${messageError.message}`);
-    }
-
-    // Save admin notification if admin exists
-    if (adminData) {
-      const adminMessage = `You ${action}d request "${requestData.RequestTitle}".`;
-      const { error: adminNotificationError } = await supabaseClient
-        .from('AdminNotifications')
-        .insert({
-          NotificationID: crypto.randomUUID(),
-          AdminID: user.id,
-          RequestID: requestId,
-          Message: adminMessage,
-          IsRead: false,
-          created_at: new Date().toISOString()
-        });
-      if (adminNotificationError) throw new Error(`Error saving admin notification: ${adminNotificationError.message}`);
-    }
-
-    closeActionModal();
-    fetchRequests(document.getElementById('status-filter').value);
-    if (adminData) loadAdminNotifications(user.id);
-    selectedCard = null;
-    selectedMarker = null;
-  } catch (error) {
-    console.error('Action submission error:', error);
-    alert('Failed to process action. Please try again.');
-  } finally {
-    isProcessing = false;
+        header.classList.add(isAscending ? 'asc' : 'desc');
+        header.querySelector('.fa-sort')?.classList.add(isAscending ? 'fa-sort-up' : 'fa-sort-down');
+        sortTable(sortKey, isAscending);
+      });
+    });
   }
-});
 
-// Handle filter change
-document.getElementById('status-filter').addEventListener('change', (e) => {
-  fetchRequests(e.target.value);
-});
+  // Sort table
+  function sortTable(key, ascending) {
+    allRequests.sort((a, b) => {
+      let valA, valB;
+      switch (key) {
+        case 'title':
+          valA = a.RequestTitle.toLowerCase();
+          valB = b.RequestTitle.toLowerCase();
+          break;
+        case 'description':
+          valA = a.RequestDescription.toLowerCase();
+          valB = b.RequestDescription.toLowerCase();
+          break;
+        case 'location':
+          valA = a.RequestLocation.toLowerCase();
+          valB = b.RequestLocation.toLowerCase();
+          break;
+        case 'status':
+          valA = a.RequestStatus.toLowerCase();
+          valB = b.RequestStatus.toLowerCase();
+          break;
+        case 'submitted':
+          valA = new Date(a.created_at);
+          valB = new Date(b.created_at);
+          break;
+        case 'username':
+          valA = a.UserTable.UserUsername.toLowerCase();
+          valB = b.UserTable.UserUsername.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+      return ascending ? (valA < valB ? -1 : 1) : (valA > valB ? -1 : 1);
+    });
+    renderRequestCards(allRequests);
+    renderRequestTable(allRequests);
+  }
 
-// Handle Logout (mock)
-document.getElementById('logout').addEventListener('click', (e) => {
-  e.preventDefault();
-  alert('Logged out successfully!');
-});
+  // Update map markers
+  async function updateMapMarkers(requests) {
+    if (!map) return;
 
-// Handle Language Selector (mock)
-document.getElementById('language-selector').addEventListener('change', (e) => {
-  const lang = e.target.value;
-  alert(`Switching to ${lang === 'zu' ? 'Zulu' : lang === 'af' ? 'Afrikaans' : 'English'}. Translation not implemented.`);
-});
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
 
-// Initialize the dashboard
-document.addEventListener('DOMContentLoaded', async () => {
-  await fetchRequests();
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (user) loadAdminNotifications(user.id);
+    for (const request of requests) {
+      try {
+        const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(request.RequestLocation)}&key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc`);
+        const data = await response.json();
+        if (data.results && data.results[0]) {
+          const { lat, lng } = data.results[0].geometry.location;
+          const marker = new google.maps.Marker({
+            position: { lat, lng },
+            map,
+            title: request.RequestTitle,
+            icon: markerIcons.default,
+            requestId: request.RequestID
+          });
+          marker.addListener('click', () => {
+            if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
+            marker.setIcon(markerIcons.selected);
+            selectedMarker = marker;
+            if (selectedCard) selectedCard.classList.remove('selected');
+            selectedCard = document.querySelector(`.request-card[data-request-id="${request.RequestID}"]`);
+            if (selectedCard) selectedCard.classList.add('selected');
+            map.panTo(marker.getPosition());
+          });
+          markers.push(marker);
+        }
+      } catch (error) {
+        console.error(`Error geocoding location for request ${request.RequestID}:`, error);
+      }
+    }
+  }
+
+  // Status filter
+  statusFilter.addEventListener('change', () => {
+    renderRequestCards(allRequests);
+    renderRequestTable(allRequests);
+  });
 });

@@ -1,281 +1,334 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
 // Initialize Supabase client
-const supabaseClient = supabase.createClient(
+const supabase = createClient(
   'https://lywylvbgsnmqwcwgiyhc.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
 );
 
-// Initialize Google Map
-let map;
-function initMap() {
-  map = new google.maps.Map(document.getElementById('map'), {
-    center: { lat: -33.9249, lng: 18.4241 },
-    zoom: 10,
-  });
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const updateStatusModal = document.getElementById('update-status-modal');
+  const updateStatusForm = document.getElementById('update-status-form');
+  const updateStatusCloseBtn = updateStatusModal.querySelector('.close');
+  const statusFilter = document.getElementById('status-filter');
+  const notificationIcon = document.querySelector('.notification-icon');
+  const notificationBadge = document.getElementById('notification-badge');
+  const logoutLink = document.querySelector('.logout');
+  const hamburger = document.querySelector('.hamburger');
+  const navLinks = document.querySelector('.nav-links');
+  let allRequests = [];
 
-// Fetch requests and display them
-async function fetchRequests() {
-  try {
-    // Get the current user
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError) {
-      console.error('Error getting user:', userError);
-      return;
-    }
-
-    // Fetch contractor's ID from ContractorTable
-    const { data: contractorData, error: contractorError } = await supabaseClient
-      .from('ContractorTable')
-      .select('ContractorID')
-      .eq('UserID', user.id)
-      .single();
-
-    if (contractorError || !contractorData) {
-      console.error('Error fetching contractor details:', contractorError);
-      return;
-    }
-
-    // Fetch requests assigned to this contractor
-    const { data, error } = await supabaseClient
-      .from('RequestTable')
-      .select('*')
-      .eq('ContractorID', contractorData.ContractorID);
-
-    if (error) {
-      console.error('Error fetching requests:', error);
-      return;
-    }
-
-    // Update stats
-    document.getElementById('total-requests').textContent = data.length;
-    document.getElementById('pending-requests').textContent = data.filter(r => r.RequestStatus === 'Allocated').length;
-    document.getElementById('accepted-requests').textContent = data.filter(r => r.RequestStatus === 'Accepted').length;
-    document.getElementById('completed-requests').textContent = data.filter(r => r.RequestStatus === 'Completed').length;
-
-    const requestsDiv = document.getElementById('requests');
-    requestsDiv.innerHTML = '';
-
-    // Process each request
-    data.forEach(request => {
-      const card = document.createElement('div');
-      card.className = 'request-card';
-      card.dataset.id = request.RequestID;
-
-      let buttonGroup = '';
-      switch (request.RequestStatus) {
-        case 'Allocated':
-          buttonGroup = `
-            <div class="button-group">
-              <button class="accept-btn" data-id="${request.RequestID}">Accept</button>
-              <button class="reject-btn" data-id="${request.RequestID}">Decline</button>
-              <button class="details-btn" data-id="${request.RequestID}">View Details</button>
-            </div>
-          `;
-          break;
-        case 'Accepted':
-          buttonGroup = `
-            <div class="button-group">
-              <button class="complete-btn" data-id="${request.RequestID}">Mark as Completed</button>
-              <button class="details-btn" data-id="${request.RequestID}">View Details</button>
-            </div>
-          `;
-          break;
-        case 'Completed':
-          buttonGroup = `
-            <div class="button-group">
-              <button class="details-btn" data-id="${request.RequestID}">View Details</button>
-            </div>
-          `;
-          break;
-        default:
-          buttonGroup = `
-            <div class="button-group">
-              <button class="details-btn" data-id="${request.RequestID}">View Details</button>
-            </div>
-          `;
+  // Get authenticated contractor
+  async function getContractor() {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        alert('You must be logged in to access the dashboard.');
+        window.location.href = '/loginPage/loginPage.html';
+        return null;
       }
 
-      const statusClass = request.RequestStatus.toLowerCase() === 'allocated'
-        ? 'status-pending'
-        : request.RequestStatus.toLowerCase() === 'accepted'
-        ? 'status-approved'
-        : request.RequestStatus.toLowerCase() === 'completed'
-        ? 'status-approved'
-        : 'status-rejected';
+      // Debug: Log user ID
+      console.log('Authenticated user ID:', user.id);
 
-      card.innerHTML = `
-        <h3>${request.RequestTitle}</h3>
-        <img src="${request.RequestImageURL || 'https://dummyimage.com/200x150/cccccc/ffffff&text=No+Image'}" alt="${request.RequestTitle}">
-        <p><strong>Description:</strong> ${request.RequestDescription}</p>
-        <p><strong>Location:</strong> ${request.RequestLocation}</p>
-        <p><strong>Status:</strong> <span class="status ${statusClass}">${request.RequestStatus}</span></p>
-        ${buttonGroup}
-      `;
+      // Query ContractorTable with case-sensitive column names
+      const { data: contractor, error: contractorError } = await supabase
+        .from('ContractorTable')
+        .select('ContractorID, ContractorName')
+        .eq('UserID', user.id)
+        .single();
 
-      requestsDiv.appendChild(card);
-    });
+      if (contractorError) {
+        console.error('Contractor query error:', contractorError);
+        alert(`Error fetching contractor profile: ${contractorError.message}`);
+        window.location.href = '/loginPage/loginPage.html';
+        return null;
+      }
 
-    // Add event listeners for buttons
-    document.querySelectorAll('.details-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const requestId = btn.dataset.id;
-        const { data: request, error } = await supabaseClient
+      if (!contractor) {
+        console.error('No contractor profile found for UserID:', user.id);
+        alert('Contractor profile not found. Please ensure your account is linked to a contractor profile.');
+        window.location.href = '/loginPage/loginPage.html';
+        return null;
+      }
+
+      console.log('Contractor profile found:', contractor);
+      return { user, contractor };
+    } catch (err) {
+      console.error('Unexpected error in getContractor:', err);
+      alert('An unexpected error occurred while verifying your session.');
+      window.location.href = '/loginPage/loginPage.html';
+      return null;
+    }
+  }
+
+  // Show toast notification
+  function showToast(message, type = 'error') {
+    alert(message); // Replace with toast library in production
+  }
+
+  // Initialize dashboard
+  async function initialize() {
+    const contractorData = await getContractor();
+    if (!contractorData) return;
+    const { user, contractor } = contractorData;
+
+    document.querySelector('.welcome-head').textContent = `Welcome, ${contractor.ContractorName}`;
+
+    loadRequests(contractor.ContractorID);
+    loadNotifications(contractor.ContractorID);
+
+    // Real-time subscriptions
+    supabase
+      .channel('request_table_contractor')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'RequestTable',
+        filter: `ContractorID=eq.${contractor.ContractorID}`
+      }, () => {
+        loadRequests(contractor.ContractorID);
+      })
+      .subscribe();
+
+    supabase
+      .channel('request_messages_contractor')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'RequestMessages',
+        filter: `ContractorID=eq.${contractor.ContractorID}`
+      }, () => {
+        loadNotifications(contractor.ContractorID);
+      })
+      .subscribe();
+  }
+  initialize();
+
+  // Hamburger menu toggle
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    hamburger.parentElement.classList.toggle('active');
+  });
+
+  // Logout
+  logoutLink.addEventListener('click', async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      showToast('Error logging out.', 'error');
+    } else {
+      window.location.href = '/loginPage/loginPage.html';
+    }
+  });
+
+  // Modal controls
+  updateStatusCloseBtn.addEventListener('click', () => {
+    updateStatusModal.style.display = 'none';
+    updateStatusForm.reset();
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target === updateStatusModal) {
+      updateStatusModal.style.display = 'none';
+      updateStatusForm.reset();
+    }
+  });
+
+  // Submit update status
+  updateStatusForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const contractorData = await getContractor();
+    if (!contractorData) return;
+    const { user, contractor } = contractorData;
+
+    const requestId = document.getElementById('update-request-id').value;
+    const status = document.getElementById('update-status').value;
+    const message = document.getElementById('update-message').value.trim();
+
+    try {
+      // Update request status
+      const { error: updateError } = await supabase
+        .from('RequestTable')
+        .update({
+          RequestStatus: status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('RequestID', requestId)
+        .eq('ContractorID', contractor.ContractorID);
+      if (updateError) {
+        console.error('Supabase update error:', updateError);
+        throw new Error(`Error updating status: ${updateError.message}`);
+      }
+
+      // Add message to RequestMessages if provided
+      if (message) {
+        const { data: request, error: fetchError } = await supabase
           .from('RequestTable')
-          .select('*')
+          .select('UserID')
           .eq('RequestID', requestId)
           .single();
-
-        if (error) {
-          console.error('Error fetching request details:', error);
-          return;
+        if (fetchError) {
+          console.error('Supabase fetch error:', fetchError);
+          throw new Error(`Error fetching request: ${fetchError.message}`);
         }
 
-        const detailsModal = document.getElementById('request-details-modal');
-        const detailsContent = document.getElementById('request-details-content');
-
-        // Fetch message history
-        const { data: messages, error: messageError } = await supabaseClient
+        const { error: messageError } = await supabase
           .from('RequestMessages')
-          .select('*')
-          .eq('RequestID', requestId)
-          .order('created_at', { ascending: true });
-
+          .insert({
+            MessageID: crypto.randomUUID(),
+            RequestID: requestId,
+            UserID: request.UserID,
+            ContractorID: contractor.ContractorID,
+            MessageType: 'Contractor Update',
+            MessageContent: message,
+            created_at: new Date().toISOString()
+          });
         if (messageError) {
-          console.error('Error fetching messages:', messageError);
+          console.error('Supabase insert error:', messageError);
+          throw new Error(`Error sending message: ${messageError.message}`);
         }
-
-        // Populate modal with request details
-        detailsContent.innerHTML = `
-          <div class="modal-section request-info">
-            <h3>Request Information</h3>
-            <div class="info-item">
-              <span class="info-label">Title:</span>
-              <span class="info-value">${request.RequestTitle}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Description:</span>
-              <span class="info-value">${request.RequestDescription}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Category:</span>
-              <span class="info-value">${request.RequestCategory || 'Other'}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Location:</span>
-              <span class="info-value">${request.RequestLocation}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Status:</span>
-              <span class="info-value status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Submitted:</span>
-              <span class="info-value">${new Date(request.created_at).toLocaleString()}</span>
-            </div>
-          </div>
-          ${request.RequestImageURL ? `
-            <div class="modal-section image-section">
-              <h3>Request Image</h3>
-              <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="request-image">
-            </div>
-          ` : ''}
-          <div class="modal-section message-history">
-            <h3>Message History</h3>
-            ${messages.length > 0 ? `
-              <div class="messages-container">
-                ${messages.map(msg => `
-                  <div class="message-item">
-                    <div class="message-header">
-                      <span class="message-type">${msg.MessageType}</span>
-                      <span class="message-date">${new Date(msg.created_at).toLocaleString()}</span>
-                    </div>
-                    <p class="message-content">${msg.MessageContent}</p>
-                  </div>
-                `).join('')}
-              </div>
-            ` : '<p class="no-messages">No messages available.</p>'}
-          </div>
-        `;
-
-        detailsModal.style.display = 'block';
-      });
-    });
-
-    // Add event listeners for accept button
-    document.querySelectorAll('.accept-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const requestId = btn.dataset.id;
-        const { error } = await supabaseClient
-          .from('RequestTable')
-          .update({ 
-            RequestStatus: 'Accepted',
-            updated_at: new Date().toISOString()
-          })
-          .eq('RequestID', requestId);
-
-        if (error) {
-          console.error('Error accepting request:', error);
-          alert('Failed to accept request. Please try again.');
-          return;
-        }
-
-        fetchRequests();
-      });
-    });
-
-    // Add event listeners for complete button
-    document.querySelectorAll('.complete-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const requestId = btn.dataset.id;
-        const { error } = await supabaseClient
-          .from('RequestTable')
-          .update({ 
-            RequestStatus: 'Completed',
-            updated_at: new Date().toISOString()
-          })
-          .eq('RequestID', requestId);
-
-        if (error) {
-          console.error('Error completing request:', error);
-          alert('Failed to complete request. Please try again.');
-          return;
-        }
-
-        fetchRequests();
-      });
-    });
-
-    // Close modal when clicking the close button or outside the modal
-    const modalCloseBtn = document.querySelector('#request-details-modal .close');
-    modalCloseBtn.addEventListener('click', () => {
-      document.getElementById('request-details-modal').style.display = 'none';
-    });
-
-    window.addEventListener('click', (event) => {
-      if (event.target === document.getElementById('request-details-modal')) {
-        document.getElementById('request-details-modal').style.display = 'none';
       }
+
+      showToast('Status updated successfully!', 'success');
+      updateStatusModal.style.display = 'none';
+      updateStatusForm.reset();
+      loadRequests(contractor.ContractorID);
+    } catch (error) {
+      console.error('Update status error:', error);
+      showToast(`Error updating status: ${error.message}`, 'error');
+    }
+  });
+
+  // Load requests
+  async function loadRequests(contractorId) {
+    try {
+      const { data: requests, error } = await supabase
+        .from('RequestTable')
+        .select('*')
+        .eq('ContractorID', contractorId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        throw new Error(`Error fetching requests: ${error.message}`);
+      }
+
+      allRequests = requests || [];
+      renderRequests(allRequests);
+    } catch (error) {
+      console.error('Load requests error:', error);
+      showToast(`Error loading requests: ${error.message}`, 'error');
+    }
+  }
+
+  // Render requests
+  function renderRequests(requests) {
+    const filterValue = statusFilter.value.toLowerCase();
+    const filteredRequests = filterValue === 'all'
+      ? requests
+      : requests.filter(r => r.RequestStatus.toLowerCase() === filterValue);
+
+    const tableBody = document.getElementById('request-table-body');
+    tableBody.innerHTML = filteredRequests.length > 0
+      ? filteredRequests.map(request => `
+          <div class="table-row" data-request-id="${request.RequestID}">
+            <div>${request.RequestID}</div>
+            <div>${request.RequestTitle}</div>
+            <div>${request.RequestCategory}</div>
+            <div>${request.RequestLocation}</div>
+            <div><span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></div>
+            <div>${request.RequestImageURL ? `<img src="${request.RequestImageURL}" class="table-image" alt="Request Image">` : '-'}</div>
+            <div class="actions">
+              <button class="update-btn" data-request-id="${request.RequestID}">Update Status</button>
+            </div>
+          </div>
+        `).join('')
+      : '<p>No assigned requests found.</p>';
+
+    // Add event listeners
+    document.querySelectorAll('.update-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('update-request-id').value = btn.dataset.requestId;
+        updateStatusModal.style.display = 'block';
+      });
     });
 
-  } catch (error) {
-    console.error('Error in fetchRequests:', error);
+    // Table sorting
+    document.querySelectorAll('.table-header .sortable').forEach(header => {
+      header.addEventListener('click', () => {
+        const sortKey = header.dataset.sort;
+        const isAscending = !header.classList.contains('sort-asc');
+        document.querySelectorAll('.table-header div').forEach(h => {
+          h.classList.remove('sort-asc', 'sort-desc');
+          h.querySelector('i').classList.remove('fa-sort-up', 'fa-sort-down');
+          h.querySelector('i').classList.add('fa-sort');
+        });
+        header.classList.add(isAscending ? 'sort-asc' : 'sort-desc');
+        header.querySelector('i').classList.add(isAscending ? 'fa-sort-up' : 'fa-sort-down');
+        sortRequests(sortKey, isAscending);
+      });
+    });
   }
-}
 
-// Initialize the dashboard
-window.onload = () => {
-  initMap();
-  fetchRequests();
-};
+  // Sort requests
+  function sortRequests(key, ascending) {
+    allRequests.sort((a, b) => {
+      let valA, valB;
+      switch (key) {
+        case 'requestId':
+          valA = a.RequestID;
+          valB = b.RequestID;
+          break;
+        case 'title':
+          valA = a.RequestTitle.toLowerCase();
+          valB = b.RequestTitle.toLowerCase();
+          break;
+        case 'category':
+          valA = a.RequestCategory.toLowerCase();
+          valB = b.RequestCategory.toLowerCase();
+          break;
+        case 'location':
+          valA = a.RequestLocation.toLowerCase();
+          valB = b.RequestLocation.toLowerCase();
+          break;
+        case 'status':
+          valA = a.RequestStatus.toLowerCase();
+          valB = b.RequestStatus.toLowerCase();
+          break;
+        case 'image':
+          valA = a.RequestImageURL ? 1 : 0;
+          valB = b.RequestImageURL ? 1 : 0;
+          break;
+        default:
+          return 0;
+      }
+      return ascending ? (valA < valB ? -1 : 1) : (valA > valB ? -1 : 1);
+    });
+    renderRequests(allRequests);
+  }
 
-// Handle Logout
-document.getElementById('logout').addEventListener('click', (e) => {
-  e.preventDefault();
-  alert('Logged out successfully!');
-});
+  // Load notifications
+  async function loadNotifications(contractorId) {
+    try {
+      const { data: messages, error } = await supabase
+        .from('RequestMessages')
+        .select('*')
+        .eq('ContractorID', contractorId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        throw new Error(`Error fetching notifications: ${error.message}`);
+      }
 
-// Handle Language Selector
-document.getElementById('language-selector').addEventListener('change', (e) => {
-  const lang = e.target.value;
-  alert(`Switching to ${lang === 'en' ? 'English' : lang === 'zu' ? 'Zulu' : 'Afrikaans'}. Translation not implemented.`);
+      const unreadCount = messages.filter(m => !m.isRead).length;
+      notificationBadge.textContent = unreadCount;
+
+      // Add notification dropdown (simplified)
+      notificationIcon.addEventListener('click', () => {
+        alert(`You have ${unreadCount} new notifications.`); // Replace with dropdown in production
+      });
+    } catch (error) {
+      console.error('Load notifications error:', error);
+      showToast(`Error loading notifications: ${error.message}`, 'error');
+    }
+  }
 });

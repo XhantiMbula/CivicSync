@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Dashboard - CivicSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="userDashboard.css">
-    <script src="userDashboard.js" defer></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js" defer></script>
     <script>
         window.supabase = supabase.createClient(
             'https://lywylvbgsnmqwcwgiyhc.supabase.co',
@@ -17,6 +16,8 @@
         );
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js" defer></script>
+    <script type="module" src="userDashboard.js" defer></script>
 </head>
 <body>
     <nav class="navbar">
@@ -49,41 +50,43 @@
         </div>
 
         <div class="request-complaint-section animate-section">
-            <div class="request-box glass-card">
-                <div><i class="fas fa-plus-circle"></i> Request</div>
-                <button id="add-request-button" class="request-button">+ New Request</button>
+            <div class="glass-card">
+                <div><i class="fas fa-file-alt"></i> Submit a Request</div>
+                <button class="request-button" id="open-request-modal">Create Request</button>
             </div>
-            <div class="complaint-box glass-card">
-                <div><i class="fas fa-exclamation-circle"></i> Complaint</div>
-                <button id="addComplaintBtn" class="complaint-button">Add Complaint</button>
-                <button id="viewComplaintBtn" class="complaint-button">View Complaints</button>
+            <div class="glass-card">
+                <div><i class="fas fa-exclamation-circle"></i> File a Complaint</div>
+                <button class="complaint-button" id="open-complaint-modal">File Complaint</button>
             </div>
         </div>
 
         <div class="table-container animate-section">
             <div class="flex justify-between items-center mb-4">
-                <h2>Your Requests</h2>
+                <h2>My Requests</h2>
                 <div class="filter-container">
-                    <label for="status-filter" class="font-semibold text-gray-700 mr-2">Filter by Status:</label>
-                    <select id="status-filter" class="p-2 border rounded-lg bg-white bg-opacity-30 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300">
+                    <label for="status-filter">Filter by Status:</label>
+                    <select id="status-filter">
                         <option value="all">All</option>
                         <option value="Pending">Pending</option>
-                        <option value="Updated">Updated</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Allocated">Allocated</option>
+                        <option value="Accepted">Accepted</option>
                         <option value="Completed">Completed</option>
                     </select>
                 </div>
             </div>
-            <div class="interactive-table" id="request-table">
+            <div class="interactive-table">
                 <div class="table-header">
-                    <div data-sort="title" class="sortable">Title <i class="fas fa-sort"></i></div>
-                    <div data-sort="category" class="sortable">Category <i class="fas fa-sort"></i></div>
-                    <div>Image</div>
-                    <div>Description</div>
-                    <div data-sort="location" class="sortable">Location <i class="fas fa-sort"></i></div>
-                    <div data-sort="status" class="sortable">Status <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="title">Title <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="description">Description <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="location">Location <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="image">Image <i class="fas fa-sort"></i></div>
+                    <div class="sortable" data-sort="date">Date <i class="fas fa-sort"></i></div>
                     <div>Actions</div>
                 </div>
-                <div class="table-body">
+                <div class="table-body" id="request-table-body">
                     <!-- Populated by JavaScript -->
                 </div>
             </div>
@@ -91,11 +94,11 @@
 
         <div class="feed-section animate-section">
             <h2>Community Feed</h2>
-            <div class="grid-container" id="community-feed">
+            <div class="grid-container" id="feed-grid">
                 <!-- Populated by JavaScript -->
             </div>
             <div class="pagination">
-                <button id="load-more-feed" class="load-more-button">Load More</button>
+                <button class="load-more-button" id="load-more">Load More</button>
             </div>
         </div>
     </div>
@@ -129,75 +132,110 @@
         </div>
     </footer>
 
-    <div id="request-modal" class="modal">
-        <div class="modal-content animate-modal">
+    <!-- Request Modal -->
+    <div class="modal" id="request-modal">
+        <div class="modal-content">
             <span class="close">×</span>
             <div class="modal-header">
-                <h2>Add New Request</h2>
+                <h2>Create a Request</h2>
             </div>
             <div class="modal-body">
-                <form id="add-request-form">
-                    <label for="title">Title:</label>
-                    <input type="text" id="title" name="title" required>
-                    <label for="category">Category:</label>
-                    <select id="category" name="category">
-                        <option value="Crime">Crime</option>
-                        <option value="Infrastructure">Infrastructure</option>
+                <form id="request-form">
+                    <label for="request-title">Request Title</label>
+                    <input type="text" id="request-title" required>
+                    <label for="request-category">Category</label>
+                    <select id="request-category" required>
+                        <option value="Water">Water</option>
                         <option value="Electricity">Electricity</option>
                         <option value="Plumbing">Plumbing</option>
-                        <option value="Public Spaces">Public Spaces</option>
-                        <option value="Government Housing">Government Housing</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Other">Other</option>
                     </select>
-                    <label for="image">Image/Picture:</label>
-                    <div id="image-container">
-                        <input type="file" id="image" name="image" accept="image/*" required>
-                    </div>
-                    <label for="description">Description:</label>
-                    <textarea id="description" name="description" rows="4" required></textarea>
-                    <label>Location:</label>
+                    <label for="request-description">Description</label>
+                    <textarea id="request-description" required></textarea>
+                    <label for="request-location">Location</label>
+                    <input type="text" id="request-location" required>
                     <div class="location-options">
-                        <label><input type="radio" name="location-type" value="manual" checked> Enter Address</label>
-                        <label><input type="radio" name="location-type" value="current"> Use Current Location</label>
+                        <button type="button" id="use-current-location">Use Current Location</button>
                     </div>
-                    <input type="text" id="location" name="location" placeholder="Enter address" required>
-                    <div class="modal-footer">
-                        <button type="button" class="modal-cancel-button">Cancel</button>
-                        <button type="submit" class="modal-submit-button">Submit Request</button>
+                    <label for="request-image">Upload Image</label>
+                    <input type="file" id="request-image" accept="image/*">
+                    <div id="image-container">
+                        <img id="image-preview" style="display: none; max-width: 100%;">
                     </div>
                 </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-cancel-button">Cancel</button>
+                <button type="submit" form="request-form" class="modal-submit-button">Submit</button>
             </div>
         </div>
     </div>
 
-    <div id="complaintModal" class="modal1">
+    <!-- Edit Request Modal -->
+    <div class="modal" id="edit-request-modal">
+        <div class="modal-content">
+            <span class="close">×</span>
+            <div class="modal-header">
+                <h2>Edit Request</h2>
+            </div>
+            <div class="modal-body">
+                <form id="edit-request-form">
+                    <input type="hidden" id="edit-request-id">
+                    <label for="edit-request-title">Request Title</label>
+                    <input type="text" id="edit-request-title" required>
+                    <label for="edit-request-category">Category</label>
+                    <select id="edit-request-category" required>
+                        <option value="Water">Water</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Plumbing">Plumbing</option>
+                        <option value="Infrastructure">Infrastructure</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <label for="edit-request-description">Description</label>
+                    <textarea id="edit-request-description" required></textarea>
+                    <label for="edit-request-location">Location</label>
+                    <input type="text" id="edit-request-location" required>
+                    <div class="location-options">
+                        <button type="button" id="edit-use-current-location">Use Current Location</button>
+                    </div>
+                    <label for="edit-request-image">Upload Image</label>
+                    <input type="file" id="edit-request-image" accept="image/*">
+                    <div id="edit-image-container">
+                        <img id="edit-image-preview" style="display: none; max-width: 100%;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="modal-cancel-button">Cancel</button>
+                <button type="submit" form="edit-request-form" class="modal-submit-button">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complaint Modal -->
+    <div class="modal1" id="complaint-modal">
         <div class="modal-content1">
             <span class="closeBtn">×</span>
-            <h2>Add Complaint</h2>
-            <form id="complaintForm">
-                <label for="complaintSubject">Complaint Subject:</label>
-                <input type="text" id="complaintSubject" name="complaintSubject" required>
-                <label for="complaintDescription">Complaint Description:</label>
-                <textarea id="complaintDescription" name="complaintDescription" required></textarea>
-                <label for="complaintResponse">Complaint Response:</label>
-                <input type="text" id="complaintResponse" name="complaintResponse" value="Pending" readonly>
-                <button type="submit">Submit</button>
+            <h2>File a Complaint</h2>
+            <form id="complaint-form">
+                <label for="complaint-title">Complaint Title</label>
+                <input type="text" id="complaint-title" required>
+                <label for="complaint-description">Description</label>
+                <textarea id="complaint-description" required></textarea>
+                <label for="complaint-location">Location</label>
+                <input type="text" id="complaint-location" required>
+                <label for="complaint-request-id">Related Request ID (Optional)</label>
+                <input type="text" id="complaint-request-id" readonly>
+                <button type="submit">Submit Complaint</button>
             </form>
         </div>
     </div>
 
-    <div id="viewComplaintModal" class="modal2">
-        <div class="modal-content1">
-            <span class="closeBtn2">×</span>
-            <h2>View Complaints</h2>
-            <div class="complaint-cards-container">
-                <!-- Cards will be dynamically generated here -->
-            </div>
-        </div>
-    </div>
-
-    <div id="feed-details-modal" class="modal">
+    <!-- Feed Details Modal -->
+    <div class="modal2" id="feed-details-modal">
         <div class="modal-content">
-            <span class="close">×</span>
+            <span class="closeBtn2">×</span>
             <div class="modal-header">
                 <h2>Feed Details</h2>
             </div>

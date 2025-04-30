@@ -223,7 +223,7 @@ button {
 .interactive-table {
     background: white;
     border-radius: 16px;
-    box-shadow: 0 4px vacun30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     padding: 20px;
     overflow-x: auto;
 }
@@ -294,12 +294,27 @@ button {
     color: white;
 }
 
-.status-updated {
-    background: #17a2b8;
+.status-approved {
+    background: #28a745;
     color: white;
 }
 
-.status-completed, .status-approved {
+.status-rejected {
+    background: #ff4d4d;
+    color: white;
+}
+
+.status-allocated {
+    background: #ffa500;
+    color: white;
+}
+
+.status-accepted {
+    background: #20c997;
+    color: white;
+}
+
+.status-completed {
     background: #28a745;
     color: white;
 }
@@ -408,7 +423,7 @@ button {
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Updated to 3 columns */
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     padding: 20px;
 }
@@ -424,7 +439,7 @@ button {
 }
 
 .grid-card.featured {
-    grid-column: span 2; /* First card spans 2 columns */
+    grid-column: span 2;
 }
 
 .grid-card::before {
@@ -613,8 +628,7 @@ button {
     margin-bottom: 20px;
     color: #333;
 }
-.modal-body{
-}
+
 .modal-body form {
     display: flex;
     flex-direction: column;
@@ -674,11 +688,11 @@ button {
     opacity: 0.9;
 }
 
-#image-container {
+#image-container, #edit-image-container {
     position: relative;
 }
 
-#image-preview {
+#image-preview, #edit-image-preview {
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     padding: 5px;
