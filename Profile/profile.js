@@ -24,11 +24,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const user = data.user.user_metadata;
 
     document.getElementById('username').value = user.username || '';
-    document.getElementById('name').value = user.name || '';
+    document.getElementById('name').value = user.UserFirstname || '';
     document.getElementById('surname').value = user.surname || '';
     document.getElementById('email').value = data.user.email || '';
     document.getElementById('number').value = user.phone || '';
-    document.getElementById('password').value = '';
     
     // Handle Edit/Save button
     document.getElementById('edit-profile-btn').addEventListener('click', async function () {
@@ -42,16 +41,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             button.textContent = 'Save';
         } else {
-            const updates = {
+            const { error } = await supabase.auth.updateUser({
                 data: {
                     username: document.getElementById('username').value,
                     name: document.getElementById('name').value,
                     surname: document.getElementById('surname').value,
                     phone: document.getElementById('number').value
                 }
-            };
-
-            const { error } = await supabase.auth.updateUser(updates);
+            });
+            
             if (error) {
                 console.error('Error updating user data:', error);
                 return;
@@ -90,11 +88,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     
             if (error) throw new Error(error.message);
     
-            const container = document.getElementById('notifications-container');
-            container.innerHTML = ''; // Clear any previous notifications
-
-            if (!section) return;
-
+            const section = document.querySelector('.notifications-section');
+            if (!section) {
+                console.error("Notifications section not found in the DOM.");
+                return;
+            }
+    
+            // Clear any previous content in the notifications section
+            section.innerHTML = '<h3>Recent Notifications</h3>'; 
+    
             if (!messages || messages.length === 0) {
                 const noMsg = document.createElement('p');
                 noMsg.className = 'no-notifications';
@@ -103,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 const container = document.createElement('div');
                 container.classList.add('recent-notifications');
-
+    
                 let html = '<ul class="notification-list">';
                 messages.forEach(message => {
                     const statusClass = message.MessageType === 'Approval' ? 'notification-approval' : 'notification-rejection';
@@ -117,12 +119,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 html += '</ul>';
                 container.innerHTML = html;
+                section.appendChild(container);
             }
-            } catch (error) {
+    
+        } catch (error) {
             console.error('Error loading recent notifications:', error);
         }
     }
-    
     // Call it at the end of DOMContentLoaded
     loadRecentNotifications();    
 });
