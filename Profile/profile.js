@@ -1,137 +1,164 @@
-const supabaseUrl = "https://bvmohzddhmqvbwtxzgbb.supabase.co";
-const supabaseKey = "YOUR_SUPABASE_KEY"; // Replace with your actual key
-const client = supabase.createClient(supabaseUrl, supabaseKey);
+// Initialize Supabase client
+const supabase = window.supabase.createClient(
+    "https://lywylvbgsnmqwcwgiyhc.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg"
+);
 
 // DOM Elements
-const usernameInput = document.getElementById("username");
-const nameInput = document.getElementById("name");
-const surnameInput = document.getElementById("surname");
-const emailInput = document.getElementById("email");
-const numberInput = document.getElementById("number");
-const editButton = document.getElementById("edit-profile-btn");
-const logoutButton = document.getElementById("logout-btn");
-const notificationsContainer = document.getElementById("notifications-container");
+const usernameInput = document.getElementById('username');
+const nameInput = document.getElementById('name');
+const surnameInput = document.getElementById('surname');
+const emailInput = document.getElementById('email');
+const numberInput = document.getElementById('number');
+const editBtn = document.getElementById('edit-profile-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const notificationsContainer = document.getElementById('notifications-container');
 
 let isEditing = false;
+let currentUserId = null;
 
-// Load user data on page load
-window.addEventListener("DOMContentLoaded", async () => {
-    const {
-        data: { user },
-        error: userError
-    } = await client.auth.getUser();
+// Check if user is logged in, if not redirect to login page
+async function checkSession() {
+    const { data: { session }, error } = await supabase.auth.getSession();
 
-    if (userError || !user) {
-        console.error("User not logged in:", userError);
-        window.location.href = "../loginPage/loginPage.html";
+    if (error || !session) {
+        console.error('No active session found:', error);
+        window.location.href = '../loginPage/loginPage.html';
         return;
     }
 
-    const { data, error } = await client
-        .from("Users")
-        .select("*")
-        .eq("UserEmail", user.email)
+    currentUserId = session.user.id;
+    loadProfile();
+}
+
+// Load profile data
+async function loadProfile() {
+    const { data, error } = await supabase
+        .from('UserTable')
+        .select('UserUsername, UserFirstname, UserLastname, UserEmail, UserPhonenumber')
+        .eq('UserID', currentUserId)
         .single();
 
-    if (error) {
-        console.error("Error fetching user data:", error.message);
-    } else {
-        usernameInput.value = data.UserUsername || "";
-        nameInput.value = data.UserFirstname || "";
-        surnameInput.value = data.UserLastname || "";
-        emailInput.value = data.UserEmail || "";
-        numberInput.value = data.UserNumber || "";
+    if (error || !data) {
+        console.error('Error loading profile data:', error);
+        return;
     }
 
-    loadRecentNotifications(user.email);
-});
+    usernameInput.value = data.UserUsername || '';
+    nameInput.value = data.UserFirstname || '';
+    surnameInput.value = data.UserLastname || '';
+    emailInput.value = data.UserEmail || '';
+    numberInput.value = data.UserPhonenumber || '';
+}
 
-// Toggle Edit Mode
-editButton.addEventListener("click", async () => {
+// Toggle edit/save
+editBtn.addEventListener('click', async () => {
     if (!isEditing) {
-        isEditing = true;
-        [usernameInput, nameInput, surnameInput, numberInput].forEach(input => {
+        [usernameInput, nameInput, surnameInput, emailInput, numberInput].forEach(input => {
             input.disabled = false;
-            input.classList.add("editable");
+            input.classList.add('editable');
         });
-        editButton.textContent = "Save Profile";
+        editBtn.textContent = 'Save';
     } else {
-        const updatedData = {
-            UserUsername: usernameInput.value,
-            UserFirstname: nameInput.value,
-            UserLastname: surnameInput.value,
-            UserNumber: numberInput.value
+        const updates = {
+            UserUsername: usernameInput.value.trim(),
+            UserFirstname: nameInput.value.trim(),
+            UserLastname: surnameInput.value.trim(),
+            UserEmail: emailInput.value.trim(),
+            UserPhonenumber: numberInput.value.trim()
         };
 
-        const { data: { user } } = await client.auth.getUser();
-
-        const { error } = await client
-            .from("Users")
-            .update(updatedData)
-            .eq("UserEmail", user.email);
+        const { error } = await supabase
+            .from('UserTable')
+            .update(updates)
+            .eq('UserID', currentUserId);
 
         if (error) {
-            console.error("Failed to update profile:", error.message);
-        } else {
-            console.log("Profile updated");
-        }
-
-        [usernameInput, nameInput, surnameInput, numberInput].forEach(input => {
-            input.disabled = true;
-            input.classList.remove("editable");
-        });
-        editButton.textContent = "Edit Profile";
-        isEditing = false;
-    }
-});
-
-// Logout Functionality
-logoutButton.addEventListener("click", async () => {
-    const { error } = await client.auth.signOut();
-    if (error) {
-        console.error("Logout failed:", error.message);
-    } else {
-        window.location.href = "../loginPage/loginPage.html";
-    }
-});
-
-// Load Notifications
-async function loadRecentNotifications(email) {
-    try {
-        const { data, error } = await client
-            .from("Notifications")
-            .select("*")
-            .eq("UserEmail", email)
-            .order("created_at", { ascending: false })
-            .limit(5);
-
-        if (error) throw error;
-
-        if (!data || data.length === 0) {
-            notificationsContainer.innerHTML = `<p class="no-notifications">No recent notifications.</p>`;
+            console.error('Error updating profile:', error);
             return;
         }
 
-        const ul = document.createElement("ul");
-        ul.classList.add("notification-list");
+        [usernameInput, nameInput, surnameInput, emailInput, numberInput].forEach(input => {
+            input.disabled = true;
+            input.classList.remove('editable');
+        });
+        editBtn.textContent = 'Edit Profile';
+    }
 
-        data.forEach(notification => {
-            const li = document.createElement("li");
-            li.textContent = notification.Message;
+    isEditing = !isEditing;
+});
 
-            if (notification.Type === "Approval") {
-                li.classList.add("notification-approval");
-            } else if (notification.Type === "Rejection") {
-                li.classList.add("notification-rejection");
-            }
+// Logout
+logoutBtn.addEventListener('click', async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('Logout error:', error.message);
+        return;
+    }
+    window.location.href = '../loginPage/loginPage.html';
+});
 
-            ul.appendChild(li);
+// Load recent notifications
+async function loadRecentNotifications() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+        console.error('Error fetching user for notifications:', error);
+        return;
+    }
+
+    try {
+        const { data: messages, error: notifError } = await supabase
+            .from('RequestMessages')
+            .select('*, RequestTable(RequestTitle)')
+            .eq('UserID', user.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (notifError) throw notifError;
+
+        if (!messages || messages.length === 0) {
+            notificationsContainer.innerHTML = '<p class="no-notifications">No recent notifications.</p>';
+            return;
+        }
+
+        const list = document.createElement('ul');
+        list.classList.add('notification-list');
+
+        messages.forEach(message => {
+            const item = document.createElement('li');
+            const statusClass = message.MessageType === 'Approval'
+                ? 'notification-approval'
+                : 'notification-rejection';
+            item.classList.add(statusClass);
+            item.innerHTML = `
+                <strong>${message.RequestTable?.RequestTitle || 'Request'}</strong><br>
+                ${message.MessageContent}<br>
+                <small>${new Date(message.created_at).toLocaleString()}</small>
+            `;
+            list.appendChild(item);
         });
 
-        notificationsContainer.innerHTML = "";
-        notificationsContainer.appendChild(ul);
+        notificationsContainer.innerHTML = '';
+        notificationsContainer.appendChild(list);
+
+        // Mark messages as read
+        const unreadMessageIds = messages.filter(m => !m.IsRead).map(m => m.MessageID);
+        if (unreadMessageIds.length > 0) {
+            const { error: updateError } = await supabase
+                .from('RequestMessages')
+                .update({ IsRead: true })
+                .in('MessageID', unreadMessageIds);
+            if (updateError) {
+                console.error('Error marking messages as read:', updateError);
+            }
+        }
     } catch (err) {
-        console.error("Error loading recent notifications:", err.message);
-        notificationsContainer.innerHTML = `<p class="no-notifications">Failed to load notifications.</p>`;
+        console.error('Error loading recent notifications:', err);
     }
 }
+
+
+// Initial load
+checkSession();
+loadRecentNotifications();
