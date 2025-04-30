@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         // Redirect to login or home page after successful logout
-        window.location.href = '../Login/login.html'; // Change this path as needed
+        window.location.href = '../loginPage/loginPage.html'; // Change this path as needed
     });
     async function loadRecentNotifications() {
         const { data: userData, error: userError } = await supabase.auth.getUser();
