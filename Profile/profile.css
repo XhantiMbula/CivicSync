@@ -30,9 +30,11 @@ p a {
 
 /* Back Container */
 .back-container {
-    top: 20px;
-    left: 20px;
-    margin-right: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    width: 100%;
 }
 
 .back-link {
@@ -41,7 +43,7 @@ p a {
     display: flex;
     font-size: 18px;
     transition: opacity 0.3s;
-    margin: auto;
+    align-self: flex-start;
 }
 
 .back-link:hover {
@@ -117,6 +119,7 @@ p a {
     font-size: 1rem;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    align-self: flex-end;
 }
 
 #logout-btn:hover {
