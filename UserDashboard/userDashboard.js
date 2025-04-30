@@ -22,12 +22,63 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadMoreFeedButton = document.getElementById('load-more-feed');
     const hamburger = document.querySelector('.hamburger');
     const navbar = document.querySelector('.navbar');
+    const statusFilter = document.getElementById('status-filter');
+    const feedDetailsModal = document.getElementById('feed-details-modal');
+    const feedDetailsCloseBtn = document.getElementById('feed-details-close');
+    const feedDetailsCloseSpan = feedDetailsModal.querySelector('.close');
 
     if (!window.supabase) {
         console.error('Supabase client not initialized.');
         alert('Application error: Supabase client not found.');
         return;
     }
+
+    // Inject CSS for status filter alignment and feed modal layout
+    const style = document.createElement('style');
+    style.textContent = `
+        #status-filter {
+            float: right;
+            margin: 10px 0;
+        }
+        #community-feed {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        .grid-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .grid-card.featured {
+            grid-column: span 2;
+        }
+        #feed-details-modal .modal-content {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        #feed-details-modal .feed-info {
+            flex: 1;
+            padding-right: 20px;
+        }
+        #feed-details-modal .image-section {
+            flex: 1;
+            text-align: center;
+        }
+        #feed-details-modal .feed-image {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+    `;
+    document.head.appendChild(style);
 
     // Google Maps Autocomplete
     let autocomplete;
@@ -38,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Pagination for feed
     let feedPage = 0;
-    const feedLimit = 8; // Number of requests per page
+    const feedLimit = 3; // 3 items per page (2 normal, 1 spanning 2 cells)
     let allFeedRequests = [];
     let hasMoreFeed = true;
 
@@ -168,6 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadUserRequests();
         loadCommunityFeed();
         loadNotifications();
+        loadComplaints(); // Load complaints on page load
     }
     checkUserOnLoad();
 
@@ -212,6 +264,51 @@ document.addEventListener('DOMContentLoaded', () => {
         modalHeader.textContent = 'Add New Request';
     });
 
+    // Feed Details Modal Handlers
+    function openFeedDetailsModal(request) {
+        const content = document.getElementById('feed-details-content');
+        content.innerHTML = `
+            <div class="modal-section feed-info">
+                <h3>Feed Information</h3>
+                <div class="info-item">
+                    <span class="info-label">Title:</span>
+                    <span class="info-value">${request.RequestTitle}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value">${request.RequestDescription}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Category:</span>
+                    <span class="info-value">${request.RequestCategory}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Location:</span>
+                    <span class="info-value">${request.RequestLocation}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Posted:</span>
+                    <span class="info-value">${new Date(request.created_at).toLocaleString()}</span>
+                </div>
+            </div>
+            ${request.RequestImageURL ? `
+                <div class="modal-section image-section">
+                    <h3>Feed Image</h3>
+                    <img src="${request.RequestImageURL}" alt="${request.RequestTitle}" class="feed-image">
+                </div>
+            ` : ''}
+        `;
+        feedDetailsModal.style.display = 'block';
+    }
+
+    function closeFeedDetailsModal() {
+        feedDetailsModal.style.display = 'none';
+        document.getElementById('feed-details-content').innerHTML = '';
+    }
+
+    feedDetailsCloseBtn.addEventListener('click', closeFeedDetailsModal);
+    feedDetailsCloseSpan.addEventListener('click', closeFeedDetailsModal);
+
     window.addEventListener("click", (event) => {
         if (event.target === modal) {
             modal.style.display = "none";
@@ -222,6 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (event.target === complaintModal) complaintModal.style.display = "none";
         if (event.target === viewComplaintModal) viewComplaintModal.style.display = "none";
+        if (event.target === feedDetailsModal) closeFeedDetailsModal();
     });
 
     requestForm.addEventListener("submit", async (event) => {
@@ -342,19 +440,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    async function loadUserRequests() {
+    async function loadUserRequests(filterStatus = 'all') {
         const user = await getUser();
         if (!user) return;
 
         try {
-            const { data: requests, error } = await supabase
+            let query = supabase
                 .from('RequestTable')
                 .select('*')
                 .eq('UserID', user.id)
                 .order('created_at', { ascending: false });
+
+            if (filterStatus !== 'all') {
+                query = query.eq('RequestStatus', filterStatus);
+            }
+
+            const { data: requests, error } = await query;
             if (error) throw new Error(`Error fetching requests: ${error.message}`);
 
             requestTableBody.innerHTML = '';
+            if (requests.length === 0) {
+                requestTableBody.innerHTML = '<p>No requests found.</p>';
+                return;
+            }
+
             requests.forEach((request, index) => {
                 const truncatedDesc = request.RequestDescription.length > 100
                     ? request.RequestDescription.substring(0, 100) + '...'
@@ -370,9 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>${request.RequestLocation}</div>
                     <div><span class="status-badge status-${request.RequestStatus.toLowerCase()}">${request.RequestStatus}</span></div>
                     <div class="actions">
-                        <button onclick="editRequest('${request.RequestID}')">Edit</button>
-                        <button onclick="deleteRequest('${request.RequestID}')">Delete</button>
-                        <button class="tracker-toggle" onclick="toggleTracker('${request.RequestID}', this)">
+                        <button class="edit-request-btn" data-request-id="${request.RequestID}">Edit</button>
+                        <button class="delete-request-btn" data-request-id="${request.RequestID}">Delete</button>
+                        <button class="tracker-toggle" data-request-id="${request.RequestID}">
                             <i class="fas fa-chevron-down"></i>
                         </button>
                     </div>
@@ -381,7 +490,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Create tracker visualization as a sibling
                 const trackerDiv = document.createElement('div');
-                trackerDiv.classList.add('tracker-visualization', 'hidden');
+                trackerDiv.classList.add('tracker-visualization');
+                trackerDiv.classList.add('hidden');
                 trackerDiv.id = `tracker-${request.RequestID}`;
                 trackerDiv.innerHTML = `
                     <div class="tracker-content">
@@ -398,6 +508,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.style.opacity = '1';
                     row.style.transform = 'translateY(0)';
                 }, index * 100);
+            });
+
+            // Add event listeners for buttons using event delegation
+            requestTableBody.addEventListener('click', (e) => {
+                const target = e.target.closest('button'); // Ensure we target the button
+                if (!target) return;
+
+                const requestId = target.dataset.requestId;
+
+                if (target.classList.contains('edit-request-btn')) {
+                    window.editRequest(requestId);
+                } else if (target.classList.contains('delete-request-btn')) {
+                    window.deleteRequest(requestId);
+                } else if (target.classList.contains('tracker-toggle')) {
+                    window.toggleTracker(requestId, target);
+                }
             });
 
             // Sorting
@@ -423,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             : valB.localeCompare(valA);
                     });
 
-                    loadUserRequests(); // Reload sorted
+                    loadUserRequests(statusFilter.value); // Reload sorted with current filter
                 });
             });
         } catch (error) {
@@ -432,57 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function toggleTracker(requestId, button) {
-        const trackerVisualization = document.getElementById(`tracker-${requestId}`);
-        const isHidden = trackerVisualization.classList.contains('hidden');
-        const icon = button.querySelector('i');
-
-        // Close all other trackers
-        document.querySelectorAll('.tracker-visualization').forEach(vis => {
-            vis.classList.add('hidden');
-            const relatedRow = vis.previousElementSibling;
-            if (relatedRow) {
-                const btn = relatedRow.querySelector('.tracker-toggle i');
-                if (btn) {
-                    btn.classList.remove('fa-chevron-up');
-                    btn.classList.add('fa-chevron-down');
-                }
-            }
-        });
-
-        if (isHidden) {
-            // Use default tracker data
-            const trackerEvents = defaultTrackerEvents;
-            const trackerContent = trackerVisualization.querySelector('.tracker-content');
-            if (trackerEvents.length === 0) {
-                trackerContent.innerHTML = '<p>No tracking updates available.</p>';
-            } else {
-                let html = '<div class="tracker-timeline">';
-                trackerEvents.forEach((event, idx) => {
-                    html += `
-                        <div class="tracker-event">
-                            <div class="tracker-details">
-                                <p><strong>${event.Status}</strong></p>
-                                <p>${event.Details}</p>
-                                <p class="timestamp">${event.Timestamp}</p>
-                            </div>
-                            ${idx < trackerEvents.length - 1 ? '<div class="tracker-arrow"><i class="fas fa-arrow-right"></i></div>' : ''}
-                        </div>
-                    `;
-                });
-                html += '</div>';
-                trackerContent.innerHTML = html;
-            }
-
-            trackerVisualization.classList.remove('hidden');
-            icon.classList.remove('fa-chevron-down');
-            icon.classList.add('fa-chevron-up');
-        } else {
-            trackerVisualization.classList.add('hidden');
-            icon.classList.remove('fa-chevron-up');
-            icon.classList.add('fa-chevron-down');
-        }
-    }
+    // Handle Filter Change
+    statusFilter.addEventListener('change', (e) => {
+        loadUserRequests(e.target.value);
+    });
 
     async function loadCommunityFeed(reset = false) {
         if (reset) {
@@ -525,20 +604,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Shuffle array to randomize spans
-            const shuffledRequests = [...allFeedRequests].sort(() => Math.random() - 0.5);
-            feedContainer.innerHTML = ''; // Clear and re-render
-
-            shuffledRequests.forEach((request, index) => {
+            // Render the latest batch of requests
+            requests.forEach((request, index) => {
                 const card = document.createElement('div');
                 card.classList.add('grid-card', `category-${request.RequestCategory.toLowerCase().replace(/\s+/g, '-')}`);
                 card.dataset.tilt = '';
-
-                // Randomly assign spans to some cards
-                const shouldSpan = index % 5 === 0 || index % 3 === 0; // Span every 3rd or 5th card
-                const spanType = Math.random() > 0.5 ? 'span-column' : 'span-row';
-                if (shouldSpan) {
-                    card.classList.add(spanType);
+                // First card in each batch spans 2 cells, others take 1 cell each
+                if (index === 2) { // Third card (index 2) spans 2 cells
+                    card.classList.add('featured');
                 }
 
                 card.innerHTML = `
@@ -555,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <p class="card-category"><strong>Category:</strong> ${request.RequestCategory}</p>
                         <p class="card-description">${request.RequestDescription.length > 150 ? request.RequestDescription.substring(0, 150) + '...' : request.RequestDescription}</p>
                         <p class="card-location"><i class="fas fa-map-marker-alt"></i> ${request.RequestLocation}</p>
-                        <button class="view-details hidden">View Details</button>
+                        <button class="view-details">View Details</button>
                     </div>
                 `;
                 feedContainer.appendChild(card);
@@ -573,23 +646,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, { threshold: 0.1 });
                 observer.observe(card);
 
-                // View Details toggle
+                // View Details button to open modal
                 const viewDetailsBtn = card.querySelector('.view-details');
-                card.addEventListener('mouseenter', () => viewDetailsBtn.classList.remove('hidden'));
-                card.addEventListener('mouseleave', () => viewDetailsBtn.classList.add('hidden'));
                 viewDetailsBtn.addEventListener('click', () => {
-                    const description = card.querySelector('.card-description');
-                    if (description.classList.contains('expanded')) {
-                        description.classList.remove('expanded');
-                        description.textContent = request.RequestDescription.length > 150
-                            ? request.RequestDescription.substring(0, 150) + '...'
-                            : request.RequestDescription;
-                        viewDetailsBtn.textContent = 'View Details';
-                    } else {
-                        description.classList.add('expanded');
-                        description.textContent = request.RequestDescription;
-                        viewDetailsBtn.textContent = 'Hide Details';
-                    }
+                    openFeedDetailsModal(request);
                 });
             });
 
@@ -709,59 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    async function editRequest(requestId) {
-        const { data: request, error } = await supabase
-            .from('RequestTable')
-            .select('*')
-            .eq('RequestID', requestId)
-            .single();
-        if (error) {
-            console.error('Error fetching request for edit:', error.message);
-            showToast(`Error fetching request: ${error.message}`, 'error');
-            return;
-        }
-
-        currentRequestId = requestId;
-        imageInput.required = false;
-        document.getElementById('title').value = request.RequestTitle;
-        document.getElementById('category').value = request.RequestCategory;
-        document.getElementById('description').value = request.RequestDescription;
-        document.getElementById('location').value = request.RequestLocation;
-        document.querySelector('input[name="location-type"][value="manual"]').checked = true;
-        locationInput.disabled = false;
-
-        document.getElementById('image-preview')?.remove();
-        if (request.RequestImageURL) {
-            const imgPreview = document.createElement('img');
-            imgPreview.id = 'image-preview';
-            imgPreview.src = request.RequestImageURL;
-            imgPreview.style.maxWidth = '100%';
-            imgPreview.style.maxHeight = '150px';
-            imgPreview.style.marginBottom = '10px';
-            imageInput.parentNode.insertBefore(imgPreview, imageInput);
-        }
-
-        modalHeader.textContent = 'Edit Request';
-        modal.style.display = 'block';
-    }
-
-    async function deleteRequest(requestId) {
-        if (confirm('Are you sure you want to delete this request?')) {
-            const { error } = await supabase
-                .from('RequestTable')
-                .delete()
-                .eq('RequestID', requestId);
-            if (error) {
-                console.error('Error deleting request:', error.message);
-                showToast(`Error deleting request: ${error.message}`, 'error');
-            } else {
-                showToast('Request deleted successfully!', 'success');
-                loadUserRequests();
-                loadCommunityFeed(true);
-            }
-        }
-    }
-
     profileIcon.addEventListener('click', async () => {
         const user = await getUser();
         if (!user) return;
@@ -831,55 +838,219 @@ document.addEventListener('DOMContentLoaded', () => {
         complaintModal.style.display = 'none';
     });
 
-    viewComplaintBtn.addEventListener('click', async () => {
+    async function loadComplaints() {
+        const user = await getUser();
+        if (!user) return;
+
+        try {
+            const { data: complaints, error } = await supabase
+                .from('ComplaintTable')
+                .select('*')
+                .eq('UserID', user.id)
+                .order('created_at', { ascending: false });
+            if (error) throw new Error(`Error fetching complaints: ${error.message}`);
+
+            const container = viewComplaintModal.querySelector('.complaint-cards-container');
+            container.innerHTML = '';
+            if (complaints.length === 0) {
+                container.innerHTML = '<p>No complaints found.</p>';
+                return;
+            }
+
+            complaints.forEach(complaint => {
+                const card = document.createElement('div');
+                card.className = 'complaint-card';
+                card.style.background = 'rgba(255, 255, 255, 0.2)';
+                card.style.borderRadius = '12px';
+                card.style.padding = '15px';
+                card.style.marginBottom = '10px';
+                card.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+                card.innerHTML = `
+                    <h3 style="font-family: 'Poppins', sans-serif; font-size: 1.2em; margin-bottom: 10px;">${complaint.ComplaintSubject}</h3>
+                    <p style="margin-bottom: 5px;"><strong>Description:</strong> ${complaint.ComplaintDescription}</p>
+                    <p style="margin-bottom: 5px;"><strong>Response:</strong> ${complaint.ComplaintResponse}</p>
+                    <p style="font-size: 0.9em; color: #777;">Submitted: ${new Date(complaint.created_at).toLocaleString()}</p>
+                `;
+                container.appendChild(card);
+            });
+        } catch (error) {
+            console.error('Error loading complaints:', error);
+            showToast('Error loading complaints.', 'error');
+        }
+    }
+
+    viewComplaintBtn.addEventListener('click', () => {
+        loadComplaints();
         viewComplaintModal.style.display = 'block';
-        const container = viewComplaintModal.querySelector('.complaint-cards-container');
-        container.innerHTML = '<p>Loading complaints...</p>';
-        // Placeholder for complaint loading
     });
 
     closeViewComplaintBtn.addEventListener('click', () => {
         viewComplaintModal.style.display = 'none';
     });
 
-    complaintForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
+    complaintForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
         const user = await getUser();
         if (!user) return;
 
         const subject = document.getElementById('complaintSubject').value;
         const description = document.getElementById('complaintDescription').value;
-        const response = document.getElementById('complaintResponse').value;
+        const response = 'Pending';
 
         try {
-            const complaintData = {
-                ComplaintID: crypto.randomUUID(),
-                ComplaintSubject: subject,
-                ComplaintDescription: description,
-                ComplaintResponse: response,
-                UserID: user.id,
-                created_at: new Date().toISOString()
-            };
             const { error } = await supabase
                 .from('ComplaintTable')
-                .insert([complaintData]);
-            if (error) throw new Error(`Complaint insertion failed: ${error.message}`);
+                .insert([{
+                    ComplaintID: crypto.randomUUID(),
+                    ComplaintSubject: subject,
+                    ComplaintDescription: description,
+                    ComplaintResponse: response,
+                    UserID: user.id,
+                    created_at: new Date().toISOString()
+                }]);
+            if (error) throw new Error(`Error submitting complaint: ${error.message}`);
 
             showToast('Complaint submitted successfully!', 'success');
             complaintModal.style.display = 'none';
             complaintForm.reset();
+            loadComplaints();
         } catch (error) {
             console.error('Error submitting complaint:', error);
             showToast('Error submitting complaint.', 'error');
         }
     });
 
-    // Hamburger Menu Toggle
     hamburger.addEventListener('click', () => {
         navbar.classList.toggle('active');
     });
-
-    window.editRequest = editRequest;
-    window.deleteRequest = deleteRequest;
-    window.toggleTracker = toggleTracker;
 });
+
+// Expose functions to global scope for inline event handlers (as a fallback)
+window.editRequest = async function(requestId) {
+    const { data: request, error } = await window.supabase
+        .from('RequestTable')
+        .select('*')
+        .eq('RequestID', requestId)
+        .single();
+    if (error) {
+        console.error('Error fetching request for edit:', error.message);
+        alert(`Error fetching request: ${error.message}`);
+        return;
+    }
+
+    const imageInput = document.getElementById('image');
+    const modalHeader = document.querySelector('.modal-header h2');
+    let currentRequestId = requestId;
+    imageInput.required = false;
+    document.getElementById('title').value = request.RequestTitle;
+    document.getElementById('category').value = request.RequestCategory;
+    document.getElementById('description').value = request.RequestDescription;
+    document.getElementById('location').value = request.RequestLocation;
+    document.querySelector('input[name="location-type"][value="manual"]').checked = true;
+    document.getElementById('location').disabled = false;
+
+    document.getElementById('image-preview')?.remove();
+    if (request.RequestImageURL) {
+        const imgPreview = document.createElement('img');
+        imgPreview.id = 'image-preview';
+        imgPreview.src = request.RequestImageURL;
+        imgPreview.style.maxWidth = '100%';
+        imgPreview.style.maxHeight = '150px';
+        imgPreview.style.marginBottom = '10px';
+        imageInput.parentNode.insertBefore(imgPreview, imageInput);
+    }
+
+    modalHeader.textContent = 'Edit Request';
+    document.getElementById("request-modal").style.display = 'block';
+};
+
+window.deleteRequest = async function(requestId) {
+    if (confirm('Are you sure you want to delete this request?')) {
+        const { error } = await window.supabase
+            .from('RequestTable')
+            .delete()
+            .eq('RequestID', requestId);
+        if (error) {
+            console.error('Error deleting request:', error.message);
+            alert(`Error deleting request: ${error.message}`);
+        } else {
+            alert('Request deleted successfully!');
+            const statusFilter = document.getElementById('status-filter');
+            loadUserRequests(statusFilter.value);
+            loadCommunityFeed(true);
+        }
+    }
+};
+
+window.toggleTracker = function(requestId, button) {
+    const trackerVisualization = document.getElementById(`tracker-${requestId}`);
+    if (!trackerVisualization) {
+        console.error(`Tracker visualization for request ${requestId} not found.`);
+        return;
+    }
+
+    const isHidden = trackerVisualization.classList.contains('hidden');
+    const icon = button.querySelector('i');
+
+    // Close all other trackers
+    document.querySelectorAll('.tracker-visualization').forEach(vis => {
+        if (vis.id !== `tracker-${requestId}`) {
+            vis.classList.add('hidden');
+            const relatedRow = vis.previousElementSibling;
+            if (relatedRow) {
+                const btn = relatedRow.querySelector('.tracker-toggle i');
+                if (btn) {
+                    btn.classList.remove('fa-chevron-up');
+                    btn.classList.add('fa-chevron-down');
+                }
+            }
+        }
+    });
+
+    if (isHidden) {
+        // Use default tracker data
+        const defaultTrackerEvents = [
+            { Status: 'Submitted', Details: 'Request submitted by user.', Timestamp: '2025-04-25 10:00 AM' },
+            { Status: 'In Progress', Details: 'Request is being reviewed by the admin.', Timestamp: '2025-04-26 02:30 PM' },
+            { Status: 'Approved', Details: 'Request has been approved.', Timestamp: '2025-04-27 09:15 AM' }
+        ];
+        const trackerEvents = defaultTrackerEvents;
+        const trackerContent = trackerVisualization.querySelector('.tracker-content');
+        if (!trackerContent) {
+            console.error(`Tracker content for request ${requestId} not found.`);
+            return;
+        }
+
+        if (trackerEvents.length === 0) {
+            trackerContent.innerHTML = '<p>No tracking updates available.</p>';
+        } else {
+            let html = '<div class="tracker-timeline">';
+            trackerEvents.forEach((event, idx) => {
+                html += `
+                    <div class="tracker-event">
+                        <div class="tracker-details">
+                            <p><strong>${event.Status}</strong></p>
+                            <p>${event.Details}</p>
+                            <p class="timestamp">${event.Timestamp}</p>
+                        </div>
+                        ${idx < trackerEvents.length - 1 ? '<div class="tracker-arrow"><i class="fas fa-arrow-right"></i></div>' : ''}
+                    </div>
+                `;
+            });
+            html += '</div>';
+            trackerContent.innerHTML = html;
+        }
+
+        trackerVisualization.classList.remove('hidden');
+        if (icon) {
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+        }
+    } else {
+        trackerVisualization.classList.add('hidden');
+        if (icon) {
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+};

@@ -154,7 +154,7 @@ async function loadAdminNotifications(adminId) {
     const badge = document.getElementById('notification-badge');
     badge.textContent = notifications.length;
   } catch (error) {
-    console.error('Error loading admin notifications:', error);
+    console.error('Error loading admins notifications:', error);
     alert('Failed to load notifications. Please try again.');
   }
 }
@@ -234,106 +234,143 @@ notificationIcon.addEventListener('click', async () => {
 let statusChartInstance = null;
 let trendChartInstance = null;
 
-function renderAnalytics(data) {
+// Utility function to generate colors dynamically
+function generateColors(count) {
+  const colors = [
+    '#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd',
+    '#81c784', '#ff8a65', '#ba68c8', '#4dd0e1', '#a1887f'
+  ];
+  const borderColors = [
+    '#2b6cb0', '#f57c00', '#00695c', '#c2185b', '#757575',
+    '#4caf50', '#f4511e', '#8e24aa', '#00acc1', '#6d4c41'
+  ];
+  const resultColors = [];
+  const resultBorderColors = [];
+  for (let i = 0; i < count; i++) {
+    resultColors.push(colors[i % colors.length]);
+    resultBorderColors.push(borderColors[i % borderColors.length]);
+  }
+  return { backgroundColors: resultColors, borderColors: resultBorderColors };
+}
+
+async function renderAnalytics(data) {
   if (typeof Chart === 'undefined') {
     console.error('Chart.js not loaded. Analytics charts cannot be rendered.');
     return;
   }
 
-  // Define categories (update these based on your actual categories)
-  const categories = ['Water', 'Electricity', 'Road Maintenance', 'Waste Management', 'Other'];
+  try {
+    // Fetch all unique categories from the RequestTable
+    const { data: categoryData, error: categoryError } = await supabaseClient
+      .from('RequestTable')
+      .select('RequestCategory')
+      .not('RequestCategory', 'is', null);
+    if (categoryError) throw new Error(`Error fetching categories: ${categoryError.message}`);
 
-  // Calculate KPIs
-  const waterCount = data.filter(r => (r.RequestCategory || 'Other') === 'Water').length;
-  const electricityCount = data.filter(r => (r.RequestCategory || 'Other') === 'Electricity').length;
-  const processingTimes = data
-    .filter(r => r.RequestStatus.toLowerCase() !== 'pending' && r.updated_at)
-    .map(r => (new Date(r.updated_at) - new Date(r.created_at)) / (1000 * 60 * 60 * 24));
-  const avgProcessingTime = processingTimes.length > 0
-    ? (processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length).toFixed(1)
-    : 0;
-
-  // Update KPIs (ensure HTML IDs match: kpi-water, kpi-electricity, kpi-processing-time)
-  document.getElementById('kpi-water').textContent = waterCount;
-  document.getElementById('kpi-electricity').textContent = electricityCount;
-  document.getElementById('kpi-processing-time').textContent = `${avgProcessingTime} days`;
-
-  // Category Distribution Pie Chart
-  const categoryCounts = categories.map(category =>
-    data.filter(r => (r.RequestCategory || 'Other') === category).length
-  );
-
-  if (statusChartInstance) statusChartInstance.destroy();
-  statusChartInstance = new Chart(document.getElementById('statusChart'), {
-    type: 'pie',
-    data: {
-      labels: categories,
-      datasets: [{
-        data: categoryCounts,
-        backgroundColor: ['#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd'],
-        borderColor: ['#2b6cb0', '#f57c00', '#00695c', '#c2185b', '#757575'],
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' },
-        title: { display: true, text: 'Request Category Distribution' }
-      }
+    // Extract unique categories, default to 'Other' if null
+    const categories = [...new Set(categoryData.map(item => item.RequestCategory || 'Other'))];
+    if (categories.length === 0) {
+      categories.push('Other'); // Ensure at least one category for charts
     }
-  });
 
-  // Submission Trend Line Chart (by category)
-  const last30Days = new Date();
-  last30Days.setDate(last30Days.getDate() - 30);
-  const dailyCountsByCategory = categories.reduce((acc, category) => {
-    acc[category] = {};
-    for (let d = new Date(last30Days); d <= new Date(); d.setDate(d.getDate() + 1)) {
-      const dateStr = d.toISOString().split('T')[0];
-      acc[category][dateStr] = 0;
-    }
-    return acc;
-  }, {});
+    // Calculate KPIs dynamically for Water, Electricity, and Avg. Processing Time
+    const waterCount = data.filter(r => (r.RequestCategory || 'Other') === 'Water').length;
+    const electricityCount = data.filter(r => (r.RequestCategory || 'Other') === 'Electricity').length;
+    const processingTimes = data
+      .filter(r => r.RequestStatus.toLowerCase() !== 'pending' && r.updated_at)
+      .map(r => (new Date(r.updated_at) - new Date(r.created_at)) / (1000 * 60 * 60 * 24));
+    const avgProcessingTime = processingTimes.length > 0
+      ? (processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length).toFixed(1)
+      : 0;
 
-  data.forEach(r => {
-    const category = r.RequestCategory || 'Other';
-    if (!categories.includes(category)) return; // Skip if category not in predefined list
-    const dateStr = new Date(r.created_at).toISOString().split('T')[0];
-    if (dateStr in dailyCountsByCategory[category]) {
-      dailyCountsByCategory[category][dateStr]++;
-    }
-  });
+    // Update KPIs
+    document.getElementById('kpi-water').textContent = waterCount;
+    document.getElementById('kpi-electricity').textContent = electricityCount;
+    document.getElementById('kpi-processing-time').textContent = `${avgProcessingTime} days`;
 
-  const labels = Object.keys(dailyCountsByCategory[categories[0]]);
-  const datasets = categories.map((category, index) => ({
-    label: category,
-    data: Object.values(dailyCountsByCategory[category]),
-    borderColor: ['#4dabf5', '#ffca28', '#26a69a', '#f06292', '#bdbdbd'][index],
-    backgroundColor: ['rgba(77, 171, 245, 0.2)', 'rgba(255, 202, 40, 0.2)', 'rgba(38, 166, 154, 0.2)', 'rgba(240, 98, 146, 0.2)', 'rgba(189, 189, 189, 0.2)'][index],
-    fill: true,
-    tension: 0.4
-  }));
+    // Generate colors for charts based on the number of categories
+    const { backgroundColors, borderColors } = generateColors(categories.length);
 
-  if (trendChartInstance) trendChartInstance.destroy();
-  trendChartInstance = new Chart(document.getElementById('trendChart'), {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: datasets
-    },
-    options: {
-      responsive: true,
-      scales: {
-        x: { display: true, title: { display: true, text: 'Date' } },
-        y: { display: true, title: { display: true, text: 'Number of Requests' }, beginAtZero: true }
+    // Category Distribution Pie Chart
+    const categoryCounts = categories.map(category =>
+      data.filter(r => (r.RequestCategory || 'Other') === category).length
+    );
+
+    if (statusChartInstance) statusChartInstance.destroy();
+    statusChartInstance = new Chart(document.getElementById('statusChart'), {
+      type: 'pie',
+      data: {
+        labels: categories,
+        datasets: [{
+          data: categoryCounts,
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
+          borderWidth: 1
+        }]
       },
-      plugins: {
-        legend: { display: true },
-        title: { display: true, text: 'Requests by Category Over Last 30 Days' }
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          title: { display: true, text: 'Request Category Distribution' }
+        }
       }
-    }
-  });
+    });
+
+    // Submission Trend Line Chart (by category)
+    const last30Days = new Date();
+    last30Days.setDate(last30Days.getDate() - 30);
+    const dailyCountsByCategory = categories.reduce((acc, category) => {
+      acc[category] = {};
+      for (let d = new Date(last30Days); d <= new Date(); d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        acc[category][dateStr] = 0;
+      }
+      return acc;
+    }, {});
+
+    data.forEach(r => {
+      const category = r.RequestCategory || 'Other';
+      if (!categories.includes(category)) return; // Skip if category not in the list
+      const dateStr = new Date(r.created_at).toISOString().split('T')[0];
+      if (dateStr in dailyCountsByCategory[category]) {
+        dailyCountsByCategory[category][dateStr]++;
+      }
+    });
+
+    const labels = Object.keys(dailyCountsByCategory[categories[0]]);
+    const datasets = categories.map((category, index) => ({
+      label: category,
+      data: Object.values(dailyCountsByCategory[category]),
+      borderColor: borderColors[index],
+      backgroundColor: backgroundColors[index] + '33', // Add transparency
+      fill: true,
+      tension: 0.4
+    }));
+
+    if (trendChartInstance) trendChartInstance.destroy();
+    trendChartInstance = new Chart(document.getElementById('trendChart'), {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { display: true, title: { display: true, text: 'Date' } },
+          y: { display: true, title: { display: true, text: 'Number of Requests' }, beginAtZero: true }
+        },
+        plugins: {
+          legend: { display: true },
+          title: { display: true, text: 'Requests by Category Over Last 30 Days' }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error rendering analytics:', error);
+    alert('Failed to render analytics. Please try again.');
+  }
 }
 
 // Table sorting and collapsible rows

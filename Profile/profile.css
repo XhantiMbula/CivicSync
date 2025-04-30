@@ -100,11 +100,11 @@ p a {
     cursor: pointer;
     font-size: 1rem;
     font-weight: bold;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.5s ease;
 }
 
 #edit-profile-btn:hover {
-    background-color: #007a14;
+    background: linear-gradient(90deg, #00c224, #00a81c);
 }
 
 #logout-btn {
@@ -199,3 +199,34 @@ input:active, input:focus {
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     font-size: 0.9em;
 }
+
+/* Notifications */
+.notification-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.notification-list li {
+    background-color: #f1f1f1;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-left: 4px solid #888;
+    border-radius: 4px;
+}
+
+.notification-approval {
+    border-color: #4CAF50; /* green */
+}
+
+.notification-rejection {
+    border-color: #f44336; /* red */
+}
+
+.no-notifications {
+    color: white;
+    font-style: italic;
+    margin-top: 10px;
+}
+
+
