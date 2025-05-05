@@ -22,16 +22,12 @@
         <nav class="navbar">
           <a href="../index.html" class="logo">CivicSync</a>
           <div class="nav-right">
-            <div class="nav-links">
-           
-             
-            </div>
-            <div class="hamburger">
-              <i class="fas fa-bars"></i>
-            </div>
+            <div class="nav-links"></div>
+            <div class="hamburger"><i class="fas fa-bars"></i></div>
           </div>
         </nav>
-      </header>
+    </header>
+    
     <div class="main-container">
         <div class="left-section">
             <div class="back-container">
@@ -43,6 +39,7 @@
             <p class="welcome-subtitle">To keep connected with us please login with your personal info</p>
             <a href="/loginPage/loginPage.html" class="btn-signin">SIGN IN</a>
         </div>
+        
         <div class="right-section">
             <div class="create-account">
                 <h2>Create Account</h2>
@@ -53,38 +50,48 @@
                 </div>
                 <p class="social-text">or use your email for registration</p>
             </div>
+            
             <form id="register-form">
                 <div id="message-box" class="message-box"></div>
+                
                 <div class="form-group">
-                    <i class="fas fa-user"></i>
+                    
                     <input type="text" id="name" placeholder="First Name" required>
                 </div>
+                
+                <div class="form-group">
+                    
+                    <input type="text" id="surname" placeholder="Last Name" required>
+                </div>
+                
                 <div class="form-group">
                     <i class="fas fa-user"></i>
-                    <input type="text" id="surname" placeholder="Surname" required>
+                    <input type="text" id="username" placeholder="    Username" required>
                 </div>
-                <div class="form-group">
-                    <i class="fas fa-user"></i>
-                    <input type="text" id="username" placeholder="Username" required>
-                </div>
+                
                 <div class="form-group">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" id="email" placeholder="Email" required>
+                    <input type="email" id="email" placeholder="    Email" required>
                 </div>
+                
                 <div class="form-group">
                     <i class="fas fa-phone"></i>
-                    <input type="tel" id="phone" placeholder="Phone Number" required>
+                    <input type="tel" id="phone" placeholder="    Phone Number" required>
                 </div>
+                
                 <div class="form-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="password" placeholder="Password" required>
+                    <input type="password" id="password" placeholder="    Password" required>
                 </div>
+                
                 <div class="form-group">
                     <i class="fas fa-lock"></i>
-                    <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                    <input type="password" id="confirm-password" placeholder="    Confirm Password" required>
                 </div>
+                
                 <button type="submit" class="btn-signup">SIGN UP</button>
             </form>
+            
             <p class="login-link">Already have an account? <a href="/loginPage/loginPage.html">Login</a></p>
         </div>
     </div>
@@ -119,6 +126,9 @@
         <div class="copyright">
             <p>&copy; 2025 CivicSync. All rights reserved.</p>
         </div>
-      </footer>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="registerPage.js" defer></script>
 </body>
 </html>

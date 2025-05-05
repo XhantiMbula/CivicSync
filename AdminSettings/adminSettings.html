@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings - CivicSync</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="adminSettings.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='90'>📍</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">CivicSync</div>
+        <div class="nav-items">
+            <div class="nav-item notifications">
+                <i class="fas fa-bell"></i>
+                <span class="badge" id="notification-badge">0</span>
+            </div>
+            <div class="nav-item profile">
+                <i class="fas fa-user"></i>
+                <div class="dropdown">
+                    <a href="#">Profile</a>
+                    <a href="#" class="active">Settings</a>
+                    <a href="#" id="logout">Logout</a>
+                </div>
+            </div>
+            <select id="language-selector">
+                <option value="en">English</option>
+                <option value="zu">Zulu</option>
+                <option value="af">Afrikaans</option>
+            </select>
+        </div>
+    </nav>
+
+    <div class="settings-container">
+        <div class="settings-sidebar">
+            <button class="back-button" id="back-to-dashboard">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </button>
+            <ul>
+                <li><a href="#" data-section="add-contractor" data-title="Add New Contractor">Add Contractor</a></li>
+                <li><a href="#" data-section="user-management" data-title="User Management">User Management</a></li>
+                <li><a href="#" data-section="system-settings" data-title="System Settings">System Settings</a></li>
+                <li><a href="#" data-section="notification-settings" data-title="Notification Settings">Notifications</a></li>
+                <li><a href="#" data-section="data-analytics" data-title="Data Analytics">Data Analytics</a></li>
+            </ul>
+        </div>
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2 id="settings-title">Add New Contractor</h2>
+            </div>
+            <div id="settings-content-area">
+                <div class="settings-form-container" id="add-contractor-section">
+                    <form id="add-contractor-form">
+                        <div class="form-group">
+                            <label for="contractor-username">Contractor Username</label>
+                            <input type="text" id="contractor-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-email">Email</label>
+                            <input type="email" id="contractor-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-password">Password</label>
+                            <input type="password" id="contractor-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-phone">Phone Number</label>
+                            <input type="tel" id="contractor-phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-location">Location</label>
+                            <input type="text" id="contractor-location" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-company">Contractor Company</label>
+                            <input type="text" id="contractor-company" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contractor-category">Contractor Category</label>
+                            <select id="contractor-category" required>
+                                <option value="">Select Category</option>
+                                <option value="Water">Water</option>
+                                <option value="Electricity">Electricity</option>
+                                <option value="Roads">Roads</option>
+                                <option value="Waste Management">Waste Management</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">Add Contractor</button>
+                            <button type="button" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                    <div id="message" class="message-container"></div>
+                </div>
+                
+                <div class="coming-soon" id="coming-soon-template" style="display: none;">
+                    <div class="coming-soon-content">
+                        <h3>This feature is coming soon!</h3>
+                        <p>We're working hard to bring you this functionality. Please check back later.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/module/index.js"></script>
+    <script type="module">
+        // Initialize Supabase client
+        const supabaseUrl = 'https://lywylvbgsnmqwcwgiyhc.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg';
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const addContractorForm = document.getElementById('add-contractor-form');
+            const messageContainer = document.getElementById('message');
+            const logoutBtn = document.getElementById('logout');
+            const backToDashboardBtn = document.getElementById('back-to-dashboard');
+            const settingsTitle = document.getElementById('settings-title');
+            const settingsContentArea = document.getElementById('settings-content-area');
+            const addContractorSection = document.getElementById('add-contractor-section');
+            const comingSoonTemplate = document.getElementById('coming-soon-template');
+            const sidebarLinks = document.querySelectorAll('.settings-sidebar a');
+
+            // Get authenticated user
+            async function getUser() {
+                try {
+                    const { data: { user }, error } = await supabase.auth.getUser();
+                    if (error || !user) {
+                        console.error('Authentication error:', error?.message || 'No user found');
+                        alert('You must be logged in to access this page.');
+                        window.location.href = '/loginPage/loginPage.html';
+                        return null;
+                    }
+                    return user;
+                } catch (err) {
+                    console.error('Error checking authentication:', err);
+                    alert('An error occurred while verifying your session.');
+                    return null;
+                }
+            }
+
+            // Logout
+            logoutBtn.addEventListener('click', async () => {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                    console.error('Error logging out:', error);
+                    showMessage('Error logging out.', 'error');
+                } else {
+                    window.location.href = '/loginPage/loginPage.html';
+                }
+            });
+
+            // Back to dashboard
+            backToDashboardBtn.addEventListener('click', () => {
+                window.location.href = '/AdminDashboard/adminDashboard.html';
+            });
+
+            // Add contractor form submission
+            addContractorForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const contractorUsername = document.getElementById('contractor-username').value.trim();
+                const contractorEmail = document.getElementById('contractor-email').value.trim();
+                const contractorPassword = document.getElementById('contractor-password').value.trim();
+                const contractorPhone = document.getElementById('contractor-phone').value.trim();
+                const contractorLocation = document.getElementById('contractor-location').value.trim();
+                const contractorCompany = document.getElementById('contractor-company').value.trim();
+                const contractorCategory = document.getElementById('contractor-category').value;
+
+                if (!contractorUsername || !contractorEmail || !contractorPassword || !contractorPhone || !contractorLocation || !contractorCompany || !contractorCategory) {
+                    showMessage('Please fill in all fields.', 'error');
+                    return;
+                }
+
+                try {
+                    // Create authentication user
+                    const { user: authUser, error: authError } = await supabase.auth.signUp({
+                        email: contractorEmail,
+                        password: contractorPassword
+                    });
+
+                    if (authError) {
+                        console.error('Error creating authentication user:', authError);
+                        showMessage('Error creating contractor: ' + authError.message, 'error');
+                        return;
+                    }
+
+                    // Create user entry in UserTable
+                    const { data: user, error: userError } = await supabase
+                        .from('UserTable')
+                        .insert([{
+                            UserFirstname: contractorUsername.split(' ')[0],
+                            UserLastname: contractorUsername.split(' ').slice(1).join(' ') || '',
+                            UserEmail: contractorEmail,
+                            UserPhonenumber: contractorPhone,
+                            UserUsername: contractorUsername,
+                            UserLocation: contractorLocation,
+                            Role: 'Contractor',
+                            CreatedAt: new Date().toISOString()
+                        }])
+                        .select();
+
+                    if (userError) {
+                        console.error('Error creating user:', userError);
+                        showMessage('Error creating contractor: ' + userError.message, 'error');
+                        return;
+                    }
+
+                    // Create contractor entry in ContractorTable
+                    const { data: contractor, error: contractorError } = await supabase
+                        .from('ContractorTable')
+                        .insert([{
+                            ContractorName: contractorCompany,
+                            ContractorCategory: contractorCategory,
+                            UserID: user[0].UserID,
+                            CreatedAt: new Date().toISOString(),
+                            UpdatedAt: new Date().toISOString()
+                        }])
+                        .select();
+
+                    if (contractorError) {
+                        console.error('Error creating contractor:', contractorError);
+                        showMessage('Error creating contractor: ' + contractorError.message, 'error');
+                        return;
+                    }
+
+                    showMessage('Contractor added successfully! Please check your email to confirm registration.', 'success');
+                    addContractorForm.reset();
+                    
+                } catch (error) {
+                    console.error('Error adding contractor:', error);
+                    showMessage('Error adding contractor: ' + error.message, 'error');
+                }
+            });
+
+            // Show message utility function
+            function showMessage(text, type) {
+                messageContainer.textContent = text;
+                messageContainer.className = 'message-container ' + type + '-message';
+                messageContainer.style.display = 'block';
+                
+                setTimeout(() => {
+                    messageContainer.style.display = 'none';
+                }, 5000);
+            }
+
+            // Section navigation
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    const section = link.dataset.section;
+                    const title = link.dataset.title;
+                    
+                    settingsTitle.textContent = title;
+                    
+                    // Hide all sections
+                    addContractorSection.style.display = 'none';
+                    comingSoonTemplate.style.display = 'none';
+                    
+                    // Show appropriate section
+                    if (section === 'add-contractor') {
+                        addContractorSection.style.display = 'block';
+                    } else {
+                        comingSoonTemplate.style.display = 'block';
+                    }
+                });
+            });
+
+            // Initialize
+            getUser();
+        });
+    </script>
+</body>
+</html>

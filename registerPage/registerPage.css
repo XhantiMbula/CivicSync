@@ -6,7 +6,7 @@
 }
 
 body {
-    background-image: url('https://lywylvbgsnmqwcwgiyhc.supabase.co/storage/v1/object/public/images//RegisterBackground.jpg');
+    background-image: url('https://lywylvbgsnmqwcwgiyhc.supabase.co/storage/v1/object/public/images/RegisterBackground.jpg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -139,7 +139,7 @@ body {
 
 .form-group input {
     width: 100%;
-    padding: 15px;
+    padding: 12px 12px 12px 40px; /* Increased left padding to make space for icon */
     border: 1px solid #ddd;
     border-radius: 5px;
     font-size: 16px;
@@ -148,13 +148,10 @@ body {
 
 .form-group i {
     position: absolute;
-    top: 15px;
-    left: 15px;
+    top: 50%;
+    left: 10px; /* Adjusted position to be inside the input box */
+    transform: translateY(-50%);
     color: #888;
-}
-
-.form-group input {
-    padding-left: 40px;
 }
 
 .btn-signup {

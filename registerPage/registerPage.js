@@ -38,14 +38,21 @@ async function registerUser() {
     }
 
     try {
+        // Clean phone number by removing all non-digit characters
+        const cleanedPhone = Phone.replace(/\D/g, ''); // Remove non-digit characters
+
         // Check if username already exists
         const { data: usernameExists, error: usernameError } = await supabase
             .from("UserTable")
             .select("UserUsername")
             .eq("UserUsername", Username)
-            .single();
+            .limit(1);
 
-        if (usernameExists) {
+        if (usernameError) {
+            showMessage("Error checking username: " + usernameError.message, "error");
+            return;
+        }
+        if (usernameExists.length > 0) {
             showMessage("Username already exists. Please choose a different username.", "error");
             return;
         }
@@ -55,44 +62,38 @@ async function registerUser() {
             .from("UserTable")
             .select("UserEmail")
             .eq("UserEmail", Email)
-            .single();
+            .limit(1);
 
-        if (emailExists) {
+        if (emailError) {
+            showMessage("Error checking email: " + emailError.message, "error");
+            return;
+        }
+        if (emailExists.length > 0) {
             showMessage("Email already exists. Please use a different email or login.", "error");
             return;
         }
 
+        // Validate phone number
+        if (cleanedPhone.length !== 10 || !/^\d+$/.test(cleanedPhone)) {
+            showMessage("Phone number must be exactly 10 digits and contain numbers only.", "error");
+            return;
+        }
+
         // Check if phone number already exists
-        // Validate phone number format
-if (Phone.length !== 10 || !/^\d+$/.test(Phone)) {
-    showMessage("Phone number must be exactly 10 digits and contain numbers only.", "error");
-    return;
-}
+        const { data: phoneExists, error: phoneError } = await supabase
+            .from("UserTable")
+            .select("UserPhonenumber")
+            .eq("UserPhonenumber", cleanedPhone)
+            .limit(1);
 
-//Phone number exception handling
-const { data: phoneExists, error: phoneError } = await supabase
-    .from("UserTable")
-    .select("UserPhonenumber")
-    .eq("UserPhonenumber", Phone)
-    .single();
-
-// Handle database errors
-if (phoneError) {
-    showMessage(
-        `Error checking phone number: ${phoneError.message || "Unknown error"}`,
-        "error"
-    );
-    return;
-}
-
-// Check for duplicate phone number
-if (phoneExists) {
-    showMessage("Phone number already exists. Please use a different phone number.", "error");
-    return;
-}
-
-
-
+        if (phoneError) {
+            showMessage("Error checking phone number: " + phoneError.message, "error");
+            return;
+        }
+        if (phoneExists.length > 0) {
+            showMessage("Phone number already exists. Please use a different phone number.", "error");
+            return;
+        }
 
         // Register the user with metadata
         const { data, error } = await supabase.auth.signUp({
@@ -103,7 +104,7 @@ if (phoneExists) {
                     FirstName, 
                     LastName, 
                     Username,
-                    phone: Phone || null
+                    phone: cleanedPhone || null // Store cleaned phone number
                 },
                 emailRedirectTo: "https://civicsync.netlify.app/loginPage/loginPage.html"
             }
@@ -121,8 +122,6 @@ if (phoneExists) {
         }
 
         console.log("User registered with metadata:", user);
-
-        // The trigger will handle inserting into UserTable
 
         showMessage("Registration successful! Check your email to verify your account.", "success");
 
