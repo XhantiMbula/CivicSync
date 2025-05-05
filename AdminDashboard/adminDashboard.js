@@ -36,9 +36,38 @@ window.initMap = function() {
   }
   try {
     console.log('Initializing map from adminDashboard.js');
-    window.map = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: -33.9249, lng: 18.4241 },
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: { lat: -33.9249, lng: 18.4241 }, // Cape Town default
       zoom: 10,
+      mapTypeId: google.maps.MapTypeId.ROADMAP, // Default to roadmap
+      mapTypeControl: true, // Enable map type control (roadmap, satellite, hybrid, terrain)
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+        position: google.maps.ControlPosition.TOP_LEFT,
+        mapTypeIds: [
+          google.maps.MapTypeId.ROADMAP,
+          google.maps.MapTypeId.SATELLITE,
+          google.maps.MapTypeId.HYBRID,
+          google.maps.MapTypeId.TERRAIN
+        ]
+      },
+      streetViewControl: true, // Enable Street View Pegman control
+      streetViewControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      zoomControl: true, // Enable zoom control
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      fullscreenControl: true, // Enable fullscreen control
+      fullscreenControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_TOP
+      },
+      rotateControl: true, // Enable rotate control for 45° imagery
+      rotateControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      scaleControl: true, // Enable scale control
       styles: [
         {
           featureType: 'all',
@@ -46,13 +75,23 @@ window.initMap = function() {
         }
       ]
     });
-    map = window.map;
+
+    // Initialize Street View panorama (optional, can be toggled by Pegman)
+    const panorama = map.getStreetView();
+    panorama.setOptions({
+      position: { lat: -33.9249, lng: 18.4241 },
+      pov: { heading: 270, pitch: 0 },
+      visible: false // Hidden by default, shown when Pegman is dropped
+    });
+
     mapReadyResolver(); // Signal map is ready
     if (window.requestsLoaded) {
       updateMapMarkers(window.requestsLoaded);
     }
     document.getElementById('map').querySelector('.loading')?.remove();
     console.log('Map initialized successfully');
+    // Trigger resize to ensure proper rendering
+    google.maps.event.trigger(map, 'resize');
   } catch (error) {
     console.error('Error initializing map:', error);
     document.getElementById('map').innerHTML = '<p class="error">Failed to initialize map: ' + error.message + '</p>';
@@ -70,7 +109,7 @@ function retryMapLoad(attempt, maxRetries = 3) {
     `;
     document.getElementById('retry-map').addEventListener('click', () => {
       mapContainer.innerHTML = '<p class="loading">Loading map...</p>';
-      retryMapLoad(0, maxRetries);
+      window.initMap();
     });
     mapReadyResolver(); // Resolve to prevent blocking
     return;
@@ -79,7 +118,7 @@ function retryMapLoad(attempt, maxRetries = 3) {
   document.getElementById('map').innerHTML = '<p class="error">Failed to load map. Retrying in ' + (delay / 1000) + ' seconds...</p>';
   setTimeout(() => {
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (existingScript) existingScript.remove(); // Remove old script
+    if (existingScript) existingScript.remove();
     const script = document.createElement('script');
     script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places&loading=async&callback=initMap';
     script.async = true;
@@ -98,7 +137,9 @@ let markers = [];
 const markerIcons = {
   default: { url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png', scaledSize: new google.maps.Size(32, 32) },
   selected: { url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png', scaledSize: new google.maps.Size(32, 32) },
-  completed: { url: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png', scaledSize: new google.maps.Size(32, 32) }
+  completed: { url: 'http://maps.google.com/mapfiles/ms/icons/purple-dot.png', scaledSize: new google.maps.Size(32, 32) },
+  pending: { url: 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png', scaledSize: new google.maps.Size(32, 32) },
+  allocated: { url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', scaledSize: new google.maps.Size(32, 32) }
 };
 
 // Handle window resize to ensure map renders correctly
@@ -129,23 +170,22 @@ async function updateMapMarkers(requests) {
 
   const geocoder = new google.maps.Geocoder();
   const defaultPosition = { lat: -33.9249, lng: 18.4241 };
+  let bounds = new google.maps.LatLngBounds();
 
   for (const request of requests) {
     if (!request.RequestLocation) {
       console.warn(`No location provided for request ${request.RequestID}. Skipping marker creation.`);
-      continue; // Skip marker creation for requests with no location
+      continue;
     }
 
     try {
       let position = defaultPosition;
       let geocoded = false;
 
-      console.log(`Geocoding location: ${request.RequestLocation}`);
       try {
         const response = await new Promise((resolve, reject) => {
           geocoder.geocode({ address: request.RequestLocation }, (results, status) => {
             if (status === google.maps.GeocoderStatus.OK && results[0]) {
-              console.log(`Geocoded ${request.RequestLocation}:`, results[0].geometry.location);
               resolve(results[0].geometry.location);
             } else {
               reject(new Error(`Geocoding failed for "${request.RequestLocation}": ${status}`));
@@ -154,22 +194,57 @@ async function updateMapMarkers(requests) {
         });
         position = { lat: response.lat(), lng: response.lng() };
         geocoded = true;
+        bounds.extend(position);
       } catch (error) {
         console.warn(`Geocoding error for request ${request.RequestID}: ${error.message}`);
+      }
+
+      // Determine marker icon based on status
+      let icon;
+      switch (request.RequestStatus) {
+        case 'Completed':
+          icon = markerIcons.completed;
+          break;
+        case 'Pending':
+          icon = markerIcons.pending;
+          break;
+        case 'Allocated':
+          icon = markerIcons.allocated;
+          break;
+        default:
+          icon = markerIcons.default;
       }
 
       const marker = new google.maps.Marker({
         position,
         map,
         title: request.RequestTitle,
-        icon: request.RequestStatus === 'Completed' ? markerIcons.completed : markerIcons.default,
+        icon: icon,
         requestId: request.RequestID
       });
 
+      // Info window for marker
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="font-family: Inter, sans-serif; padding: 10px;">
+            <h3 style="margin: 0 0 5px; font-size: 1.1em;">${request.RequestTitle}</h3>
+            <p style="margin: 0; font-size: 0.9em;"><strong>Status:</strong> ${request.RequestStatus}</p>
+            <p style="margin: 0; font-size: 0.9em;"><strong>Location:</strong> ${request.RequestLocation}</p>
+          </div>
+        `
+      });
+
       marker.addListener('click', () => {
-        if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
-        marker.setIcon(request.RequestStatus === 'Completed' ? markerIcons.completed : markerIcons.selected);
+        // Close any open info windows
+        markers.forEach(m => m.infoWindow?.close());
+        infoWindow.open(map, marker);
+
+        // Update marker and card selection
+        if (selectedMarker) selectedMarker.setIcon(markerIcons[selectedMarker.requestStatus] || markerIcons.default);
+        marker.setIcon(markerIcons.selected);
+        marker.requestStatus = request.RequestStatus;
         selectedMarker = marker;
+
         if (selectedCard) selectedCard.classList.remove('selected');
         selectedCard = document.querySelector(`.request-card[data-request-id="${request.RequestID}"]`);
         if (selectedCard) {
@@ -179,23 +254,34 @@ async function updateMapMarkers(requests) {
         map.panTo(marker.getPosition());
       });
 
+      marker.infoWindow = infoWindow;
       markers.push(marker);
-      console.log(`Marker created for request ${request.RequestID} at position:`, position);
-      if (!geocoded) {
+
+      if (geocoded) {
+        console.log(`Marker created for request ${request.RequestID} at position:`, position);
+      } else {
         console.log(`Used default position for request ${request.RequestID}: ${request.RequestTitle}`);
       }
     } catch (error) {
       console.error(`Error creating marker for request ${request.RequestID}:`, error);
     }
 
-    await new Promise(resolve => setTimeout(resolve, 100)); // Avoid hitting rate limits
+    await new Promise(resolve => setTimeout(resolve, 100)); // Avoid rate limits
+  }
+
+  // Adjust map to fit all markers
+  if (markers.length > 0) {
+    map.fitBounds(bounds);
+    // Ensure zoom doesn't go too far out
+    map.addListener('bounds_changed', () => {
+      if (map.getZoom() > 15) map.setZoom(15);
+    });
+  } else {
+    document.getElementById('map').innerHTML = '<p class="error">No valid locations to display on the map.</p>';
   }
 
   document.getElementById('map').querySelector('.loading')?.remove();
   console.log(`Created ${markers.length} markers for ${requests.length} requests`);
-  if (markers.length === 0) {
-    document.getElementById('map').innerHTML = '<p class="error">No valid locations to display on the map.</p>';
-  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -302,6 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loadRequests();
     loadAdminNotifications(user.id);
     loadChartJs();
+    // Ensure map is initialized
+    window.initMap();
 
     // Subscribe to real-time request updates
     supabaseClient
@@ -372,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
     actionModal.dataset.userId = userId;
     actionModal.dataset.contractorId = (action === 'Message' && contractorId) ? contractorId : null;
     document.getElementById('message').value = '';
-    console.log('Opening action modal:', { action, requestId, userId, contractorId: actionModal.dataset.contractorId });
     actionModal.style.display = 'block';
   }
 
@@ -383,7 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
     actionModal.dataset.requestId = '';
     actionModal.dataset.userId = '';
     actionModal.dataset.contractorId = null;
-    console.log('Closed action modal, reset dataset:', actionModal.dataset);
   }
 
   actionCloseBtn.addEventListener('click', closeActionModal);
@@ -405,8 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .select('ContractorID, ContractorName, ContractorCategory')
         .ilike('ContractorCategory', `%${requestCategory}%`);
       if (error) throw new Error(`Error fetching contractors: ${error.message}`);
-
-      console.log('Fetched contractors:', contractors);
 
       contractorList.innerHTML = contractors.length > 0
         ? contractors.map(contractor => `
@@ -463,14 +547,10 @@ document.addEventListener('DOMContentLoaded', () => {
               IsRead: false,
               created_at: new Date().toISOString()
             };
-            console.log('Contractor notification payload:', contractorNotification);
             const { error: contractorNotifyError } = await supabaseClient
               .from('ContractorNotifications')
               .insert(contractorNotification);
-            if (contractorNotifyError) {
-              console.error('Supabase error details:', contractorNotifyError);
-              throw new Error(`Error notifying contractor: ${contractorNotifyError.message}`);
-            }
+            if (contractorNotifyError) throw new Error(`Error notifying contractor: ${contractorNotifyError.message}`);
 
             // Notify user
             const userNotification = {
@@ -485,14 +565,10 @@ document.addEventListener('DOMContentLoaded', () => {
               ContractorID: contractorId
             };
             validateMessageType(userNotification.MessageType);
-            console.log('Inserting RequestMessages:', userNotification);
             const { error: userNotifyError } = await supabaseClient
               .from('RequestMessages')
               .insert(userNotification);
-            if (userNotifyError) {
-              console.error('Supabase error details:', userNotifyError);
-              throw new Error(`Error notifying user: ${userNotifyError.message}`);
-            }
+            if (userNotifyError) throw new Error(`Error notifying user: ${userNotifyError.message}`);
 
             // Notify admin
             const { error: adminNotifyError } = await supabaseClient
@@ -505,10 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 IsRead: false,
                 created_at: new Date().toISOString()
               });
-            if (adminNotifyError) {
-              console.error('Supabase error details:', adminNotifyError);
-              throw new Error(`Error notifying admin: ${adminNotifyError.message}`);
-            }
+            if (adminNotifyError) throw new Error(`Error notifying admin: ${adminNotifyError.message}`);
 
             showToast('Request allocated successfully!', 'success');
             loadRequests();
@@ -651,8 +724,6 @@ document.addEventListener('DOMContentLoaded', () => {
       contractorId = await validateContractorId(contractorId);
     }
 
-    console.log('Action form submitted:', { action, requestId, userId, contractorId, message });
-
     try {
       const { data: request, error: requestError } = await supabaseClient
         .from('RequestTable')
@@ -684,14 +755,10 @@ document.addEventListener('DOMContentLoaded', () => {
           created_at: new Date().toISOString(),
           ContractorID: null
         };
-        console.log('Inserting RequestMessages (Accept):', messagePayload);
         const { error: messageError } = await supabaseClient
           .from('RequestMessages')
           .insert([messagePayload], { returning: 'minimal' });
-        if (messageError) {
-          console.error('Supabase error details:', messageError);
-          throw new Error(`Error sending message: ${messageError.message}`);
-        }
+        if (messageError) throw new Error(`Error sending message: ${messageError.message}`);
 
         await supabaseClient
           .from('UserNotifications')
@@ -741,14 +808,10 @@ document.addEventListener('DOMContentLoaded', () => {
           created_at: new Date().toISOString(),
           ContractorID: null
         };
-        console.log('Inserting RequestMessages (Reject):', messagePayload);
         const { error: messageError } = await supabaseClient
           .from('RequestMessages')
           .insert([messagePayload], { returning: 'minimal' });
-        if (messageError) {
-          console.error('Supabase error details:', messageError);
-          throw new Error(`Error sending message: ${messageError.message}`);
-        }
+        if (messageError) throw new Error(`Error sending message: ${messageError.message}`);
 
         await supabaseClient
           .from('UserNotifications')
@@ -789,14 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
           created_at: new Date().toISOString(),
           ContractorID: contractorId
         };
-        console.log('Inserting RequestMessages (Message):', messagePayload);
         const { error: messageError } = await supabaseClient
           .from('RequestMessages')
           .insert([messagePayload], { returning: 'minimal' });
-        if (messageError) {
-          console.error('Supabase error details:', messageError);
-          throw new Error(`Error sending message: ${messageError.message}`);
-        }
+        if (messageError) throw new Error(`Error sending message: ${messageError.message}`);
 
         const notificationTable = contractorId ? 'ContractorNotifications' : 'UserNotifications';
         const notificationPayload = contractorId
@@ -816,14 +875,10 @@ document.addEventListener('DOMContentLoaded', () => {
               IsRead: false,
               created_at: new Date().toISOString()
             };
-        console.log(`Inserting ${notificationTable}:`, notificationPayload);
         const { error: notifyError } = await supabaseClient
           .from(notificationTable)
           .insert(notificationPayload);
-        if (notifyError) {
-          console.error('Supabase error details:', notifyError);
-          throw new Error(`Error sending notification: ${notifyError.message}`);
-        }
+        if (notifyError) throw new Error(`Error sending notification: ${notifyError.message}`);
 
         await supabaseClient
           .from('AdminNotifications')
@@ -861,7 +916,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .order('created_at', { ascending: false });
       if (error) throw new Error(`Error fetching requests: ${error.message}`);
 
-      console.log('Fetched requests:', requests);
       allRequests = requests;
       window.requestsLoaded = requests;
 
@@ -932,9 +986,10 @@ document.addEventListener('DOMContentLoaded', () => {
           const requestId = card.dataset.requestId;
           const marker = markers.find(m => m.requestId === requestId);
           if (marker) {
-            if (selectedMarker) selectedMarker.setIcon(markerIcons.default);
-            marker.setIcon(request.RequestStatus === 'Completed' ? markerIcons.completed : markerIcons.selected);
+            if (selectedMarker) selectedMarker.setIcon(markerIcons[selectedMarker.requestStatus] || markerIcons.default);
+            marker.setIcon(markerIcons.selected);
             selectedMarker = marker;
+            marker.infoWindow.open(map, marker);
             map.panTo(marker.getPosition());
           }
         });
@@ -1075,22 +1130,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Render analytics
   function renderAnalytics(requests) {
-    if (!requests.length || typeof Chart === 'undefined') return;
+    if (!requests.length || typeof Chart === 'undefined') {
+      console.warn('No requests or Chart.js not loaded for analytics');
+      return;
+    }
 
-    // KPIs
-    document.getElementById('kpi-water').textContent = requests.filter(r => r.RequestCategory === 'Water').length;
-    document.getElementById('kpi-electricity').textContent = requests.filter(r => r.RequestCategory === 'Electricity').length;
-    const avgProcessingTime = requests.reduce((sum, r) => {
-      if (r.RequestStatus === 'Completed') {
-        const created = new Date(r.created_at);
-        const updated = new Date(r.updated_at);
-        return sum + (updated - created) / (1000 * 60 * 60 * 24);
-      }
-      return sum;
-    }, 0) / (requests.filter(r => r.RequestStatus === 'Completed').length || 1);
+    // Enhanced KPIs
+    const categories = ['Water', 'Electricity', 'Plumbing', 'Infrastructure', 'Crime', 'Other'];
+    const categoryCounts = categories.reduce((acc, cat) => {
+      acc[cat] = requests.filter(r => r.RequestCategory === cat).length;
+      return acc;
+    }, {});
+    document.getElementById('kpi-water').textContent = categoryCounts.Water;
+    document.getElementById('kpi-electricity').textContent = categoryCounts.Electricity;
+
+    const completedRequests = requests.filter(r => r.RequestStatus === 'Completed');
+    const avgProcessingTime = completedRequests.length > 0
+      ? completedRequests.reduce((sum, r) => {
+          const created = new Date(r.created_at);
+          const updated = new Date(r.updated_at);
+          return sum + (updated - created) / (1000 * 60 * 60 * 24);
+        }, 0) / completedRequests.length
+      : 0;
     document.getElementById('kpi-processing-time').textContent = `${Math.round(avgProcessingTime)} days`;
 
-    // Status chart
+    // Status chart (Bar chart for better visibility)
     const statusCounts = {
       Pending: requests.filter(r => r.RequestStatus === 'Pending').length,
       Accepted: requests.filter(r => r.RequestStatus === 'Accepted').length,
@@ -1101,45 +1165,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (statusChartInstance) statusChartInstance.destroy();
     statusChartInstance = new Chart(document.getElementById('statusChart'), {
-      type: 'pie',
+      type: 'bar',
       data: {
         labels: Object.keys(statusCounts),
         datasets: [{
+          label: 'Request Status',
           data: Object.values(statusCounts),
-          backgroundColor: ['#ffaa00', '#28a745', '#ff4d4d', '#20c997', '#ba68c8']
+          backgroundColor: ['#ffaa00', '#28a745', '#ff4d4d', '#20c997', '#ba68c8'],
+          borderColor: ['#cc8800', '#1e7e34', '#cc3333', '#1a8c6b', '#8e4b9b'],
+          borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'top' }
+          legend: { display: false },
+          title: { display: true, text: 'Request Status Distribution' }
+        },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: 'Number of Requests' } }
         }
       }
     });
 
-    // Trend chart
+    // Trend chart (Monthly trend)
     const trendData = {};
     requests.forEach(r => {
-      const date = new Date(r.created_at).toLocaleDateString();
+      const date = new Date(r.created_at).toLocaleString('default', { month: 'short', year: 'numeric' });
       trendData[date] = (trendData[date] || 0) + 1;
+    });
+
+    const sortedLabels = Object.keys(trendData).sort((a, b) => {
+      const [monthA, yearA] = a.split(' ');
+      const [monthB, yearB] = b.split(' ');
+      return new Date(`${monthA} 1, ${yearA}`) - new Date(`${monthB} 1, ${yearB}`);
     });
 
     if (trendChartInstance) trendChartInstance.destroy();
     trendChartInstance = new Chart(document.getElementById('trendChart'), {
       type: 'line',
       data: {
-        labels: Object.keys(trendData),
+        labels: sortedLabels,
         datasets: [{
           label: 'Requests Submitted',
-          data: Object.values(trendData),
+          data: sortedLabels.map(label => trendData[label]),
           borderColor: '#28a745',
-          fill: false
+          backgroundColor: 'rgba(40, 167, 69, 0.2)',
+          fill: true,
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
+        plugins: {
+          title: { display: true, text: 'Request Submission Trend' }
+        },
         scales: {
-          y: { beginAtZero: true }
+          y: { beginAtZero: true, title: { display: true, text: 'Number of Requests' } },
+          x: { title: { display: true, text: 'Month' } }
         }
       }
     });
