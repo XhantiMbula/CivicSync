@@ -1,136 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contractor Dashboard - CivicSync</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="contractorDashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script>
-        window.supabase = supabase.createClient(
-            'https://lywylvbgsnmqwcwgiyhc.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
-        );
-    </script>
-    <script type="module" src="contractorDashboard.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CivicSync Contractor Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="contractorDashboard.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="app-name">CivicSync</div>
-        <div class="nav-links">
-            <a href="#services">Services</a>
-            <a href="#about">About</a>
-            <a href="#contacts">Contacts</a>
-            <div class="header-icons">
-                <div class="notification-icon">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notification-badge">0</span>
-                </div>
-                <div class="profile-icon">
-                    <a href="../Profile/profile.html" class="profile-link">
-                        <i class="fas fa-user-circle"></i>
-                    </a>
-                </div>
-                <div class="logout">Logout</div>
-            </div>
+  <nav class="navbar">
+    <div class="logo">CivicSync</div>
+    <div class="nav-items">
+      <div class="nav-item notifications">
+        <i class="fas fa-bell"></i>
+        <span class="badge" id="notification-badge">0</span>
+      </div>
+      <div class="nav-item profile">
+        <i class="fas fa-user"></i>
+        <div class="dropdown">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#" id="logout">Logout</a>
         </div>
-        <div class="hamburger">
-            <i class="fas fa-bars"></i>
-        </div>
-    </nav>
-
-    <div class="dashboard-container">
-        <div class="welcome-section animate-section">
-            <h2 class="welcome-head">Welcome, Contractor</h2>
-        </div>
-
-        <div class="table-container animate-section">
-            <div class="flex justify-between items-center mb-4">
-                <h2>Assigned Requests</h2>
-                <div class="filter-container">
-                    <label for="status-filter">Filter by Status:</label>
-                    <select id="status-filter">
-                        <option value="all">All</option>
-                        <option value="Allocated">Allocated</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-            </div>
-            <div class="interactive-table">
-                <div class="table-header">
-                    <div class="sortable" data-sort="requestId">Request ID <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="title">Title <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="category">Category <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="location">Location <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="image">Image <i class="fas fa-sort"></i></div>
-                    <div>Actions</div>
-                </div>
-                <div class="table-body" id="request-table-body">
-                    <!-- Populated by JavaScript -->
-                </div>
-            </div>
-        </div>
+      </div>
+      <select id="language-selector">
+        <option value="en">English</option>
+        <option value="zu">Zulu</option>
+        <option value="af">Afrikaans</option>
+      </select>
     </div>
+  </nav>
 
-    <footer class="site-footer animate-section">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Contact Us</h3>
-                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
-                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
-            </div>
-            <div class="footer-section">
-                <h3>Our Services</h3>
-                <ul>
-                    <li>Incident Reporting</li>
-                    <li>Community Engagement</li>
-                    <li>Real-Time Updates</li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Follow Us</h3>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>© 2025 CivicSync. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <!-- Update Status Modal -->
-    <div class="modal" id="update-status-modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <div class="modal-header">
-                <h2>Update Request Status</h2>
-            </div>
-            <div class="modal-body">
-                <form id="update-status-form">
-                    <input type="hidden" id="update-request-id">
-                    <label for="update-status">Status</label>
-                    <select id="update-status" required>
-                        <option value="Allocated">Allocated</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                    <label for="update-message">Message to User (Optional)</label>
-                    <textarea id="update-message"></textarea>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-cancel-button">Cancel</button>
-                <button type="submit" form="update-status-form" class="modal-submit-button">Update</button>
-            </div>
-        </div>
+  <div class="main-container">
+    <header class="dashboard-header animate-section">
+      <h1>Contractor Dashboard </h1>
+      <h2 id="contractor-name" class="contractor-name"></h2>
+      <p>Manage your allocated service requests efficiently.</p>
+    </header>
+    <div class="dashboard-container animate-section">
+      <div class="request-list">
+        <h2>Your Allocated Requests</h2>
+        <div id="requests" class="requests-scrollable"></div>
+      </div>
+      <div id="map" class="map-container">
+        <p class="loading">Loading map...</p>
+      </div>
     </div>
+  </div>
+
+  <div id="action-modal" class="modal" role="dialog" aria-labelledby="modal-title">
+    <div class="modal-content" tabindex="0">
+      <span class="close" aria-label="Close modal">×</span>
+      <div class="modal-header">
+        <h2 id="modal-title">Action</h2>
+      </div>
+      <div class="modal-body">
+        <form id="action-form">
+          <label for="message">Message to Admin (optional):</label>
+          <textarea id="message" name="message" rows="4" cols="50" aria-label="Message to admin"></textarea><br><br>
+          <div class="modal-footer">
+            <button type="button" class="modal-cancel-button" aria-label="Cancel action">Cancel</button>
+            <button type="submit" class="modal-submit-button" id="modal-submit">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="details-modal" class="modal" role="dialog" aria-labelledby="details-title">
+    <div class="modal-content" tabindex="0">
+      <span class="close" aria-label="Close modal">×</span>
+      <div class="modal-header">
+        <h2 id="details-title">Request Details</h2>
+      </div>
+      <div class="modal-body" id="details-content">
+        <!-- Populated by JavaScript -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="modal-cancel-button" id="details-close" aria-label="Close details">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer animate-section">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:xhantimbula@syntaxsyndicate.co.za">xhantimbula@syntaxsyndicate.co.za</a></p>
+        <p>Phone: <a href="tel:+27640716111">+27 64 071 6111</a></p>
+      </div>
+      <div class="footer-section">
+        <h3>Our Services</h3>
+        <ul>
+          <li>Incident Reporting</li>
+          <li>Community Engagement</li>
+          <li>Real-Time Updates</li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Follow Us</h3>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-x-twitter"></i></a>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <p>© 2025 CivicSync by Syntax Syndicate. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="contractorDashboard.js"></script>
 </body>
 </html>

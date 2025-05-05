@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CivicSync Admin Dashboard</title>
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="adminDashboard.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="adminDashboard.css">
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
 </head>
 <body>
+  <!-- Navbar -->
   <nav class="navbar">
     <div class="logo">CivicSync</div>
     <div class="nav-items">
@@ -21,7 +26,7 @@
         <i class="fas fa-user"></i>
         <div class="dropdown">
           <a href="#">Profile</a>
-          <a href="/AdminSettings/adminSettings.html">Settings</a>
+          <a href="#">Settings</a>
           <a href="#" id="logout">Logout</a>
         </div>
       </div>
@@ -33,12 +38,15 @@
     </div>
   </nav>
 
+  <!-- Main Container -->
   <div class="main-container">
+    <!-- Header -->
     <header class="dashboard-header animate-section">
       <h1>Admin Dashboard</h1>
       <p>Welcome, Xhanti Mbula! Manage municipal service requests efficiently.</p>
     </header>
 
+    <!-- Stats Overview -->
     <div class="stats-overview animate-section">
       <div class="stat-card glass-card">
         <h3>Total Requests</h3>
@@ -49,8 +57,8 @@
         <p id="pending-requests">0</p>
       </div>
       <div class="stat-card glass-card">
-        <h3>Approved</h3>
-        <p id="approved-requests">0</p>
+        <h3>Accepted</h3>
+        <p id="accepted-requests">0</p>
       </div>
       <div class="stat-card glass-card">
         <h3>Rejected</h3>
@@ -58,6 +66,7 @@
       </div>
     </div>
 
+    <!-- Dashboard Container -->
     <div class="dashboard-container animate-section">
       <div class="request-list">
         <h2>Service Requests</h2>
@@ -66,19 +75,23 @@
           <select id="status-filter">
             <option value="all">All</option>
             <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
+            <option value="accepted">Accepted</option>
             <option value="rejected">Rejected</option>
             <option value="allocated">Allocated</option>
-            <option value="accepted">Accepted</option>
+            <option value="approved">Approved</option>
             <option value="completed">Completed</option>
           </select>
         </div>
         <div id="requests" class="requests-scrollable"></div>
       </div>
-      <div id="map" class="map-container"></div>
+      <div id="map" class="map-container">
+        <p class="loading">Loading map...</p>
+      </div>
     </div>
 
+    <!-- Dashboard Footer -->
     <div class="dashboard-footer">
+      <!-- Requests Table -->
       <div class="requests-table-section animate-section">
         <h2>Request Details</h2>
         <div class="table-container">
@@ -98,6 +111,14 @@
           </table>
         </div>
       </div>
+
+      <!-- Complaints Section -->
+      <div class="complaints-section animate-section">
+        <h2>Urgent Complaints</h2>
+        <div id="complaints-container" class="complaints-grid"></div>
+      </div>
+
+      <!-- Analytics Section -->
       <div class="analytics-section animate-section" id="analytics-section">
         <h2>Request Analytics</h2>
         <div class="analytics-kpis">
@@ -126,16 +147,17 @@
     </div>
   </div>
 
+  <!-- Action Modal -->
   <div id="action-modal" class="modal">
     <div class="modal-content">
       <span class="close">×</span>
-      <div class="modal-header">
-        <h2 id="modal-title">Action</h2>
-      </div>
-      <div class="modal-body">
+      <div class="modal-section">
+        <h3 id="modal-title">Action</h3>
         <form id="action-form">
-          <label for="message">Message (optional):</label>
-          <textarea id="message" name="message" rows="4" cols="50"></textarea><br><br>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-comment"></i> Message (optional):</label>
+            <textarea id="message" name="message" class="detail-value" rows="4"></textarea>
+          </div>
           <div class="modal-footer">
             <button type="button" class="modal-cancel-button">Cancel</button>
             <button type="submit" class="modal-submit-button" id="modal-submit">Submit</button>
@@ -145,17 +167,20 @@
     </div>
   </div>
 
+  <!-- Allocate Modal -->
   <div id="allocate-modal" class="modal">
     <div class="modal-content">
       <span class="close">×</span>
-      <div class="modal-header">
-        <h2>Allocate Request</h2>
-      </div>
-      <div class="modal-body">
-        <h3>Select Contractor</h3>
-        <div id="contractor-list"></div>
-        <label for="allocate-message">Message to Contractor (optional):</label>
-        <textarea id="allocate-message" name="allocate-message" rows="4" cols="50"></textarea><br><br>
+      <div class="modal-section">
+        <h3><i class="fas fa-users"></i> Allocate Request</h3>
+        <div class="detail-card">
+          <label class="detail-label"><i class="fas fa-user"></i> Select Contractor</label>
+          <div id="contractor-list" class="detail-value"></div>
+        </div>
+        <div class="detail-card">
+          <label class="detail-label"><i class="fas fa-comment"></i> Message to Contractor (optional):</label>
+          <textarea id="allocate-message" name="allocate-message" class="detail-value" rows="4"></textarea>
+        </div>
         <div class="modal-footer">
           <button type="button" class="modal-cancel-button" id="allocate-cancel">Cancel</button>
         </div>
@@ -163,21 +188,52 @@
     </div>
   </div>
 
+  <!-- Details Modal -->
   <div id="details-modal" class="modal">
     <div class="modal-content">
       <span class="close">×</span>
-      <div class="modal-header">
-        <h2>Request Details</h2>
-      </div>
-      <div class="modal-body" id="details-content">
-        <!-- Populated by JavaScript -->
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="modal-cancel-button" id="details-close">Close</button>
+      <div class="modal-section">
+        <h3><i class="fas fa-info-circle"></i> Request Details</h3>
+        <div id="details-content">
+          <!-- Populated by JavaScript -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="modal-cancel-button" id="details-close">Close</button>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Complaint Response Modal -->
+  <div id="complaint-response-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-section">
+        <h3><i class="fas fa-exclamation-circle"></i> Respond to Complaint</h3>
+        <form id="complaint-response-form">
+          <input type="hidden" id="complaint-id">
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-heading"></i> Subject</label>
+            <input type="text" id="complaint-subject" class="detail-value" readonly>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="complaint-description" class="detail-value" readonly></textarea>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-reply"></i> Response</label>
+            <textarea id="complaint-response-message" name="complaint-response-message" class="detail-value" rows="4" required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="modal-cancel-button" id="complaint-response-cancel">Cancel</button>
+            <button type="submit" class="modal-submit-button">Send Response</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
   <footer class="site-footer animate-section">
     <div class="footer-content">
       <div class="footer-section">
@@ -207,21 +263,21 @@
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
+  <!-- Define initMap globally before Google Maps API loads -->
   <script>
     window.initMap = function() {
-      if (!window.google || !window.google.maps) {
-        console.error('Google Maps API not loaded');
-        return;
-      }
-      window.map = new window.google.maps.Map(document.getElementById('map'), {
-        center: { lat: -33.9249, lng: 18.4241 },
-        zoom: 10,
-      });
+      console.log('initMap placeholder called. Waiting for adminDashboard.js to initialize map.');
+      // Actual initialization will be handled in adminDashboard.js
     };
   </script>
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places&callback=initMap"></script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places&loading=async&callback=initMap"
+    async
+    defer
+    onerror="console.error('Google Maps API failed to load'); document.getElementById('map').innerHTML = '<p class=error>Failed to load map. <button id=retry-map class=request-button>Retry</button></p>'; document.getElementById('retry-map')?.addEventListener('click', () => { document.getElementById('map').innerHTML = '<p class=loading>Loading map...</p>'; window.location.reload(); });">
+  </script>
   <script type="module" src="adminDashboard.js"></script>
 </body>
 </html>

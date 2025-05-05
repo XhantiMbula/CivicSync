@@ -1,251 +1,284 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dashboard - CivicSync</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="userDashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📍</text></svg>">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script>
-        window.supabase = supabase.createClient(
-            'https://lywylvbgsnmqwcwgiyhc.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5d3lsdmJnc25tcXdjd2dpeWhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MzI4ODYsImV4cCI6MjA2MDIwODg4Nn0.RGkQl_ZwwvQgbrUpP7jDXMPw2qJsEoLIkDmZUb0X5xg'
-        );
-    </script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js" defer></script>
-    <script type="module" src="userDashboard.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Toastify CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="userDashboard.css">
 </head>
 <body>
-    <nav class="navbar">
-        <div class="app-name">CivicSync</div>
-        <div class="nav-links">
-            <a href="#services">Services</a>
-            <a href="#about">About</a>
-            <a href="#contacts">Contacts</a>
-            <div class="header-icons">
-                <div class="notification-icon">
-                    <i class="fas fa-bell"></i>
-                    <span class="notification-badge" id="notification-badge">0</span>
-                </div>
-                <div class="profile-icon">
-                    <a href="../Profile/profile.html" class="profile-link">
-                        <i class="fas fa-user-circle"></i>
-                    </a>
-                </div>
-                <div class="logout">Logout</div>
-            </div>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="app-name">CivicSync</div>
+    <div class="hamburger"><i class="fas fa-bars"></i></div>
+    <div class="nav-links">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#requests">My Requests</a>
+      <a href="#feed">Community Feed</a>
+      <div class="header-icons">
+        <div class="notification-icon">
+          <i class="fas fa-bell"></i>
+          <span id="notification-badge" class="notification-badge">0</span>
         </div>
-        <div class="hamburger">
-            <i class="fas fa-bars"></i>
-        </div>
-    </nav>
-
-    <div class="dashboard-container">
-        <div class="welcome-section animate-section">
-            <h2 class="welcome-head">Welcome</h2>
-        </div>
-
-        <div class="request-complaint-section animate-section">
-            <div class="glass-card">
-                <div><i class="fas fa-file-alt"></i> Submit a Request</div>
-                <button class="request-button" id="open-request-modal">Create Request</button>
-            </div>
-            <div class="glass-card">
-                <div><i class="fas fa-exclamation-circle"></i> File a Complaint</div>
-                <button class="complaint-button" id="open-complaint-modal">File Complaint</button>
-            </div>
-        </div>
-
-        <div class="table-container animate-section">
-            <div class="flex justify-between items-center mb-4">
-                <h2>My Requests</h2>
-                <div class="filter-container">
-                    <label for="status-filter">Filter by Status:</label>
-                    <select id="status-filter">
-                        <option value="all">All</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Rejected">Rejected</option>
-                        <option value="Allocated">Allocated</option>
-                        <option value="Accepted">Accepted</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-            </div>
-            <div class="interactive-table">
-                <div class="table-header">
-                    <div class="sortable" data-sort="title">Title <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="description">Description <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="location">Location <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="image">Image <i class="fas fa-sort"></i></div>
-                    <div class="sortable" data-sort="date">Date <i class="fas fa-sort"></i></div>
-                    <div>Actions</div>
-                </div>
-                <div class="table-body" id="request-table-body">
-                    <!-- Populated by JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <div class="feed-section animate-section">
-            <h2>Community Feed</h2>
-            <div class="grid-container" id="feed-grid">
-                <!-- Populated by JavaScript -->
-            </div>
-            <div class="pagination">
-                <button class="load-more-button" id="load-more">Load More</button>
-            </div>
-        </div>
+        <div class="profile-icon"><i class="fas fa-user"></i></div>
+        <div class="logout">Logout</div>
+      </div>
     </div>
+  </nav>
 
-    <footer class="site-footer animate-section">
-        <div class="footer-content">
-            <div class="footer-section">
-                <h3>Contact Us</h3>
-                <p>Email: <a href="mailto:info@civicsync.com">info@civicsync.com</a></p>
-                <p>Phone: <a href="tel:+1234567890">+1 234 567 890</a></p>
-            </div>
-            <div class="footer-section">
-                <h3>Our Services</h3>
-                <ul>
-                    <li>Incident Reporting</li>
-                    <li>Community Engagement</li>
-                    <li>Real-Time Updates</li>
-                </ul>
-            </div>
-            <div class="footer-section">
-                <h3>Follow Us</h3>
-                <div class="social-links">
-                    <a href="#"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="copyright">
-            <p>© 2025 CivicSync. All rights reserved.</p>
-        </div>
-    </footer>
+  <!-- Dashboard Container -->
+  <div class="dashboard-container">
+    <!-- Welcome Section -->
+    <section class="welcome-section animate-section">
+      <h1 class="welcome-head">Welcome User</h1>
+    </section>
 
-    <!-- Request Modal -->
-    <div class="modal" id="request-modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <div class="modal-header">
-                <h2>Create a Request</h2>
-            </div>
-            <div class="modal-body">
-                <form id="request-form">
-                    <label for="request-title">Request Title</label>
-                    <input type="text" id="request-title" required>
-                    <label for="request-category">Category</label>
-                    <select id="request-category" required>
-                        <option value="Water">Water</option>
-                        <option value="Electricity">Electricity</option>
-                        <option value="Plumbing">Plumbing</option>
-                        <option value="Infrastructure">Infrastructure</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <label for="request-description">Description</label>
-                    <textarea id="request-description" required></textarea>
-                    <label for="request-location">Location</label>
-                    <input type="text" id="request-location" required>
-                    <div class="location-options">
-                        <button type="button" id="use-current-location">Use Current Location</button>
-                    </div>
-                    <label for="request-image">Upload Image</label>
-                    <input type="file" id="request-image" accept="image/*">
-                    <div id="image-container">
-                        <img id="image-preview" style="display: none; max-width: 100%;">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-cancel-button">Cancel</button>
-                <button type="submit" form="request-form" class="modal-submit-button">Submit</button>
-            </div>
+    <!-- Request and Complaint Section -->
+    <section class="request-complaint-section animate-section">
+      <div class="glass-card">
+        <div><i class="fas fa-file-alt"></i>Create Request</div>
+        <button id="open-request-modal" class="request-button">Create Now</button>
+      </div>
+      <div class="glass-card">
+        <div><i class="fas fa-exclamation-circle"></i>Submit Complaint</div>
+        <button id="open-complaint-modal" class="complaint-button">Submit Now</button>
+      </div>
+    </section>
+
+    <!-- My Requests Section -->
+    <section class="table-container animate-section">
+      <h2>My Requests</h2>
+      <div class="filter-container">
+        <label for="status-filter">Filter by Status:</label>
+        <select id="status-filter">
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="allocated">Allocated</option>
+          <option value="approved">Approved</option>
+          <option value="completed">Completed</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="interactive-table">
+        <div class="table-header">
+          <div class="sortable" data-sort="title">Title <i class="fas fa-sort"></i></div>
+          <div class="sortable" data-sort="description">Description <i class="fas fa-sort"></i></div>
+          <div class="sortable" data-sort="location">Location <i class="fas fa-sort"></i></div>
+          <div class="sortable" data-sort="status">Status <i class="fas fa-sort"></i></div>
+          <div class="sortable" data-sort="image">Image <i class="fas fa-sort"></i></div>
+          <div class="sortable" data-sort="date">Created At <i class="fas fa-sort"></i></div>
+          <div>Actions</div>
         </div>
+        <div class="table-body">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Community Feed Section -->
+    <section class="feed-section animate-section">
+      <h2>Community Feed</h2>
+      <div id="feed-grid" class="grid-container">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="pagination">
+        <button id="load-more" class="load-more-button">Load More</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- Request Modal -->
+  <div id="request-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-section">
+        <h3><i class="fas fa-file-alt"></i> Create Request</h3>
+        <form id="request-form">
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-heading"></i> Title</label>
+            <input type="text" id="request-title" class="detail-value" required>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-tag"></i> Category</label>
+            <select id="request-category" class="detail-value" required>
+              <option value="Water">Water</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="Crime">Crime</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="request-description" class="detail-value" required></textarea>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-map-marker-alt"></i> Location</label>
+            <input type="text" id="request-location" class="detail-value" required>
+            <div class="location-options">
+              <button type="button" id="use-current-location" class="modal-btn"><i class="fas fa-location-arrow"></i> Use Current Location</button>
+              <button type="button" id="pick-on-map" class="modal-btn"><i class="fas fa-map"></i> Pick on Map</button>
+            </div>
+          </div>
+          <div class="detail-card image-card">
+            <label class="detail-label"><i class="fas fa-image"></i> Image</label>
+            <input type="file" id="request-image" accept="image/*" class="detail-value">
+            <img id="image-preview" class="request-image" style="display: none;">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="modal-submit-button">Submit</button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 
-    <!-- Edit Request Modal -->
-    <div class="modal" id="edit-request-modal">
-        <div class="modal-content">
-            <span class="close">×</span>
-            <div class="modal-header">
-                <h2>Edit Request</h2>
+  <!-- Edit Request Modal -->
+  <div id="edit-request-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div class="modal-section">
+        <h3><i class="fas fa-edit"></i> Edit Request</h3>
+        <form id="edit-request-form">
+          <input type="hidden" id="edit-request-id">
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-heading"></i> Title</label>
+            <input type="text" id="edit-request-title" class="detail-value" required>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-tag"></i> Category</label>
+            <select id="edit-request-category" class="detail-value" required>
+              <option value="Water">Water</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Infrastructure">Infrastructure</option>
+              <option value="Crime">Crime</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="edit-request-description" class="detail-value" required></textarea>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-map-marker-alt"></i> Location</label>
+            <input type="text" id="edit-request-location" class="detail-value" required>
+            <div class="location-options">
+              <button type="button" id="edit-use-current-location" class="modal-btn"><i class="fas fa-location-arrow"></i> Use Current Location</button>
+              <button type="button" id="edit-pick-on-map" class="modal-btn"><i class="fas fa-map"></i> Pick on Map</button>
             </div>
-            <div class="modal-body">
-                <form id="edit-request-form">
-                    <input type="hidden" id="edit-request-id">
-                    <label for="edit-request-title">Request Title</label>
-                    <input type="text" id="edit-request-title" required>
-                    <label for="edit-request-category">Category</label>
-                    <select id="edit-request-category" required>
-                        <option value="Water">Water</option>
-                        <option value="Electricity">Electricity</option>
-                        <option value="Plumbing">Plumbing</option>
-                        <option value="Infrastructure">Infrastructure</option>
-                        <option value="Other">Other</option>
-                    </select>
-                    <label for="edit-request-description">Description</label>
-                    <textarea id="edit-request-description" required></textarea>
-                    <label for="edit-request-location">Location</label>
-                    <input type="text" id="edit-request-location" required>
-                    <div class="location-options">
-                        <button type="button" id="edit-use-current-location">Use Current Location</button>
-                    </div>
-                    <label for="edit-request-image">Upload Image</label>
-                    <input type="file" id="edit-request-image" accept="image/*">
-                    <div id="edit-image-container">
-                        <img id="edit-image-preview" style="display: none; max-width: 100%;">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-cancel-button">Cancel</button>
-                <button type="submit" form="edit-request-form" class="modal-submit-button">Save Changes</button>
-            </div>
-        </div>
+          </div>
+          <div class="detail-card image-card">
+            <label class="detail-label"><i class="fas fa-image"></i> Image</label>
+            <input type="file" id="edit-request-image" accept="image/*" class="detail-value">
+            <img id="edit-image-preview" class="request-image" style="display: none;">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="modal-submit-button">Update</button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 
-    <!-- Complaint Modal -->
-    <div class="modal1" id="complaint-modal">
-        <div class="modal-content1">
-            <span class="closeBtn">×</span>
-            <h2>File a Complaint</h2>
-            <form id="complaint-form">
-                <label for="complaint-title">Complaint Title</label>
-                <input type="text" id="complaint-title" required>
-                <label for="complaint-description">Description</label>
-                <textarea id="complaint-description" required></textarea>
-                <label for="complaint-location">Location</label>
-                <input type="text" id="complaint-location" required>
-                <label for="complaint-request-id">Related Request ID (Optional)</label>
-                <input type="text" id="complaint-request-id" readonly>
-                <button type="submit">Submit Complaint</button>
-            </form>
-        </div>
+  <!-- Complaint Modal -->
+  <div id="complaint-modal" class="modal1">
+    <div class="modal-content1">
+      <span class="closeBtn">×</span>
+      <div class="modal-section">
+        <h3><i class="fas fa-exclamation-circle"></i> Submit Complaint</h3>
+        <form id="complaint-form">
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-heading"></i> Subject</label>
+            <input type="text" id="complaintSubject" class="detail-value" required>
+          </div>
+          <div class="detail-card">
+            <label class="detail-label"><i class="fas fa-align-left"></i> Description</label>
+            <textarea id="complaint-description" class="detail-value" required></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="modal-submit-button">Submit</button>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 
-    <!-- Feed Details Modal -->
-    <div class="modal2" id="feed-details-modal">
-        <div class="modal-content">
-            <span class="closeBtn2">×</span>
-            <div class="modal-header">
-                <h2>Feed Details</h2>
-            </div>
-            <div class="modal-body" id="feed-details-content">
-                <!-- Populated by JavaScript -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="modal-cancel-button" id="feed-details-close">Close</button>
-            </div>
-        </div>
+  <!-- Feed Details Modal -->
+  <div id="feed-details-modal" class="modal2">
+    <div class="modal-content">
+      <span class="closeBtn2">×</span>
+      <div id="feed-details-content">
+        <!-- Populated dynamically -->
+      </div>
     </div>
+  </div>
+
+  <!-- Request Details Modal -->
+  <div id="request-details-modal" class="modal">
+    <div class="modal-content">
+      <span class="closeBtn">×</span>
+      <div id="request-details-content">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Map Picker Modal -->
+  <div id="map-picker-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">×</span>
+      <div id="map-picker" style="height: 400px;"></div>
+      <div class="modal-footer">
+        <button id="map-picker-confirm" class="modal-submit-button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>About CivicSync</h3>
+        <p>Empowering communities to report and resolve local issues efficiently.</p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#dashboard">Dashboard</a></li>
+          <li><a href="#requests">My Requests</a></li>
+          <li><a href="#feed">Community Feed</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p>Email: support@civicsync.com</p>
+        <p>Phone: +27 123 456 789</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-x"></i></a>
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      © 2025 CivicSync. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanilla-tilt@1.7.2/dist/vanilla-tilt.min.js"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFM6HNEnxbn6_VvYaQ_o4n72VlAUajgmc&libraries=places"></script>
+  <script type="module" src="userDashboard.js"></script>
 </body>
 </html>

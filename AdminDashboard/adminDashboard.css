@@ -24,6 +24,223 @@ button {
   cursor: pointer;
 }
 
+/* Map error message */
+.map-container .error {
+  text-align: center;
+  color: #ff4d4d;
+  padding: 20px;
+  font-size: 1.2em;
+}
+
+/* Notification header for Clear All button */
+.notification-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#clear-notifications {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+#clear-notifications:hover {
+  opacity: 0.9;
+}
+
+/* Additional status styles */
+.status-allocated {
+  background: #20c997;
+  color: white;
+}
+
+.status-approved {
+  background: #4dabf5;
+  color: white;
+}
+
+.status-completed {
+  background: #ba68c8;
+  color: white;
+}
+
+/* Additional notification styles */
+.notification-allocation {
+  background: rgba(32, 201, 151, 0.1);
+}
+
+.notification-completion {
+  background: rgba(186, 104, 200, 0.1);
+}
+
+.notification-request {
+  background: rgba(255, 170, 0, 0.1);
+}
+
+.notification-complaint {
+  background: rgba(255, 77, 77, 0.1);
+}
+
+/* Complaints section */
+.complaints-section {
+  margin-top: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+}
+
+.complaints-section h2 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.8em;
+  color: #333;
+  margin: 0 0 15px;
+  border-left: 4px solid #28a745;
+  padding-left: 10px;
+}
+
+#complaints-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+#complaints-table thead {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(90deg, #28a745, #20c997);
+  color: white;
+  z-index: 10;
+}
+
+#complaints-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+#complaints-table th:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+#complaints-table th i {
+  margin-left: 5px;
+  font-size: 0.9em;
+}
+
+#complaints-table tbody tr {
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+#complaints-table tbody tr:hover {
+  background: rgba(40, 167, 69, 0.1);
+  transform: scale(1.01);
+}
+
+#complaints-table td {
+  padding: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  vertical-align: middle;
+}
+
+.respond-btn {
+  background: #20c997;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.respond-btn:hover {
+  opacity: 0.9;
+}
+
+/* Complaint response modal */
+#complaint-response-form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: 600;
+  color: #333;
+}
+
+#complaint-response-form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 1em;
+  background: rgba(255, 255, 255, 0.3);
+  color: #333;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+#complaint-response-form textarea:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.3);
+}
+
+/* Responsive modal styles */
+@media (max-width: 600px) {
+  .modal-content {
+    padding: 15px;
+    max-width: 95%;
+    margin: 15px auto;
+  }
+  .modal-header h2 {
+    font-size: 1.5em;
+  }
+  .modal-section h3 {
+    font-size: 1em;
+  }
+  .request-image {
+    max-width: 100%;
+    height: auto;
+  }
+  .info-label {
+    font-size: 0.9em;
+  }
+  .info-value {
+    font-size: 0.9em;
+  }
+  #complaints-table thead {
+    display: none;
+  }
+  #complaints-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  #complaints-table td {
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 8px 0;
+  }
+  #complaints-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #333;
+    min-width: 100px;
+  }
+}
+
 /* Navbar */
 .navbar {
   background: rgba(255, 255, 255, 0.1);
@@ -128,7 +345,7 @@ button {
 
 /* Main Container */
 .main-container {
-  max-width: 1400px;
+  width: 100%;
   margin: 0 auto;
   padding: 20px;
   flex: 1;
@@ -383,8 +600,10 @@ button:disabled {
 .map-container {
   width: 70%;
   height: 100%;
+  min-height: 400px; /* Fallback height to prevent collapse */
   border-radius: 16px;
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  /* border: 2px solid red; */ /* Uncomment for debugging */
 }
 
 /* Notification Dropdown */
@@ -437,7 +656,7 @@ button:disabled {
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 100brica0;
   overflow-y: auto;
 }
 
@@ -458,12 +677,12 @@ button:disabled {
 
 @keyframes slideIn {
   from {
-      transform: translateY(-50px);
-      opacity: 0;
+    transform: translateY(-50px);
+    opacity: 0;
   }
   to {
-      transform: translateY(0);
-      opacity: 1;
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
@@ -763,12 +982,12 @@ button:disabled {
 
 @keyframes slideDown {
   from {
-      opacity: 0;
-      transform: translateY(-10px);
+    opacity: 0;
+    transform: translateY(-10px);
   }
   to {
-      opacity: 1;
-      transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -915,92 +1134,92 @@ button:disabled {
 
 @keyframes fadeInUp {
   to {
-      opacity: 1;
-      transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .modal-content {
-      width: 95%;
-      max-height: 80vh;
-      margin: 10px auto;
+    width: 95%;
+    max-height: 80vh;
+    margin: 10px auto;
   }
 
   .info-item {
-      flex-direction: column;
+    flex-direction: column;
   }
 
   .info-label {
-      min-width: auto;
-      margin-bottom: 5px;
+    min-width: auto;
+    margin-bottom: 5px;
   }
 
   .modal-section h3 {
-      font-size: 1.1em;
+    font-size: 1.1em;
   }
 
   .analytics-kpis {
-      flex-direction: column;
+    flex-direction: column;
   }
 
   .analytics-charts {
-      flex-direction: column;
+    flex-direction: column;
   }
 
   .chart-container {
-      min-width: 100%;
+    min-width: 100%;
   }
 
   #requests-table thead {
-      display: none;
+    display: none;
   }
 
   #requests-table tbody tr {
-      display: block;
-      margin-bottom: 15px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      padding: 10px;
+    display: block;
+    margin-bottom: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 10px;
   }
 
   #requests-table td {
-      display: flex;
-      justify-content: space-between;
-      border: none;
-      padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    border: none;
+    padding: 8px 0;
   }
 
   #requests-table td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      color: #333;
-      min-width: 100px;
+    content: attr(data-label);
+    font-weight: 600;
+    color: #333;
+    min-width: 100px;
   }
 
   .table-details-row {
-      margin: 10px 0;
+    margin: 10px 0;
   }
 }
 
 @media (max-width: 600px) {
   .dashboard-container {
-      flex-direction: column;
-      height: auto;
+    flex-direction: column;
+    height: auto;
   }
 
   .request-list {
-      width: 100%;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    width: 100%;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
 
   .map-container {
-      width: 100%;
-      height: 400px;
+    width: 100%;
+    height: 400px; /* Fixed height for smaller screens */
   }
 
   .stat-card, .kpi-card {
-      max-width: 100%;
+    max-width: 100%;
   }
 }
