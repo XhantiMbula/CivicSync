@@ -31,7 +31,7 @@ function loadGoogleMapsAPI() {
     console.log('Attempting to load Google Maps API');
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
     if (existingScript) {
-      console.log('Google Maps API script already present, checking status');
+      console.log('Google Maps API script already present');
       if (window.google && window.google.maps) {
         console.log('Google Maps API already loaded');
         resolve();
@@ -69,22 +69,66 @@ function loadGoogleMapsAPI() {
         reject(new Error('Google Maps API script loaded but not initialized'));
       }
     };
-    document.body.appendChild(script);
+    document.head.appendChild(script);
   });
 }
 
 // Initialize Google Maps
 window.initMap = function() {
   console.log('initMap called');
+  const mapContainer = document.getElementById('map');
+  if (!mapContainer) {
+    console.error('Map container #map not found in DOM');
+    const container = document.querySelector('.map-container');
+    if (container) {
+      container.innerHTML = '<p class="error">Map container not found. Please check the HTML structure.</p>';
+    }
+    mapReadyResolver();
+    return;
+  }
   if (!window.google || !window.google.maps) {
     console.error('Google Maps API not loaded in initMap');
     retryMapLoad(0);
     return;
   }
   try {
-    map = new google.maps.Map(document.getElementById('map'), {
-      center: { lat: -33.9249, lng: 18.4241 },
+    // Ensure map container has dimensions and is visible
+    mapContainer.style.height = '100%';
+    mapContainer.style.width = '100%';
+    mapContainer.style.display = 'block';
+    
+    map = new google.maps.Map(mapContainer, {
+      center: { lat: -33.9249, lng: 18.4241 }, // Cape Town default
       zoom: 10,
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: true,
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
+        position: google.maps.ControlPosition.TOP_LEFT,
+        mapTypeIds: [
+          google.maps.MapTypeId.ROADMAP,
+          google.maps.MapTypeId.SATELLITE,
+          google.maps.MapTypeId.HYBRID,
+          google.maps.MapTypeId.TERRAIN
+        ]
+      },
+      streetViewControl: true,
+      streetViewControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      zoomControl: true,
+      zoomControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      fullscreenControl: true,
+      fullscreenControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_TOP
+      },
+      rotateControl: true,
+      rotateControlOptions: {
+        position: google.maps.ControlPosition.RIGHT_BOTTOM
+      },
+      scaleControl: true,
       styles: [
         {
           featureType: 'all',
@@ -92,12 +136,29 @@ window.initMap = function() {
         }
       ]
     });
+
+    // Initialize Street View panorama (hidden by default)
+    const panorama = map.getStreetView();
+    panorama.setOptions({
+      position: { lat: -33.9249, lng: 18.4241 },
+      pov: { heading: 270, pitch: 0 },
+      visible: false
+    });
+
     console.log('Map initialized successfully');
-    document.getElementById('map').querySelector('.loading')?.remove();
+    const loadingElement = mapContainer.querySelector('.loading');
+    if (loadingElement) loadingElement.remove();
+    
     if (window.requestsLoaded) {
       console.log('Updating markers with pre-loaded requests:', window.requestsLoaded);
       updateMapMarkers(window.requestsLoaded);
     }
+    
+    // Trigger resize to ensure proper rendering
+    setTimeout(() => {
+      google.maps.event.trigger(map, 'resize');
+      console.log('Map resize triggered');
+    }, 100);
     mapReadyResolver();
   } catch (error) {
     console.error('Error initializing map:', error);
@@ -109,13 +170,37 @@ window.initMap = function() {
 function retryMapLoad(attempt, maxRetries = 3) {
   if (attempt >= maxRetries) {
     console.error('Map load failed after maximum retries');
-    document.getElementById('map').innerHTML = '<p class="error">Failed to load map. Please check your Google Maps API key or internet connection.</p>';
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+      mapContainer.innerHTML = `
+        <p class="error">Failed to load map after ${maxRetries} attempts. Please check your API key or network connection.</p>
+        <button id="retry-map" class="request-button">Retry Map</button>
+      `;
+      const retryButton = document.getElementById('retry-map');
+      if (retryButton) {
+        retryButton.addEventListener('click', () => {
+          mapContainer.innerHTML = '<p class="loading">Loading map...</p>';
+          loadGoogleMapsAPI().then(() => {
+            window.initMap();
+          }).catch(e => {
+            console.error('Manual retry failed:', e);
+            mapContainer.innerHTML = `
+              <p class="error">Retry failed. Please check your API key or network connection.</p>
+              <button id="retry-map" class="request-button">Retry Map</button>
+            `;
+          });
+        });
+      }
+    }
     mapReadyResolver();
     return;
   }
   const delay = Math.pow(2, attempt) * 2000;
   console.log(`Retrying map load, attempt ${attempt + 1}/${maxRetries} after ${delay}ms`);
-  document.getElementById('map').innerHTML = '<p class="error">Failed to load map. Retrying...</p>';
+  const mapContainer = document.getElementById('map');
+  if (mapContainer) {
+    mapContainer.innerHTML = '<p class="error">Failed to load map. Retrying...</p>';
+  }
   setTimeout(() => {
     loadGoogleMapsAPI().then(() => {
       if (window.google && window.google.maps) {
@@ -432,6 +517,7 @@ async function updateMapMarkers(requests) {
 
   markers.forEach(marker => marker.setMap(null));
   markers = [];
+  let bounds = new google.maps.LatLngBounds();
 
   const geocoder = new google.maps.Geocoder();
   for (const request of requests) {
@@ -448,9 +534,10 @@ async function updateMapMarkers(requests) {
       });
       if (response && response[0]) {
         const { lat, lng } = response[0].geometry.location;
+        const position = { lat: lat(), lng: lng() };
         console.log('Geocoded coordinates for RequestID:', request.RequestID, 'Lat:', lat(), 'Lng:', lng());
         const marker = new google.maps.Marker({
-          position: { lat: lat(), lng: lng() },
+          position,
           map,
           title: request.RequestTitle,
           icon: markerIcons.default,
@@ -470,6 +557,7 @@ async function updateMapMarkers(requests) {
           map.panTo(marker.getPosition());
         });
         markers.push(marker);
+        bounds.extend(position);
       } else {
         console.warn(`No geocoding results for location: ${request.RequestLocation}`);
       }
@@ -478,6 +566,20 @@ async function updateMapMarkers(requests) {
     }
   }
   console.log('Markers updated, count:', markers.length);
+
+  // Adjust map to fit all markers
+  if (markers.length > 0) {
+    map.fitBounds(bounds);
+    map.addListener('bounds_changed', () => {
+      if (map.getZoom() > 15) map.setZoom(15);
+    });
+  } else {
+    console.log('No valid locations to display on the map');
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+      mapContainer.innerHTML = '<p>No valid locations to display on the map.</p>';
+    }
+  }
 }
 
 // Action modal controls
@@ -568,236 +670,285 @@ function closeDetailsModal() {
 // Initialize data and event listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM content loaded, initializing dashboard');
+  
+  // Start map initialization immediately
+  console.log('Starting map initialization');
+  setTimeout(() => {
+    loadGoogleMapsAPI().then(() => {
+      console.log('Google Maps API loaded, calling initMap');
+      window.initMap();
+    }).catch(error => {
+      console.error('Failed to load Google Maps API:', error);
+      const mapContainer = document.getElementById('map');
+      if (mapContainer) {
+        mapContainer.innerHTML = `
+          <p class="error">Failed to load map. Check your API key or connection.</p>
+          <button id="retry-map" class="request-button">Retry Map</button>
+        `;
+        const retryButton = document.getElementById('retry-map');
+        if (retryButton) {
+          retryButton.addEventListener('click', () => {
+            mapContainer.innerHTML = '<p class="loading">Loading map...</p>';
+            loadGoogleMapsAPI().then(() => {
+              window.initMap();
+            }).catch(e => {
+              console.error('Retry failed:', e);
+              mapContainer.innerHTML = `
+                <p class="error">Retry failed. Please check your API key or network connection.</p>
+                <button id="retry-map" class="request-button">Retry Map</button>
+              `;
+            });
+          });
+        }
+      }
+    });
+  }, 500); // Delay to ensure DOM is fully rendered
+
   const actionModal = document.getElementById('action-modal');
   const modalTitle = document.getElementById('modal-title');
   const modalSubmit = document.querySelector('#action-modal .modal-submit-button');
   const actionForm = document.getElementById('action-form');
-  const actionCloseBtn = actionModal.querySelector('.close');
+  const actionCloseBtn = actionModal?.querySelector('.close');
   const actionCancelBtn = document.querySelector('#action-modal .modal-cancel-button');
   const detailsModal = document.getElementById('details-modal');
   const detailsCloseBtn = document.getElementById('details-close');
-  const detailsCloseSpan = detailsModal.querySelector('.close');
+  const detailsCloseSpan = detailsModal?.querySelector('.close');
   notificationIcon = document.querySelector('.nav-item.notifications');
   const logoutBtn = document.getElementById('logout');
 
   // Initialize data
   async function initialize() {
-    console.log('Starting initialization');
-    const contractor = await getContractor();
-    if (!contractor) {
-      console.log('No contractor found, initialization aborted');
-      return;
+    console.log('Starting data initialization');
+    try {
+      const contractor = await getContractor();
+      if (!contractor) {
+        console.log('No contractor found, initialization aborted');
+        return;
+      }
+      console.log('Contractor initialized:', contractor.ContractorName);
+      document.getElementById('contractor-name').textContent = `Welcome, ${contractor.ContractorName}`;
+      
+      // Load requests and notifications concurrently
+      await Promise.all([
+        loadRequests(contractor.ContractorID),
+        loadContractorNotifications(contractor.ContractorID)
+      ]);
+
+      // Subscribe to real-time request updates
+      console.log('Subscribing to RequestTable changes for ContractorID:', contractor.ContractorID);
+      supabaseClient
+        .channel('request_table_contractor')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'RequestTable',
+          filter: `ContractorID=eq.${contractor.ContractorID}`
+        }, () => {
+          console.log('RequestTable change detected, reloading requests');
+          loadRequests(contractor.ContractorID);
+        })
+        .subscribe();
+
+      // Subscribe to real-time notification updates
+      console.log('Subscribing to ContractorNotifications for ContractorID:', contractor.ContractorID);
+      supabaseClient
+        .channel('contractor_notifications')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'ContractorNotifications',
+          filter: `ContractorID=eq.${contractor.ContractorID}`
+        }, () => {
+          console.log('ContractorNotifications change detected, reloading notifications');
+          loadContractorNotifications(contractor.ContractorID);
+        })
+        .subscribe();
+    } catch (error) {
+      console.error('Data initialization failed:', error);
+      showToast('Failed to initialize dashboard. Please try again.', 'error');
     }
-    console.log('Contractor initialized:', contractor.ContractorName);
-    document.getElementById('contractor-name').textContent = `Welcome, ${contractor.ContractorName}`;
-    await loadRequests(contractor.ContractorID);
-    loadContractorNotifications(contractor.ContractorID);
-
-    // Subscribe to real-time request updates
-    console.log('Subscribing to RequestTable changes for ContractorID:', contractor.ContractorID);
-    supabaseClient
-      .channel('request_table_contractor')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'RequestTable',
-        filter: `ContractorID=eq.${contractor.ContractorID}`
-      }, () => {
-        console.log('RequestTable change detected, reloading requests');
-        loadRequests(contractor.ContractorID);
-      })
-      .subscribe();
-
-    // Subscribe to real-time notification updates
-    console.log('Subscribing to ContractorNotifications for ContractorID:', contractor.ContractorID);
-    supabaseClient
-      .channel('contractor_notifications')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'ContractorNotifications',
-        filter: `ContractorID=eq.${contractor.ContractorID}`
-      }, () => {
-        console.log('ContractorNotifications change detected, reloading notifications');
-        loadContractorNotifications(contractor.ContractorID);
-      })
-      .subscribe();
   }
 
-  // Run initialization and then load map
-  initialize().then(() => {
-    console.log('Data initialization complete, loading Google Maps API');
-    loadGoogleMapsAPI().catch(error => {
-      console.error('Failed to load Google Maps API:', error);
-      document.getElementById('map').innerHTML = '<p class="error">Failed to load map. Check your API key or connection.</p>';
-    });
-  });
+  // Run data initialization
+  initialize();
 
   // Logout
-  logoutBtn.addEventListener('click', async () => {
-    console.log('Logout button clicked');
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) {
-      console.error('Error logging out:', error);
-      showToast('Error logging out.', 'error');
-    } else {
-      showToast('Logged out successfully!', 'success');
-      window.location.href = '/loginPage/loginPage.html';
-    }
-  });
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      console.log('Logout button clicked');
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) {
+        console.error('Error logging out:', error);
+        showToast('Error logging out.', 'error');
+      } else {
+        showToast('Logged out successfully!', 'success');
+        window.location.href = '/loginPage/loginPage.html';
+      }
+    });
+  }
 
   // Action modal event listeners
-  actionCloseBtn.addEventListener('click', closeActionModal);
-  actionCancelBtn.addEventListener('click', closeActionModal);
+  if (actionCloseBtn) actionCloseBtn.addEventListener('click', closeActionModal);
+  if (actionCancelBtn) actionCancelBtn.addEventListener('click', closeActionModal);
   window.addEventListener('click', (e) => {
     if (e.target === actionModal) closeActionModal();
   });
 
   // Details modal event listeners
-  detailsCloseBtn.addEventListener('click', closeDetailsModal);
-  detailsCloseSpan.addEventListener('click', closeDetailsModal);
+  if (detailsCloseBtn) detailsCloseBtn.addEventListener('click', closeDetailsModal);
+  if (detailsCloseSpan) detailsCloseSpan.addEventListener('click', closeDetailsModal);
   window.addEventListener('click', (e) => {
     if (e.target === detailsModal) closeDetailsModal();
   });
 
   // Handle action form submission
-  actionForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const action = actionModal.dataset.action;
-    const requestId = actionModal.dataset.requestId;
-    const userId = actionModal.dataset.userId;
-    const contractorId = actionModal.dataset.contractorId;
-    const message = document.getElementById('message').value.trim();
-    console.log('Action form submitted:', action, 'RequestID:', requestId, 'Message:', message);
+  if (actionForm) {
+    actionForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const action = actionModal.dataset.action;
+      const requestId = actionModal.dataset.requestId;
+      const userId = actionModal.dataset.userId;
+      const contractorId = actionModal.dataset.contractorId;
+      const message = document.getElementById('message').value.trim();
+      console.log('Action form submitted:', action, 'RequestID:', requestId, 'Message:', message);
 
-    try {
-      const { data: request, error: requestError } = await supabaseClient
-        .from('RequestTable')
-        .select('RequestTitle')
-        .eq('RequestID', requestId)
-        .single();
-      if (requestError) throw new Error(`Error fetching request: ${requestError.message}`);
-
-      const { data: admin, error: adminError } = await supabaseClient
-        .from('UserTable')
-        .select('UserID')
-        .eq('Role', 'Admin')
-        .single();
-      if (adminError || !admin) throw new Error(`Error fetching admin: ${adminError?.message || 'No admin user found'}`);
-
-      if (action === 'approve') {
-        console.log('Approving request:', requestId);
-        await supabaseClient
+      try {
+        const { data: request, error: requestError } = await supabaseClient
           .from('RequestTable')
-          .update({
-            RequestStatus: 'Approved',
-            updated_at: new Date().toISOString()
-          })
-          .eq('RequestID', requestId);
-        await supabaseClient
-          .from('RequestMessages')
-          .insert({
-            MessageID: crypto.randomUUID(),
-            RequestID: requestId,
-            UserID: userId,
-            ContractorID: contractorId,
-            MessageContent: `Request "${request.RequestTitle}" has been approved by the contractor.${message ? ` Message: ${message}` : ''}`,
-            MessageType: 'Approval',
-            SenderRole: 'contractor',
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('UserNotifications')
-          .insert({
-            NotificationID: crypto.randomUUID(),
-            UserID: userId,
-            RequestID: requestId,
-            Message: `Your request "${request.RequestTitle}" has been approved by the contractor.${message ? ` Message: ${message}` : ''}`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('AdminNotifications')
-          .insert({
-            NotificationID: crypto.randomUUID(),
-            AdminID: admin.UserID,
-            RequestID: requestId,
-            Message: `Request "${request.RequestTitle}" approved by contractor.`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('ContractorNotifications')
-          .insert({
-            ContractorNotificationID: crypto.randomUUID(),
-            ContractorID: contractorId,
-            RequestID: requestId,
-            Message: `You approved request "${request.RequestTitle}".`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        showToast('Request approved successfully!', 'success');
-      } else if (action === 'reject') {
-        console.log('Rejecting request:', requestId);
-        await supabaseClient
-          .from('RequestTable')
-          .update({
-            RequestStatus: 'Rejected',
-            updated_at: new Date().toISOString()
-          })
-          .eq('RequestID', requestId);
-        await supabaseClient
-          .from('RequestMessages')
-          .insert({
-            MessageID: crypto.randomUUID(),
-            RequestID: requestId,
-            UserID: userId,
-            ContractorID: contractorId,
-            MessageContent: `Request "${request.RequestTitle}" has been rejected by the contractor.${message ? ` Message: ${message}` : ''}`,
-            MessageType: 'Rejection',
-            SenderRole: 'Contractor',
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('UserNotifications')
-          .insert({
-            NotificationID: crypto.randomUUID(),
-            UserID: userId,
-            RequestID: requestId,
-            Message: `Your request "${request.RequestTitle}" has been rejected by the contractor.${message ? ` Message: ${message}` : ''}`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('AdminNotifications')
-          .insert({
-            NotificationID: crypto.randomUUID(),
-            AdminID: admin.UserID,
-            RequestID: requestId,
-            Message: `Request "${request.RequestTitle}" rejected by contractor.`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        await supabaseClient
-          .from('ContractorNotifications')
-          .insert({
-            ContractorNotificationID: crypto.randomUUID(),
-            ContractorID: contractorId,
-            RequestID: requestId,
-            Message: `You rejected request "${request.RequestTitle}".`,
-            IsRead: false,
-            created_at: new Date().toISOString()
-          });
-        showToast('Request rejected successfully!', 'success');
+          .select('RequestTitle')
+          .eq('RequestID', requestId)
+          .single();
+        if (requestError) throw new Error(`Error fetching request: ${requestError.message}`);
+
+        const { data: admin, error: adminError } = await supabaseClient
+          .from('UserTable')
+          .select('UserID')
+          .eq('Role', 'Admin')
+          .single();
+        if (adminError || !admin) throw new Error(`Error fetching admin: ${adminError?.message || 'No admin user found'}`);
+
+        if (action === 'approve') {
+          console.log('Approving request:', requestId);
+          await supabaseClient
+            .from('RequestTable')
+            .update({
+              RequestStatus: 'Approved',
+              updated_at: new Date().toISOString()
+            })
+            .eq('RequestID', requestId);
+          await supabaseClient
+            .from('RequestMessages')
+            .insert({
+              MessageID: crypto.randomUUID(),
+              RequestID: requestId,
+              UserID: userId,
+              ContractorID: contractorId,
+              MessageContent: `Request "${request.RequestTitle}" has been approved by the contractor.${message ? ` Message: ${message}` : ''}`,
+              MessageType: 'Approval',
+              SenderRole: 'contractor',
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('UserNotifications')
+            .insert({
+              NotificationID: crypto.randomUUID(),
+              UserID: userId,
+              RequestID: requestId,
+              Message: `Your request "${request.RequestTitle}" has been approved by the contractor.${message ? ` Message: ${message}` : ''}`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('AdminNotifications')
+            .insert({
+              NotificationID: crypto.randomUUID(),
+              AdminID: admin.UserID,
+              RequestID: requestId,
+              Message: `Request "${request.RequestTitle}" approved by contractor.`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('ContractorNotifications')
+            .insert({
+              ContractorNotificationID: crypto.randomUUID(),
+              ContractorID: contractorId,
+              RequestID: requestId,
+              Message: `You approved request "${request.RequestTitle}".`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          showToast('Request approved successfully!', 'success');
+        } else if (action === 'reject') {
+          console.log('Rejecting request:', requestId);
+          await supabaseClient
+            .from('RequestTable')
+            .update({
+              RequestStatus: 'Rejected',
+              updated_at: new Date().toISOString()
+            })
+            .eq('RequestID', requestId);
+          await supabaseClient
+            .from('RequestMessages')
+            .insert({
+              MessageID: crypto.randomUUID(),
+              RequestID: requestId,
+              UserID: userId,
+              ContractorID: contractorId,
+              MessageContent: `Request "${request.RequestTitle}" has been rejected by the contractor.${message ? ` Message: ${message}` : ''}`,
+              MessageType: 'Rejection',
+              SenderRole: 'Contractor',
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('UserNotifications')
+            .insert({
+              NotificationID: crypto.randomUUID(),
+              UserID: userId,
+              RequestID: requestId,
+              Message: `Your request "${request.RequestTitle}" has been rejected by the contractor.${message ? ` Message: ${message}` : ''}`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('AdminNotifications')
+            .insert({
+              NotificationID: crypto.randomUUID(),
+              AdminID: admin.UserID,
+              RequestID: requestId,
+              Message: `Request "${request.RequestTitle}" rejected by contractor.`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          await supabaseClient
+            .from('ContractorNotifications')
+            .insert({
+              ContractorNotificationID: crypto.randomUUID(),
+              ContractorID: contractorId,
+              RequestID: requestId,
+              Message: `You rejected request "${request.RequestTitle}".`,
+              IsRead: false,
+              created_at: new Date().toISOString()
+            });
+          showToast('Request rejected successfully!', 'success');
+        }
+        console.log('Reloading requests after action');
+        loadRequests(contractorId);
+        closeActionModal();
+      } catch (error) {
+        console.error(`Error performing ${action} action:`, error);
+        showToast(`Error performing ${action} action: ${error.message}`, 'error');
       }
-      console.log('Reloading requests after action');
-      loadRequests(contractorId);
-      closeActionModal();
-    } catch (error) {
-      console.error(`Error performing ${action} action:`, error);
-      showToast(`Error performing ${action} action: ${error.message}`, 'error');
+    });
+  }
+
+  // Handle window resize to ensure map renders correctly
+  window.addEventListener('resize', () => {
+    if (map && window.google && window.google.maps) {
+      google.maps.event.trigger(map, 'resize');
+      console.log('Map resized on window resize');
     }
   });
 });

@@ -39,8 +39,8 @@ window.initMap = function() {
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: -33.9249, lng: 18.4241 }, // Cape Town default
       zoom: 10,
-      mapTypeId: google.maps.MapTypeId.ROADMAP, // Default to roadmap
-      mapTypeControl: true, // Enable map type control (roadmap, satellite, hybrid, terrain)
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      mapTypeControl: true,
       mapTypeControlOptions: {
         style: google.maps.MapTypeControlStyle.DROPDOWN_MENU,
         position: google.maps.ControlPosition.TOP_LEFT,
@@ -51,23 +51,23 @@ window.initMap = function() {
           google.maps.MapTypeId.TERRAIN
         ]
       },
-      streetViewControl: true, // Enable Street View Pegman control
+      streetViewControl: true,
       streetViewControlOptions: {
         position: google.maps.ControlPosition.RIGHT_BOTTOM
       },
-      zoomControl: true, // Enable zoom control
+      zoomControl: true,
       zoomControlOptions: {
         position: google.maps.ControlPosition.RIGHT_BOTTOM
       },
-      fullscreenControl: true, // Enable fullscreen control
+      fullscreenControl: true,
       fullscreenControlOptions: {
         position: google.maps.ControlPosition.RIGHT_TOP
       },
-      rotateControl: true, // Enable rotate control for 45° imagery
+      rotateControl: true,
       rotateControlOptions: {
         position: google.maps.ControlPosition.RIGHT_BOTTOM
       },
-      scaleControl: true, // Enable scale control
+      scaleControl: true,
       styles: [
         {
           featureType: 'all',
@@ -76,21 +76,19 @@ window.initMap = function() {
       ]
     });
 
-    // Initialize Street View panorama (optional, can be toggled by Pegman)
     const panorama = map.getStreetView();
     panorama.setOptions({
       position: { lat: -33.9249, lng: 18.4241 },
       pov: { heading: 270, pitch: 0 },
-      visible: false // Hidden by default, shown when Pegman is dropped
+      visible: false
     });
 
-    mapReadyResolver(); // Signal map is ready
+    mapReadyResolver();
     if (window.requestsLoaded) {
       updateMapMarkers(window.requestsLoaded);
     }
     document.getElementById('map').querySelector('.loading')?.remove();
     console.log('Map initialized successfully');
-    // Trigger resize to ensure proper rendering
     google.maps.event.trigger(map, 'resize');
   } catch (error) {
     console.error('Error initializing map:', error);
@@ -111,10 +109,10 @@ function retryMapLoad(attempt, maxRetries = 3) {
       mapContainer.innerHTML = '<p class="loading">Loading map...</p>';
       window.initMap();
     });
-    mapReadyResolver(); // Resolve to prevent blocking
+    mapReadyResolver();
     return;
   }
-  const delay = Math.pow(2, attempt) * 2000; // Exponential backoff: 2s, 4s, 8s
+  const delay = Math.pow(2, attempt) * 2000;
   document.getElementById('map').innerHTML = '<p class="error">Failed to load map. Retrying in ' + (delay / 1000) + ' seconds...</p>';
   setTimeout(() => {
     const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
@@ -142,7 +140,7 @@ const markerIcons = {
   allocated: { url: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png', scaledSize: new google.maps.Size(32, 32) }
 };
 
-// Handle window resize to ensure map renders correctly
+// Handle window resize
 window.addEventListener('resize', () => {
   if (map && window.google && window.google.maps) {
     google.maps.event.trigger(map, 'resize');
@@ -164,7 +162,6 @@ async function updateMapMarkers(requests) {
     return;
   }
 
-  // Clear existing markers
   markers.forEach(marker => marker.setMap(null));
   markers = [];
 
@@ -199,7 +196,6 @@ async function updateMapMarkers(requests) {
         console.warn(`Geocoding error for request ${request.RequestID}: ${error.message}`);
       }
 
-      // Determine marker icon based on status
       let icon;
       switch (request.RequestStatus) {
         case 'Completed':
@@ -223,7 +219,6 @@ async function updateMapMarkers(requests) {
         requestId: request.RequestID
       });
 
-      // Info window for marker
       const infoWindow = new google.maps.InfoWindow({
         content: `
           <div style="font-family: Inter, sans-serif; padding: 10px;">
@@ -235,11 +230,9 @@ async function updateMapMarkers(requests) {
       });
 
       marker.addListener('click', () => {
-        // Close any open info windows
         markers.forEach(m => m.infoWindow?.close());
         infoWindow.open(map, marker);
 
-        // Update marker and card selection
         if (selectedMarker) selectedMarker.setIcon(markerIcons[selectedMarker.requestStatus] || markerIcons.default);
         marker.setIcon(markerIcons.selected);
         marker.requestStatus = request.RequestStatus;
@@ -266,13 +259,11 @@ async function updateMapMarkers(requests) {
       console.error(`Error creating marker for request ${request.RequestID}:`, error);
     }
 
-    await new Promise(resolve => setTimeout(resolve, 100)); // Avoid rate limits
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // Adjust map to fit all markers
   if (markers.length > 0) {
     map.fitBounds(bounds);
-    // Ensure zoom doesn't go too far out
     map.addListener('bounds_changed', () => {
       if (map.getZoom() > 15) map.setZoom(15);
     });
@@ -297,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const detailsModal = document.getElementById('details-modal');
   const detailsCloseBtn = document.getElementById('details-close');
   const detailsCloseSpan = detailsModal.querySelector('.close');
+  const complaintResponseModal = document.getElementById('complaint-response-modal');
+  const complaintResponseForm = document.getElementById('complaint-response-form');
+  const complaintResponseCancel = document.getElementById('complaint-response-cancel');
+  const complaintResponseClose = complaintResponseModal.querySelector('.close');
   const notificationIcon = document.querySelector('.nav-item.notifications');
   const statusFilter = document.getElementById('status-filter');
   const logoutBtn = document.getElementById('logout');
@@ -380,18 +375,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   }
 
+  // Load and display complaints
+  async function loadComplaints() {
+    try {
+      const { data: complaints, error } = await supabaseClient
+        .from('ComplaintTable')
+        .select(`
+          ComplaintID,
+          ComplaintSubject,
+          ComplaintDescription,
+          ComplaintStatus,
+          created_at,
+          UserTable (UserUsername)
+        `)
+        .order('created_at', { ascending: false });
+      if (error) throw new Error(`Error fetching complaints: ${error.message}`);
+
+      const complaintsContainer = document.getElementById('complaints-container');
+      complaintsContainer.innerHTML = complaints.length > 0
+        ? complaints.map(complaint => `
+            <div class="complaint-card" data-complaint-id="${complaint.ComplaintID}">
+              <h3>${complaint.ComplaintSubject}</h3>
+              <p><strong>Description:</strong> ${complaint.ComplaintDescription}</p>
+              <p><strong>Status:</strong> <span class="status status-${complaint.ComplaintStatus.toLowerCase()}">${complaint.ComplaintStatus}</span></p>
+              <p><strong>Submitted:</strong> ${new Date(complaint.created_at).toLocaleString()}</p>
+              <p><strong>User:</strong> ${complaint.UserTable?.UserUsername || 'Unknown'}</p>
+              <button class="respond-btn" data-complaint-id="${complaint.ComplaintID}" ${complaint.ComplaintStatus !== 'Pending' ? 'disabled' : ''}>Respond</button>
+            </div>
+          `).join('')
+        : '<p>No complaints available.</p>';
+
+      document.querySelectorAll('.respond-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const complaintId = btn.dataset.complaintId;
+          const complaint = complaints.find(c => c.ComplaintID === complaintId);
+          openComplaintResponseModal(complaint);
+        });
+      });
+    } catch (error) {
+      console.error('Error loading complaints:', error);
+      showToast(`Error loading complaints: ${error.message}`, 'error');
+    }
+  }
+
+  // Open complaint response modal
+  function openComplaintResponseModal(complaint) {
+    document.getElementById('complaint-id').value = complaint.ComplaintID;
+    document.getElementById('complaint-subject').value = complaint.ComplaintSubject;
+    document.getElementById('complaint-description').value = complaint.ComplaintDescription;
+    document.getElementById('complaint-response-message').value = '';
+    complaintResponseModal.style.display = 'block';
+  }
+
+  function closeComplaintResponseModal() {
+    complaintResponseModal.style.display = 'none';
+    complaintResponseForm.reset();
+  }
+
+  complaintResponseCancel.addEventListener('click', closeComplaintResponseModal);
+  complaintResponseClose.addEventListener('click', closeComplaintResponseModal);
+  window.addEventListener('click', (e) => {
+    if (e.target === complaintResponseModal) closeComplaintResponseModal();
+  });
+
+  // Handle complaint response submission
+  complaintResponseForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const complaintId = document.getElementById('complaint-id').value;
+    const responseMessage = document.getElementById('complaint-response-message').value.trim();
+
+    try {
+      const { data: complaint, error: complaintError } = await supabaseClient
+        .from('ComplaintTable')
+        .select('ComplaintSubject, UserID')
+        .eq('ComplaintID', complaintId)
+        .single();
+      if (complaintError) throw new Error(`Error fetching complaint: ${complaintError.message}`);
+
+      const { error: updateError } = await supabaseClient
+        .from('ComplaintTable')
+        .update({
+          ComplaintStatus: 'Responded',
+          updated_at: new Date().toISOString()
+        })
+        .eq('ComplaintID', complaintId);
+      if (updateError) throw new Error(`Error updating complaint: ${updateError.message}`);
+
+      const { error: notifyError } = await supabaseClient
+        .from('UserNotifications')
+        .insert({
+          NotificationID: crypto.randomUUID(),
+          UserID: complaint.UserID,
+          Message: `Response to your complaint "${complaint.ComplaintSubject}": ${responseMessage}`,
+          IsRead: false,
+          created_at: new Date().toISOString()
+        });
+      if (notifyError) throw new Error(`Error notifying user: ${notifyError.message}`);
+
+      const { error: adminNotifyError } = await supabaseClient
+        .from('AdminNotifications')
+        .insert({
+          NotificationID: crypto.randomUUID(),
+          AdminID: (await getUser()).id,
+          Message: `Response sent for complaint "${complaint.ComplaintSubject}".`,
+          IsRead: false,
+          created_at: new Date().toISOString()
+        });
+      if (adminNotifyError) throw new Error(`Error notifying admin: ${adminNotifyError.message}`);
+
+      showToast('Response sent successfully!', 'success');
+      loadComplaints();
+      loadAdminNotifications((await getUser()).id);
+      closeComplaintResponseModal();
+    } catch (error) {
+      console.error('Error responding to complaint:', error);
+      showToast(`Error: ${error.message}`, 'error');
+    }
+  });
+
   // Load initial data
   async function initialize() {
     const user = await getUser();
     if (!user) return;
 
     loadRequests();
+    loadComplaints();
     loadAdminNotifications(user.id);
     loadChartJs();
-    // Ensure map is initialized
     window.initMap();
 
-    // Subscribe to real-time request updates
     supabaseClient
       .channel('request_table_admin')
       .on('postgres_changes', {
@@ -403,7 +515,17 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .subscribe();
 
-    // Subscribe to real-time message updates for contractor actions
+    supabaseClient
+      .channel('complaint_table_admin')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'ComplaintTable'
+      }, () => {
+        loadComplaints();
+      })
+      .subscribe();
+
     supabaseClient
       .channel('request_messages_admin')
       .on('postgres_changes', {
@@ -503,7 +625,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
       allocateModal.style.display = 'block';
 
-      // Add event listeners for contractor selection
       document.querySelectorAll('.select-contractor-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const contractorId = btn.dataset.contractorId;
@@ -519,7 +640,6 @@ document.addEventListener('DOMContentLoaded', () => {
               .single();
             if (requestError) throw new Error(`Error fetching request: ${requestError.message}`);
 
-            // Validate contractor exists
             const { data: contractor, error: contractorError } = await supabaseClient
               .from('ContractorTable')
               .select('ContractorID')
@@ -527,7 +647,6 @@ document.addEventListener('DOMContentLoaded', () => {
               .single();
             if (contractorError || !contractor) throw new Error(`Invalid contractor: ${contractorError?.message || 'Contractor not found'}`);
 
-            // Update request
             const { error: updateError } = await supabaseClient
               .from('RequestTable')
               .update({
@@ -538,7 +657,6 @@ document.addEventListener('DOMContentLoaded', () => {
               .eq('RequestID', requestId);
             if (updateError) throw new Error(`Error updating request: ${updateError.message}`);
 
-            // Notify contractor
             const contractorNotification = {
               ContractorNotificationID: crypto.randomUUID(),
               ContractorID: contractorId,
@@ -552,7 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
               .insert(contractorNotification);
             if (contractorNotifyError) throw new Error(`Error notifying contractor: ${contractorNotifyError.message}`);
 
-            // Notify user
             const userNotification = {
               MessageID: crypto.randomUUID(),
               RequestID: requestId,
@@ -570,7 +687,6 @@ document.addEventListener('DOMContentLoaded', () => {
               .insert(userNotification);
             if (userNotifyError) throw new Error(`Error notifying user: ${userNotifyError.message}`);
 
-            // Notify admin
             const { error: adminNotifyError } = await supabaseClient
               .from('AdminNotifications')
               .insert({
@@ -717,7 +833,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = document.getElementById('message').value.trim();
     let contractorId = actionModal.dataset.contractorId;
 
-    // Force contractorId to null for accept/reject
     if (action !== 'message') {
       contractorId = null;
     } else {
@@ -784,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showToast('Request accepted successfully!', 'success');
         loadAdminNotifications((await getUser()).id);
-        openAllocateModal(requestId, userId, request.RequestCategory || 'Other');
+        closeActionModal();
       } else if (action === 'reject') {
         const messageType = 'Rejection';
         validateMessageType(messageType);
@@ -919,13 +1034,11 @@ document.addEventListener('DOMContentLoaded', () => {
       allRequests = requests;
       window.requestsLoaded = requests;
 
-      // Update stats
       document.getElementById('total-requests').textContent = requests.length;
       document.getElementById('pending-requests').textContent = requests.filter(r => r.RequestStatus === 'Pending').length;
       document.getElementById('accepted-requests').textContent = requests.filter(r => r.RequestStatus === 'Accepted').length;
       document.getElementById('rejected-requests').textContent = requests.filter(r => r.RequestStatus === 'Rejected').length;
 
-      // Render request cards
       const requestsContainer = document.getElementById('requests');
       requestsContainer.innerHTML = requests.length > 0
         ? requests.map(request => {
@@ -942,7 +1055,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   <button class="approve-btn" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" ${request.RequestStatus !== 'Pending' ? 'disabled' : ''}>Accept</button>
                   <button class="reject-btn" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" ${request.RequestStatus !== 'Pending' ? 'disabled' : ''}>Reject</button>
                   <button class="details-btn" data-request-id="${request.RequestID}">Details</button>
-                  ${request.RequestStatus === 'Allocated' || request.RequestStatus === 'Accepted' ? `
+                  ${request.RequestStatus === 'Accepted' ? `
+                    <button class="allocate-btn" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" data-category="${request.RequestCategory || 'Other'}">Allocate</button>
+                  ` : ''}
+                  ${request.RequestStatus === 'Allocated' ? `
                     <button class="message-btn" data-request-id="${request.RequestID}" data-user-id="${request.UserID}" data-contractor-id="${request.ContractorID || ''}">Message</button>
                   ` : ''}
                 </div>
@@ -951,7 +1067,6 @@ document.addEventListener('DOMContentLoaded', () => {
           }).join('')
         : '<p>No requests available.</p>';
 
-      // Add event listeners for request cards
       document.querySelectorAll('.approve-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           openActionModal('Accept', btn.dataset.requestId, btn.dataset.userId);
@@ -969,6 +1084,12 @@ document.addEventListener('DOMContentLoaded', () => {
           const request = requests.find(r => r.RequestID === btn.dataset.requestId);
           const messages = request.RequestMessages || [];
           await openDetailsModal(request, request.UserTable, messages);
+        });
+      });
+
+      document.querySelectorAll('.allocate-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          openAllocateModal(btn.dataset.requestId, btn.dataset.userId, btn.dataset.category);
         });
       });
 
@@ -995,7 +1116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Render request table
       const tableBody = document.querySelector('#requests-table tbody');
       tableBody.innerHTML = requests.map(request => `
         <tr>
@@ -1019,15 +1139,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      // Update map markers
       await mapReady;
       updateMapMarkers(requests);
 
-      // Apply status filter
       statusFilter.value = statusFilter.value || 'all';
       filterRequests(statusFilter.value);
 
-      // Render analytics
       renderAnalytics(requests);
     } catch (error) {
       console.error('Error loading requests:', error);
@@ -1135,7 +1252,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // Enhanced KPIs
     const categories = ['Water', 'Electricity', 'Plumbing', 'Infrastructure', 'Crime', 'Other'];
     const categoryCounts = categories.reduce((acc, cat) => {
       acc[cat] = requests.filter(r => r.RequestCategory === cat).length;
@@ -1154,7 +1270,6 @@ document.addEventListener('DOMContentLoaded', () => {
       : 0;
     document.getElementById('kpi-processing-time').textContent = `${Math.round(avgProcessingTime)} days`;
 
-    // Status chart (Bar chart for better visibility)
     const statusCounts = {
       Pending: requests.filter(r => r.RequestStatus === 'Pending').length,
       Accepted: requests.filter(r => r.RequestStatus === 'Accepted').length,
@@ -1188,7 +1303,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Trend chart (Monthly trend)
     const trendData = {};
     requests.forEach(r => {
       const date = new Date(r.created_at).toLocaleString('default', { month: 'short', year: 'numeric' });
